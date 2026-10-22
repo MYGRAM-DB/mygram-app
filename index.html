@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - Global Portal</title>
+    <title>MYGRAM - Portal</title>
     <style>
         :root {
             --bg-main: #0b1120;
@@ -19,7 +19,7 @@
         h1 { color: var(--primary); margin: 0 0 5px; font-size: 28px; font-weight: 900; letter-spacing: 1px; }
         .sub-slogan { color: var(--text-sub); font-size: 11px; margin-bottom: 20px; }
         input, select { width: 100%; padding: 12px 14px; margin-bottom: 12px; background: #0b1120; border: 1px solid var(--border); color: #fff; border-radius: 10px; box-sizing: border-box; font-size: 13px; outline: none; }
-        input:focus { border-color: var(--primary); }
+        input:focus, select:focus { border-color: var(--primary); }
         button { width: 100%; padding: 13px; background: var(--primary-gradient); color: #fff; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 5px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
         button:hover { opacity: 0.95; }
         .toggle-link { margin-top: 15px; font-size: 12px; color: var(--text-sub); cursor: pointer; }
@@ -33,11 +33,27 @@
         <h1>MYGRAM</h1>
         <div class="sub-slogan">Everything you need is here</div>
         
-        <div id="nameField" style="display:none;">
+        <div id="signupFields" style="display:none;">
             <input type="text" id="fullName" placeholder="الاسم الكامل">
             <input type="date" id="birthDate" placeholder="تاريخ الميلاد">
             <div class="age-warning">* يجب أن يكون عمرك 16 عاماً أو أكثر للتسجيل.</div>
+            
+            <select id="genderSelect">
+                <option value="" disabled selected>تحديد الجندر (الهوية)</option>
+                <option value="male">ذكر (Male)</option>
+                <option value="female">أنثى (Female)</option>
+                <option value="custom">أخرى / تخصيص</option>
+            </select>
+
+            <select id="relationSelect">
+                <option value="" disabled selected>الحالة الاجتماعية (الارتباط)</option>
+                <option value="single">أعزب / عزباء</option>
+                <option value="in_relation">مرتبط / مرتبطة</option>
+                <option value="married">متزوج / متزوجة</option>
+                <option value="engaged">مخطوب / مخطوبة</option>
+            </select>
         </div>
+
         <input type="email" id="emailInput" placeholder="البريد الإلكتروني">
         <input type="tel" id="phoneInput" placeholder="رقم الهاتف الدولي">
         <input type="password" id="password" placeholder="كلمة السر">
@@ -54,7 +70,7 @@
 
         function toggleMode() {
             isSignup = !isSignup;
-            document.getElementById('nameField').style.display = isSignup ? 'block' : 'none';
+            document.getElementById('signupFields').style.display = isSignup ? 'block' : 'none';
             document.getElementById('actionBtn').innerText = isSignup ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
             document.getElementById('toggleText').innerText = isSignup ? 'لديك حساب بالفعل؟ سجل دخولك' : 'ليس لديك حساب؟ انضم إلينا الآن';
         }
@@ -80,10 +96,15 @@
 
             let userName = email ? email.split('@')[0] : phone;
             let userAge = 18;
+            let gender = "غير محدد";
+            let relation = "غير محدد";
 
             if (isSignup) {
                 const fullName = document.getElementById('fullName').value.trim();
                 const birthDate = document.getElementById('birthDate').value;
+                gender = document.getElementById('genderSelect').value || "غير محدد";
+                relation = document.getElementById('relationSelect').value || "غير محدد";
+
                 if (!birthDate) {
                     alert('الرجاء إدخال تاريخ الميلاد للتحقق من السن القانوني!');
                     return;
@@ -100,6 +121,8 @@
             localStorage.setItem('mygram_email', email);
             localStorage.setItem('mygram_phone', phone);
             localStorage.setItem('mygram_age', userAge);
+            localStorage.setItem('mygram_gender', gender);
+            localStorage.setItem('mygram_relation', relation);
             window.location.href = 'home.html';
         }
     </script>
