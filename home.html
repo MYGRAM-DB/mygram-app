@@ -13,14 +13,20 @@
         .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
         
         /* صندوق كتابة المنشور */
-        .post-box { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .post-box, .card-box { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); border: 1px solid #334155; }
         .post-box textarea { width: 100%; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 8px; padding: 10px; resize: none; box-sizing: border-box; height: 80px; font-family: sans-serif; }
-        .post-box button { background: #38bdf8; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; float: left; }
+        .post-box button, .action-btn { background: #38bdf8; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .post-box button { float: left; }
         
-        /* شكل المنشورات */
+        /* شكل المنشورات والعناصر */
         .post-card { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
         .post-author { font-weight: bold; color: #38bdf8; margin-bottom: 8px; }
         .post-text { color: #e2e8f0; font-size: 15px; line-height: 1.5; }
+
+        /* تنسيق قسم الأصدقاء */
+        .friend-item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #334155; }
+        .friend-name { color: #f8fafc; font-weight: bold; }
+        .add-btn { background: #4ade80; color: #0f172a; border: none; padding: 5px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
 
         /* شريط التنقل السفلي */
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #334155; z-index: 100; }
@@ -36,20 +42,7 @@
     </div>
 
     <div class="container" id="mainContent">
-        <!-- صندوق نشر منشور جديد -->
-        <div class="post-box">
-            <textarea id="postText" placeholder="بماذا تفكر يا غالي؟"></textarea>
-            <button onclick="addPost()">نشر</button>
-            <div style="clear: both;"></div>
-        </div>
-
-        <!-- قائمة المنشورات -->
-        <div id="postsContainer">
-            <div class="post-card">
-                <div class="post-author">النظام (مرحباً بك)</div>
-                <div class="post-text">أهلاً بك في منصة MYGRAM الاجتماعية! ابدأ بنشر أول منشور لك الآن.</div>
-            </div>
-        </div>
+        <!-- المحتوى الافتراضي (الرئيسية) -->
     </div>
 
     <!-- شريط التنقل السفلي -->
@@ -62,8 +55,70 @@
 
     <script>
         let currentUser = localStorage.getItem('mygram_username') || 'مستخدم مجهول';
+        let currentTab = 'home';
 
-        // وظيفة إضافة منشور جديد وحفظه بالذاكرة المحلية للمتصفح
+        function renderContent() {
+            const content = document.getElementById('mainContent');
+            
+            if (currentTab === 'home') {
+                document.getElementById('appTitle').innerText = 'MYGRAM';
+                content.innerHTML = `
+                    <div class="post-box">
+                        <textarea id="postText" placeholder="بماذا تفكر يا غالي؟"></textarea>
+                        <button onclick="addPost()">نشر</button>
+                        <div style="clear: both;"></div>
+                    </div>
+                    <div id="postsContainer"></div>
+                `;
+                loadPosts();
+            } else if (currentTab === 'friends') {
+                document.getElementById('appTitle').innerText = 'الأصدقاء والمشاهير';
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color: #38bdf8; margin-top: 0;">اقتراحات المتابعة</h3>
+                        <div class="friend-item">
+                            <span class="friend-name">سيف الدين (مهندس برمجيات)</span>
+                            <button class="add-btn" onclick="alert('تم إرسال طلب المتابعة بنجاح!')">متابعة</button>
+                        </div>
+                        <div class="friend-item">
+                            <span class="friend-name">محمد الشامي (مصمم جرافيك)</span>
+                            <button class="add-btn" onclick="alert('تم إرسال طلب المتابعة بنجاح!')">متابعة</button>
+                        </div>
+                        <div class="friend-item">
+                            <span class="friend-name">عمر الفاروق (مطور تطبيقات)</span>
+                            <button class="add-btn" onclick="alert('تم إرسال طلب المتابعة بنجاح!')">متابعة</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'groups') {
+                document.getElementById('appTitle').innerText = 'المجموعات العامة';
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color: #38bdf8; margin-top: 0;">المجموعات المتاحة للانضمام</h3>
+                        <div class="friend-item">
+                            <span class="friend-name">🛡️ مجتمع تقنيات الويب والـ APK</span>
+                            <button class="add-btn" onclick="alert('انضممت للمجموعة بنجاح!')">انضمام</button>
+                        </div>
+                        <div class="friend-item">
+                            <span class="friend-name">💡 رواد الأعمال والمشاريع</span>
+                            <button class="add-btn" onclick="alert('انضممت للمجموعة بنجاح!')">انضمام</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'profile') {
+                document.getElementById('appTitle').innerText = 'الملف الشخصي';
+                let bio = localStorage.getItem('mygram_bio') || 'لم تضف نبذة تعريفية بعد...';
+                content.innerHTML = `
+                    <div class="card-box" style="text-align: center;">
+                        <div style="font-size: 50px; margin-bottom: 10px;">👤</div>
+                        <div class="post-author" style="font-size: 18px; margin-bottom: 5px;">${currentUser}</div>
+                        <p style="color: #94a3b8; font-size: 14px;" id="bioText">${bio}</p>
+                        <button class="action-btn" onclick="editBio()">تعديل النبذة التعريفية</button>
+                    </div>
+                `;
+            }
+        }
+
         function addPost() {
             const text = document.getElementById('postText').value;
             if (!text.trim()) return;
@@ -76,10 +131,10 @@
             loadPosts();
         }
 
-        // تحميل المنشورات وعرضها
         function loadPosts() {
             let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
             const container = document.getElementById('postsContainer');
+            if(!container) return;
             
             let html = `
                 <div class="post-card">
@@ -99,43 +154,23 @@
             container.innerHTML = html;
         }
 
-        // التنقل البسيط بين التبويبات السفلية
-        function switchTab(tab, element) {
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            element.classList.add('active');
-
-            const content = document.getElementById('mainContent');
-            if (tab === 'home') {
-                document.getElementById('appTitle').innerText = 'MYGRAM';
-                content.innerHTML = `
-                    <div class="post-box">
-                        <textarea id="postText" placeholder="بماذا تفكر يا غالي؟"></textarea>
-                        <button onclick="addPost()">نشر</button>
-                        <div style="clear: both;"></div>
-                    </div>
-                    <div id="postsContainer"></div>
-                `;
-                loadPosts();
-            } else if (tab === 'friends') {
-                document.getElementById('appTitle').innerText = 'الأصدقاء';
-                content.innerHTML = `<div class="post-card"><div class="post-author">قريباً</div><div class="post-text">قائمة الأصدقاء والبحث عن أشخاص جدد قادمة في التحديث القادم!</div></div>`;
-            } else if (tab === 'groups') {
-                document.getElementById('appTitle').innerText = 'المجموعات والصفحات';
-                content.innerHTML = `<div class="post-card"><div class="post-author">قريباً</div><div class="post-text">ميزة إنشاء المجموعات الخاصة والصفحات العامة قيد التطوير الآن!</div></div>`;
-            } else if (tab === 'profile') {
-                document.getElementById('appTitle').innerText = 'الملف الشخصي';
-                content.innerHTML = `
-                    <div class="post-card" style="text-align: center;">
-                        <div class="post-author" style="font-size: 18px; margin-bottom: 10px;">👤 ${currentUser}</div>
-                        <div class="post-text">أنت مسجل الدخول بنجاح في تطبيق MYGRAM وتتمتع بكامل صلاحيات المنصة.</div>
-                    </div>
-                `;
+        function editBio() {
+            let newBio = prompt('أدخل نبذة تعريفية جديدة عنك:');
+            if (newBio !== null && newBio.trim() !== '') {
+                localStorage.setItem('mygram_bio', newBio);
+                renderContent();
             }
         }
 
-        // تشغيل تحميل المنشورات فور فتح الصفحة
+        function switchTab(tab, element) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            currentTab = tab;
+            renderContent();
+        }
+
         window.onload = function() {
-            loadPosts();
+            renderContent();
         };
 
         function logout() {
