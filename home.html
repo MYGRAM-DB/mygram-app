@@ -82,23 +82,27 @@
             return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
 
-        let currentAccount = null;
-        try { currentAccount = JSON.parse(localStorage.getItem('mygram_current_account')); } catch(e) {}
-        if (!currentAccount || !currentAccount.account) {
-            currentAccount = {
-                name: "Louay Chaghal",
-                account: "louay@mygram.com",
-                gender: "male",
-                birthDate: "1995-01-01",
-                age: 31,
-                relation: "متزوج",
-                hobbies: "البرمجة وتقنية المصاعد",
-                avatar: ""
-            };
-            localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
-        }
+        // ضمان وجود حساب افتراضي دائماً لعدم حدوث شاشة سوداء
+        let currentAccount = {
+            name: "Louay Chaghal",
+            account: "louay@mygram.com",
+            gender: "male",
+            birthDate: "1995-01-01",
+            age: 31,
+            relation: "متزوج",
+            hobbies: "البرمجة وتقنية المصاعد",
+            avatar: ""
+        };
 
-        let currentUser = escapeHtml(currentAccount.name || 'مستخدم MYGRAM');
+        try {
+            const saved = localStorage.getItem('mygram_current_account');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.account) currentAccount = parsed;
+            }
+        } catch(e) {}
+
+        let currentUser = escapeHtml(currentAccount.name || 'Louay Chaghal');
         let userGender = escapeHtml(currentAccount.gender || 'male');
         let currentTab = 'feed';
         let chatSubTab = 'messenger';
@@ -265,7 +269,7 @@
 
         function publishAppPost() {
             const text = document.getElementById('postText').value;
-            const isSens = document.getElementById('sensitiveCheck') ? document.getElementById('sensitiveCheck'].checked : false;
+            const isSens = document.getElementById('sensitiveCheck') ? document.getElementById('sensitiveCheck').checked : false;
             if(!text.trim() && !attachedMedia) return;
             let posts = [];
             try { posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]'); } catch(e){}
@@ -302,8 +306,7 @@
             window.location.href = 'index.html';
         }
 
-        window.onload = function() { initApp(); };
-        function initApp() { renderAppContent(); }
+        window.onload = function() { renderAppContent(); };
     </script>
 </body>
 </html>
