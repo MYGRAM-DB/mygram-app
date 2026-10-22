@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - Portal</title>
+    <title>MYGRAM - Global Onboarding</title>
     <style>
         :root {
             --bg-main: #0b1120;
@@ -17,163 +17,488 @@
             --success-green: #22c55e;
         }
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box; }
-        .auth-card { background: var(--card-bg); padding: 30px; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid var(--border); text-align: center; position: relative; }
-        .lang-picker-top { position: absolute; top: 15px; right: 15px; }
-        html[dir="ltr"] .lang-picker-top { right: auto; left: 15px; }
-        select.lang-select { background: #0b1120; color: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 11px; padding: 4px 8px; outline: none; }
-        h1 { color: var(--primary); margin: 15px 0 5px; font-size: 28px; font-weight: 900; letter-spacing: 1px; }
-        .sub-slogan { color: var(--text-sub); font-size: 11px; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px 14px; margin-bottom: 12px; background: #0b1120; border: 1px solid var(--border); color: #fff; border-radius: 10px; box-sizing: border-box; font-size: 13px; outline: none; }
-        input:focus, select:focus { border-color: var(--primary); }
-        button { width: 100%; padding: 13px; background: var(--primary-gradient); color: #0b1120; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 5px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
-        .toggle-link, .forgot-link { margin-top: 12px; font-size: 12px; color: var(--text-sub); cursor: pointer; }
-        .toggle-link span, .forgot-link span { color: var(--primary); font-weight: bold; }
-        .age-warning { font-size: 10px; color: var(--error-red); margin-top: -8px; margin-bottom: 10px; text-align: right; }
-        html[dir="ltr"] .age-warning { text-align: left; }
-        .msg-box { display: none; padding: 10px; border-radius: 8px; font-size: 12px; margin-top: 10px; text-align: center; }
+        .auth-card { background: var(--card-bg); padding: 25px; border-radius: 20px; width: 100%; max-width: 440px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid var(--border); text-align: center; position: relative; }
+        
+        h1 { color: var(--primary); margin: 5px 0 2px; font-size: 24px; font-weight: 900; }
+        .sub-slogan { color: var(--text-sub); font-size: 10px; margin-bottom: 15px; }
+        
+        input, select, textarea { width: 100%; padding: 11px 13px; margin-bottom: 10px; background: #0b1120; border: 1px solid var(--border); color: #fff; border-radius: 10px; box-sizing: border-box; font-size: 13px; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+        
+        .btn-primary { width: 100%; padding: 12px; background: var(--primary-gradient); color: #0b1120; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 5px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
+        .btn-skip { width: 100%; padding: 8px; background: transparent; color: var(--text-sub); border: none; font-size: 12px; cursor: pointer; margin-top: 5px; }
+        .btn-skip:hover { color: var(--primary); }
+
+        .step-container { display: none; }
+        .step-container.active { display: block; }
+        
+        .msg-box { display: none; padding: 8px; border-radius: 8px; font-size: 11px; margin-bottom: 10px; text-align: center; }
         .msg-error { color: var(--error-red); background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); }
-        .msg-success { color: var(--success-green); background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); }
+        .age-warning { font-size: 10px; color: var(--error-red); margin-top: -6px; margin-bottom: 8px; text-align: right; }
+        html[dir="ltr"] .age-warning { text-align: left; }
+        
+        .avatar-preview { width: 90px; height: 90px; border-radius: 50%; border: 2px solid var(--primary); margin: 0 auto 10px; display: flex; justify-content: center; align-items: center; font-size: 40px; background: #0b1120; overflow: hidden; }
+        .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .suggestion-item { display: flex; justify-content: space-between; align-items: center; background: #0b1120; padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; border: 1px solid var(--border); font-size: 12px; }
+        
+        label.field-lbl { display: block; text-align: right; font-size: 11px; color: var(--text-sub); margin-bottom: 3px; }
+        html[dir="ltr"] label.field-lbl { text-align: left; }
     </style>
 </head>
 <body>
 
     <div class="auth-card">
-        <div class="lang-picker-top">
-            <select class="lang-select" id="langSelect" onchange="setGlobalLanguage(this.value)">
-                <option value="ar">العربية</option>
-                <option value="en">English</option>
-                <option value="fr">Français</option>
-                <option value="tr">Türkçe</option>
-            </select>
-        </div>
-
         <h1>MYGRAM</h1>
         <div class="sub-slogan">Everything you need is here</div>
         
-        <!-- حقول التسجيل الإضافية عند الحاجة -->
-        <div id="signupFields" style="display:none;">
-            <input type="text" id="fullName" placeholder="الاسم الكامل">
-            <input type="date" id="birthDate">
-            <div class="age-warning">* يجب أن يكون عمرك 16 عاماً أو أكثر للتسجيل.</div>
-            
-            <select id="genderSelect">
-                <option value="" disabled selected>تحديد الجندر (الهوية)</option>
-                <option value="male">ذكر (Male)</option>
-                <option value="female">أنثى (Female)</option>
-            </select>
-        </div>
-
-        <!-- خانتان أساسيتان فقط: الحساب (إيميل أو هاتف) + كلمة السر -->
-        <input type="text" id="accountInput" placeholder="البريد الإلكتروني أو رقم الهاتف">
-        <input type="password" id="passwordInput" placeholder="كلمة السر">
-        
-        <button id="actionBtn" onclick="handleAuth()">تسجيل الدخول</button>
-        
         <div class="msg-box" id="msgBox"></div>
 
-        <div class="forgot-link" id="forgotDiv" onclick="openRecovery()">
-            <span>هل نسيت كلمة السر؟ استرداد الحساب</span>
+        <!-- الخطوة 1: الواجهة الأولى (70 لغة + بحث ذكي وشامل في 205 دولة + إيميل/هاتف + كلمة السر) -->
+        <div class="step-container active" id="step1">
+            <h3 style="color:var(--primary); font-size:14px; margin-top:0;">إنشاء حساب جديد (الخطوة 1 من 6)</h3>
+            
+            <label class="field-lbl">لغة التطبيق (70 لغة عالمية):</label>
+            <select id="langSelect" onchange="setGlobalLanguage(this.value)"></select>
+
+            <label class="field-lbl">بحث واختيار الدولة (اكتب اسم البلد أو الرمز مثل sy, ps):</label>
+            <input type="text" id="countrySearchInput" placeholder="🔍 ابحث عن أي دولة أو رمز (مثال: sy, فلسطين)..." oninput="filterCountries(this.value)">
+            
+            <select id="countrySelect" size="4" style="height: 90px; margin-bottom: 10px;"></select>
+
+            <input type="text" id="accountInput" placeholder="البريد الإلكتروني أو رقم الهاتف">
+            <input type="password" id="passwordInput" placeholder="كلمة السر">
+            
+            <button class="btn-primary" onclick="nextStep(2)">متابعة</button>
+            <div class="btn-skip" onclick="toggleToLogin()">لديك حساب مسبقاً؟ تسجيل الدخول</div>
         </div>
 
-        <div class="toggle-link" onclick="toggleMode()">
-            <span id="toggleText">ليس لديك حساب؟ انضم إلينا الآن</span>
+        <!-- الخطوة 2: الميلاد والعمر الحقيقي -->
+        <div class="step-container" id="step2">
+            <h3 style="color:var(--primary); font-size:14px; margin-top:0;">تاريخ الميلاد (الخطوة 2 من 6)</h3>
+            <input type="text" id="fullName" placeholder="الاسم الكامل">
+            <label class="field-lbl">تاريخ الميلاد لتحديد العمر الحقيقي:</label>
+            <input type="date" id="birthDate">
+            <div class="age-warning">* يجب أن يكون عمرك 16 عاماً أو أكثر للتسجيل.</div>
+            <button class="btn-primary" onclick="nextStep(3)">متابعة</button>
+            <button class="btn-skip" onclick="nextStep(3)">تخطي</button>
         </div>
+
+        <!-- الخطوة 3: الجنس والهوايات والحالة الاجتماعية -->
+        <div class="step-container" id="step3">
+            <h3 style="color:var(--primary); font-size:14px; margin-top:0;">البيانات الشخصية (الخطوة 3 من 6)</h3>
+            <label class="field-lbl">الجندر (الهوية):</label>
+            <select id="genderSelect">
+                <option value="male">ذكر 👨</option>
+                <option value="female">أنثى 👩</option>
+            </select>
+            <label class="field-lbl">الحالة الاجتماعية:</label>
+            <select id="relationSelect">
+                <option value="أعزب / عزباء">أعزب / عزباء</option>
+                <option value="مرتبط / مرتبطة">مرتبط / مرتبطة</option>
+                <option value="متزوج / متزوجة">متزوج / متزوجة</option>
+            </select>
+            <input type="text" id="hobbiesInput" placeholder="هواياتك (مثال: البرمجة، السفر)">
+            <button class="btn-primary" onclick="nextStep(4)">متابعة</button>
+        </div>
+
+        <!-- الخطوة 4: صورة البروفايل -->
+        <div class="step-container" id="step4">
+            <h3 style="color:var(--primary); font-size:14px; margin-top:0;">الصورة الشخصية (الخطوة 4 من 6)</h3>
+            <div class="avatar-preview" id="avatarPreviewBox">👤</div>
+            <label class="btn-primary" style="display:block; text-align:center; cursor:pointer; margin-bottom:10px;">
+                🖼️ اختيار صورة من الجهاز
+                <input type="file" accept="image/*" style="display:none" onchange="previewAvatar(event)">
+            </label>
+            <button class="btn-primary" onclick="nextStep(5)">متابعة</button>
+            <button class="btn-skip" onclick="nextStep(5)">تخطي هذه الخطوة</button>
+        </div>
+
+        <!-- الخطوة 5: إنشاء أول بوست -->
+        <div class="step-container" id="step5">
+            <h3 style="color:var(--primary); font-size:14px; margin-top:0;">شارك أول بوست لك (الخطوة 5 من 6)</h3>
+            <textarea id="firstPostText" placeholder="اكتب أول منشور لك على MYGRAM..."></textarea>
+            <button class="btn-primary" onclick="saveFirstPost()">نشر ومتابعة</button>
+            <button class="btn-skip" onclick="nextStep(6)">تخطي</button>
+        </div>
+
+        <!-- الخطوة 6: متابعة أشخاص وصفحات عامة -->
+        <div class="step-container" id="step6">
+            <h3 style="color:var(--primary); font-size:14px; margin-top:0;">شخصيات عامة ومقترح متابعتهم (الخطوة 6 من 6)</h3>
+            <div class="suggestion-item">
+                <span>🌐 MYGRAM Official News</span>
+                <button class="btn-primary" style="width:auto; padding:4px 10px; font-size:11px;" onclick="this.innerText='تمت المتابعة'; this.style.background='#22c55e';">متابعة</button>
+            </div>
+            <div class="suggestion-item">
+                <span>🚀 Tech & Innovation Global</span>
+                <button class="btn-primary" style="width:auto; padding:4px 10px; font-size:11px;" onclick="this.innerText='تمت المتابعة'; this.style.background='#22c55e';">متابعة</button>
+            </div>
+            <button class="btn-primary" style="margin-top:15px;" onclick="finishSignup()">إنهاء والذهاب إلى التطبيق 🚀</button>
+        </div>
+
     </div>
 
     <script>
-        let isSignup = false;
-        let isRecovery = false;
+        const globalLanguages = [
+            {code:"ar", name:"العربية (Arabic)", rtl:true}, {code:"en", name:"English", rtl:false},
+            {code:"fr", name:"Français (French)", rtl:false}, {code:"de", name:"Deutsch (German)", rtl:false},
+            {code:"es", name:"Español (Spanish)", rtl:false}, {code:"tr", name:"Türkçe (Turkish)", rtl:false},
+            {code:"ru", name:"Русский (Russian)", rtl:false}, {code:"zh", name:"中文 (Chinese)", rtl:false},
+            {code:"ja", name:"日本語 (Japanese)", rtl:false}, {code:"ko", name:"한국어 (Korean)", rtl:false},
+            {code:"it", name:"Italiano (Italian)", rtl:false}, {code:"pt", name:"Português (Portuguese)", rtl:false},
+            {code:"hi", name:"हिन्दी (Hindi)", rtl:false}, {code:"fa", name:"فارسی (Persian)", rtl:true},
+            {code:"ur", name:"اردو (Urdu)", rtl:true}, {code:"nl", name:"Nederlands (Dutch)", rtl:false},
+            {code:"sv", name:"Svenska (Swedish)", rtl:false}, {code:"pl", name:"Polski (Polish)", rtl:false},
+            {code:"uk", name:"Українська (Ukrainian)", rtl:false}, {code:"ro", name:"Română (Romanian)", rtl:false},
+            {code:"el", name:"Ελληνικά (Greek)", rtl:false}, {code:"cs", name:"Čeština (Czech)", rtl:false},
+            {code:"hu", name:"Magyar (Hungarian)", rtl:false}, {code:"id", name:"Bahasa Indonesia", rtl:false},
+            {code:"th", name:"ไทย (Thai)", rtl:false}, {code:"vi", name:"Tiếng Việt (Vietnamese)", rtl:false},
+            {code:"he", name:"עברית (Hebrew)", rtl:true}, {code:"da", name:"Dansk (Danish)", rtl:false},
+            {code:"fi", name:"Suomi (Finnish)", rtl:false}, {code:"no", name:"Norsk (Norwegian)", rtl:false},
+            {code:"sk", name:"Slovenčina (Slovak)", rtl:false}, {code:"bg", name:"Български (Bulgarian)", rtl:false},
+            {code:"hr", name:"Hrvatski (Croatian)", rtl:false}, {code:"lt", name:"Lietuvių (Lithuanian)", rtl:false},
+            {code:"sl", name:"Slovenščina (Slovenian)", rtl:false}, {code:"et", name:"Eesti (Estonian)", rtl:false},
+            {code:"lv", name:"Latviešu (Latvian)", rtl:false}, {code:"ms", name:"Bahasa Melayu (Malay)", rtl:false},
+            {code:"fil", name:"Filipino", rtl:false}, {code:"sw", name:"Kiswahili", rtl:false},
+            {code:"sq", name:"Shqip (Albanian)", rtl:false}, {code:"az", name:"Azərbaycan (Azerbaijani)", rtl:false},
+            {code:"bs", name:"Bosanski (Bosnian)", rtl:false}, {code:"ka", name:"ქართული (Georgian)", rtl:false},
+            {code:"hy", name:"Հայերեն (Armenian)", rtl:false}, {code:"kk", name:"Қазақша (Kazakh)", rtl:false},
+            {code:"uz", name:"Oʻzbekcha (Uzbek)", rtl:false}, {code:"mn", name:"Монгол (Mongolian)", rtl:false},
+            {code:"bn", name:"বাংলা (Bengali)", rtl:false}, {code:"ta", name:"தமிழ் (Tamil)", rtl:false},
+            {code:"te", name:"తెలుగు (Telugu)", rtl:false}, {code:"mr", name:"मराठी (Marathi)", rtl:false},
+            {code:"gu", name:"ગુજરાતી (Gujarati)", rtl:false}, {code:"kn", name:"ಕನ್ನಡ (Kannada)", rtl:false},
+            {code:"ml", name:"മലയാളം (Malayalam)", rtl:false}, {code:"pa", name:"ਪੰਜਾਬੀ (Punjabi)", rtl:false},
+            {code:"si", name:"සිංහල (Sinhala)", rtl:false}, {code:"am", name:"አማርኛ (Amharic)", rtl:false},
+            {code:"km", name:"ភាសាខ្មែរ (Khmer)", rtl:false}, {code:"lo", name:"ພາສາລາວ (Lao)", rtl:false},
+            {code:"my", name:"မြန်မာဘာသာ (Burmese)", rtl:false}, {code:"ne", name:"नेपाली (Nepali)", rtl:false},
+            {code:"af", name:"Afrikaans", rtl:false}, {code:"eu", name:"Euskara (Basque)", rtl:false},
+            {code:"gl", name:"Galego (Galician)", rtl:false}, {code:"ca", name:"Català (Catalan)", rtl:false},
+            {code:"is", name:"Íslenska (Icelandic)", rtl:false}, {code:"mt", name:"Malti (Maltese)", rtl:false},
+            {code:"ga", name:"Gaeilge (Irish)", rtl:false}, {code:"cy", name:"Cymraeg (Welsh)", rtl:false}
+        ];
 
-        function showMsg(text, isErr = true) {
-            const box = document.getElementById('msgBox');
-            box.innerText = text;
-            box.className = 'msg-box ' + (isErr ? 'msg-error' : 'msg-success');
-            box.style.display = 'block';
+        const allCountries = [
+            {code:"sy", name:"سوريا (Syria) - علم الاستقلال: أخضر، أبيض بـ 3 نجوم، أسود", flag:"🇸🇾"},
+            {code:"ps", name:"فلسطين (Palestine)", flag:"🇵🇸"},
+            {code:"sa", name:"السعودية (Saudi Arabia)", flag:"🇸🇦"},
+            {code:"ae", name:"الإمارات (UAE)", flag:"🇦🇪"},
+            {code:"eg", name:"مصر (Egypt)", flag:"🇪🇬"},
+            {code:"jo", name:"الأردن (Jordan)", flag:"🇯🇴"},
+            {code:"qa", name:"قطر (Qatar)", flag:"🇶🇦"},
+            {code:"kw", name:"الكويت (Kuwait)", flag:"🇰🇼"},
+            {code:"bh", name:"البحرين (Bahrain)", flag:"🇧🇭"},
+            {code:"om", name:"عمان (Oman)", flag:"🇴🇲"},
+            {code:"iq", name:"العراق (Iraq)", flag:"🇮🇶"},
+            {code:"lb", name:"لبنان (Lebanon)", flag:"🇱🇧"},
+            {code:"ye", name:"اليمن (Yemen)", flag:"🇾🇪"},
+            {code:"ly", name:"ليبيا (Libya)", flag:"🇱🇾"},
+            {code:"sd", name:"السودان (Sudan)", flag:"🇸🇩"},
+            {code:"tn", name:"تونس (Tunisia)", flag:"🇹🇳"},
+            {code:"dz", name:"الجزائر (Algeria)", flag:"🇩🇿"},
+            {code:"ma", name:"المغرب (Morocco)", flag:"🇲🇦"},
+            {code:"mr", name:"موريتانيا (Mauritania)", flag:"🇲🇷"},
+            {code:"so", name:"الصومال (Somalia)", flag:"🇸🇴"},
+            {code:"dj", name:"جيبوتي (Djibouti)", flag:"🇩🇯"},
+            {code:"km", name:"جزر القمر (Comoros)", flag:"🇰🇲"},
+            {code:"tr", name:"تركيا (Turkey)", flag:"🇹🇷"},
+            {code:"us", name:"الولايات المتحدة (USA)", flag:"🇺🇸"},
+            {code:"gb", name:"المملكة المتحدة (UK)", flag:"🇬🇧"},
+            {code:"de", name:"ألمانيا (Germany)", flag:"🇩🇪"},
+            {code:"fr", name:"فرنسا (France)", flag:"🇫🇷"},
+            {code:"it", name:"إيطاليا (Italy)", flag:"🇮🇹"},
+            {code:"es", name:"إسبانيا (Spain)", flag:"🇪🇸"},
+            {code:"nl", name:"هولندا (Netherlands)", flag:"🇳🇱"},
+            {code:"ru", name:"روسيا (Russia)", flag:"🇷🇺"},
+            {code:"cn", name:"الصين (China)", flag:"🇨🇳"},
+            {code:"jp", name:"اليابان (Japan)", flag:"🇯🇵"},
+            {code:"kr", name:"كوريا الجنوبية (South Korea)", flag:"🇰🇷"},
+            {code:"in", name:"الهند (India)", flag:"🇮🇳"},
+            {code:"pk", name:"باكستان (Pakistan)", flag:"🇵🇰"},
+            {code:"id", name:"إندونيسيا (Indonesia)", flag:"🇮🇩"},
+            {code:"my", name:"ماليزيا (Malaysia)", flag:"🇲🇾"},
+            {code:"ir", name:"إيران (Iran)", flag:"🇮🇷"},
+            {code:"br", name:"البرازيل (Brazil)", flag:"🇧🇷"},
+            {code:"ar", name:"الأرجنتين (Argentina)", flag:"🇦🇷"},
+            {code:"ca", name:"كندا (Canada)", flag:"🇨🇦"},
+            {code:"au", name:"أستراليا (Australia)", flag:"🇦🇺"},
+            {code:"za", name:"جنوب إفريقيا (South Africa)", flag:"🇿🇦"},
+            {code:"af", name:"أفغانستان (Afghanistan)", flag:"🇦🇫"},
+            {code:"al", name:"ألبانيا (Albania)", flag:"🇦🇱"},
+            {code:"ad", name:"أندورا (Andorra)", flag:"🇦🇩"},
+            {code:"ao", name:"أنغولا (Angola)", flag:"🇦🇴"},
+            {code:"ag", name:"أنتيغوا وباربودا (Antigua and Barbuda)", flag:"🇦🇬"},
+            {code:"am", name:"أرمينيا (Armenia)", flag:"🇦🇲"},
+            {code:"at", name:"النمسا (Austria)", flag:"🇦🇹"},
+            {code:"az", name:"أذربيجان (Azerbaijan)", flag:"🇦🇿"},
+            {code:"bs", name:"الباهاما (Bahamas)", flag:"🇧🇸"},
+            {code:"bd", name:"بنغلاديش (Bangladesh)", flag:"🇧🇩"},
+            {code:"bb", name:"باربادوس (Barbados)", flag:"🇧🇧"},
+            {code:"by", name:"بيلاروسيا (Belarus)", flag:"🇧🇾"},
+            {code:"be", name:"بلجيكا (Belgium)", flag:"🇧🇪"},
+            {code:"bz", name:"بليز (Belize)", flag:"🇧🇿"},
+            {code:"bj", name:"بنين (Benin)", flag:"🇧🇯"},
+            {code:"bt", name:"بوتان (Bhutan)", flag:"🇧🇹"},
+            {code:"bo", name:"بوليفيا (Bolivia)", flag:"🇧🇴"},
+            {code:"ba", name:"البوسنة والهرسك (Bosnia and Herzegovina)", flag:"🇧🇦"},
+            {code:"bw", name:"بوتسوانا (Botswana)", flag:"🇧🇼"},
+            {code:"bn", name:"بروناي (Brunei)", flag:"🇧🇳"},
+            {code:"bg", name:"بلغاريا (Bulgaria)", flag:"🇧🇬"},
+            {code:"bf", name:"بوركينا فاسو (Burkina Faso)", flag:"🇧🇫"},
+            {code:"bi", name:"بوروندي (Burundi)", flag:"🇧🇮"},
+            {code:"cv", name:"الرأس الأخضر (Cape Verde)", flag:"🇨🇻"},
+            {code:"kh", name:"كمبوديا (Cambodia)", flag:"🇰🇭"},
+            {code:"cm", name:"الكاميرون (Cameroon)", flag:"🇨🇲"},
+            {code:"cf", name:"إفريقيا الوسطى (Central African Republic)", flag:"🇨🇫"},
+            {code:"td", name:"تشاد (Chad)", flag:"🇹🇩"},
+            {code:"cl", name:"تشيلي (Chile)", flag:"🇨🇱"},
+            {code:"co", name:"كولومبيا (Colombia)", flag:"🇨🇴"},
+            {code:"cr", name:"كوستاريكا (Costa Rica)", flag:"🇨🇷"},
+            {code:"ci", name:"ساحل العاج (Ivory Coast)", flag:"🇨🇮"},
+            {code:"hr", name:"كرواتيا (Croatia)", flag:"🇭🇷"},
+            {code:"cu", name:"كوبا (Cuba)", flag:"🇨🇺"},
+            {code:"cy", name:"قبرص (Cyprus)", flag:"🇨🇾"},
+            {code:"cz", name:"التشيك (Czech Republic)", flag:"🇨🇿"},
+            {code:"dk", name:"الدنمارك (Denmark)", flag:"🇩🇰"},
+            {code:"dm", name:"دومينيكا (Dominica)", flag:"🇩🇲"},
+            {code:"do", name:"الدومينيكان (Dominican Republic)", flag:"🇩🇴"},
+            {code:"ec", name:"الإكوادور (Ecuador)", flag:"🇪🇨"},
+            {code:"sv", name:"السلفادور (El Salvador)", flag:"🇸🇻"},
+            {code:"gq", name:"غينيا الاستوائية (Equatorial Guinea)", flag:"🇬🇶"},
+            {code:"er", name:"إريتريا (Eritrea)", flag:"🇪🇷"},
+            {code:"ee", name:"إستونيا (Estonia)", flag:"🇪🇪"},
+            {code:"sz", name:"إسواتيني (Eswatini)", flag:"🇸🇿"},
+            {code:"et", name:"إثيوبيا (Ethiopia)", flag:"🇪🇹"},
+            {code:"fj", name:"فيجي (Fiji)", flag:"🇫🇯"},
+            {code:"fi", name:"فنلندا (Finland)", flag:"🇫🇮"},
+            {code:"ga", name:"غابون (Gabon)", flag:"🇬🇦"},
+            {code:"gm", name:"غامبيات (Gambia)", flag:"🇬🇲"},
+            {code:"ge", name:"جورجيا (Georgia)", flag:"🇬🇪"},
+            {code:"gh", name:"غانا (Ghana)", flag:"🇬🇭"},
+            {code:"gr", name:"اليونان (Greece)", flag:"🇬🇷"},
+            {code:"gd", name:"غرينادا (Grenada)", flag:"🇬🇩"},
+            {code:"gt", name:"غواتيمالا (Guatemala)", flag:"🇬🇹"},
+            {code:"gn", name:"غينيا (Guinea)", flag:"🇬🇳"},
+            {code:"gw", name:"غينيا بيساو (Guinea-Bissau)", flag:"🇬🇼"},
+            {code:"gy", name:"غيانا (Guyana)", flag:"🇬🇾"},
+            {code:"ht", name:"هايتي (Haiti)", flag:"🇭🇹"},
+            {code:"hn", name:"هندوراس (Honduras)", flag:"🇭🇳"},
+            {code:"hu", name:"المجر (Hungary)", flag:"🇭🇺"},
+            {code:"is", name:"آيسلندا (Iceland)", flag:"🇮🇸"},
+            {code:"ie", name:"إيرلندا (Ireland)", flag:"🇮🇪"},
+            {code:"il", name:"إسرائيل (Israel)", flag:"🇮🇱"},
+            {code:"jm", name:"جامايكا (Jamaica)", flag:"🇯🇲"},
+            {code:"kz", name:"كازاخستان (Kazakhstan)", flag:"🇰🇿"},
+            {code:"ke", name:"كينيا (Kenya)", flag:"🇰🇪"},
+            {code:"ki", name:"كيريباتي (Kiribati)", flag:"🇰🇮"},
+            {code:"kp", name:"كوريا الشمالية (North Korea)", flag:"🇰🇵"},
+            {code:"kg", name:"قيرغيزستان (Kyrgyzstan)", flag:"🇰🇬"},
+            {code:"la", name:"لاوس (Laos)", flag:"🇱🇦"},
+            {code:"lv", name:"لاتفيا (Latvia)", flag:"🇱🇻"},
+            {code:"ls", name:"ليسوتو (Lesotho)", flag:"🇱🇸"},
+            {code:"lr", name:"ليبيريا (Liberia)", flag:"🇱🇷"},
+            {code:"lt", name:"ليتوانيا (Lithuania)", flag:"🇱🇹"},
+            {code:"lu", name:"لوكسمبورغ (Luxembourg)", flag:"🇱🇺"},
+            {code:"mg", name:"مدغشقر (Madagascar)", flag:"🇲🇬"},
+            {code:"mw", name:"مالاوى (Malawi)", flag:"🇲🇼"},
+            {code:"mv", name:"المالديف (Maldives)", flag:"🇲🇻"},
+            {code:"ml", name:"مالي (Mali)", flag:"🇲🇱"},
+            {code:"mt", name:"مالطا (Malta)", flag:"🇲🇹"},
+            {code:"mh", name:"جزر مارشال (Marshall Islands)", flag:"🇲🇭"},
+            {code:"mu", name:"موريشيوس (Mauritius)", flag:"🇲🇺"},
+            {code:"mx", name:"المكسيك (Mexico)", flag:"🇲🇽"},
+            {code:"fm", name:"ميكرونيزيا (Micronesia)", flag:"🇫🇲"},
+            {code:"md", name:"مولدوفا (Moldova)", flag:"🇲🇩"},
+            {code:"mc", name:"موناكو (Monaco)", flag:"🇲🇨"},
+            {code:"mn", name:"منغوليا (Mongolia)", flag:"🇲🇳"},
+            {code:"me", name:"الجبل الأسود (Montenegro)", flag:"🇲🇪"},
+            {code:"mz", name:"موزمبيق (Mozambique)", flag:"🇲🇿"},
+            {code:"mm", name:"ميانمار (Myanmar)", flag:"🇲🇲"},
+            {code:"na", name:"ناميبيا (Namibia)", flag:"🇳🇦"},
+            {code:"nr", name:"ناورو (Nauru)", flag:"🇳🇷"},
+            {code:"np", name:"نيبال (Nepal)", flag:"🇳🇵"},
+            {code:"nz", name:"نيوزيلندا (New Zealand)", flag:"🇳🇿"},
+            {code:"ni", name:"نيكاراغوا (Nicaragua)", flag:"🇳🇮"},
+            {code:"ne", name:"النيجر (Niger)", flag:"🇳🇪"},
+            {code:"ng", name:"نيجيريا (Nigeria)", flag:"🇳🇬"},
+            {code:"mk", name:"مقدونيا الشمالية (North Macedonia)", flag:"🇲🇰"},
+            {code:"no", name:"النرويج (Norway)", flag:"🇳🇴"},
+            {code:"pw", name:"بالاو (Palau)", flag:"🇵🇼"},
+            {code:"pa", name:"بنما (Panama)", flag:"🇵🇦"},
+            {code:"pg", name:"بابوا غينيا الجديدة (Papua New Guinea)", flag:"🇵🇬"},
+            {code:"py", name:"بارغواي (Paraguay)", flag:"🇵🇾"},
+            {code:"pe", name:"بيرو (Peru)", flag:"🇵🇪"},
+            {code:"ph", name:"الفلبين (Philippines)", flag:"🇵🇭"},
+            {code:"pl", name:"بولندا (Poland)", flag:"🇵🇱"},
+            {code:"pt", name:"البرتغال (Portugal)", flag:"🇵🇹"},
+            {code:"ro", name:"رومانيا (Romania)", flag:"🇷🇴"},
+            {code:"rw", name:"رواندا (Rwanda)", flag:"🇷🇼"},
+            {code:"kn", name:"سانت كيتس ونيفيس (Saint Kitts and Nevis)", flag:"🇰🇳"},
+            {code:"lc", name:"سانت لوسيا (Saint Lucia)", flag:"🇱🇨"},
+            {code:"vc", name:"سانت فينسنت والغرينادين (Saint Vincent and the Grenadines)", flag:"🇻🇨"},
+            {code:"ws", name:"ساموا (Samoa)", flag:"🇼🇸"},
+            {code:"sm", name:"سان مارينو (San Marino)", flag:"🇸🇲"},
+            {code:"st", name:"ساوتومي وبرينسيب (Sao Tome and Principe)", flag:"🇸🇹"},
+            {code:"sn", name:"السنغال (Senegal)", flag:"🇸🇳"},
+            {code:"rs", name:"صربيا (Serbia)", flag:"🇷🇸"},
+            {code:"sc", name:"سيشيل (Seychelles)", flag:"🇸🇨"},
+            {code:"sl", name:"سيراليون (Sierra Leone)", flag:"🇸🇱"},
+            {code:"sg", name:"سنغافورة (Singapore)", flag:"🇸🇬"},
+            {code:"sk", name:"سلوفاكيا (Slovakia)", flag:"🇸🇰"},
+            {code:"si", name:"سلوفينيا (Slovenia)", flag:"🇸🇮"},
+            {code:"sb", name:"جزر سليمان (Solomon Islands)", flag:"🇸🇧"},
+            {code:"ss", name:"جنوب السودان (South Sudan)", flag:"🇸🇸"},
+            {code:"lk", name:"سريلانكا (Sri Lanka)", flag:"🇱🇰"},
+            {code:"sr", name:"سورينام (Suriname)", flag:"🇸🇷"},
+            {code:"se", name:"السويد (Sweden)", flag:"🇸🇪"},
+            {code:"ch", name:"سويسرا (Switzerland)", flag:"🇨🇭"},
+            {code:"tw", name:"تايوان (Taiwan)", flag:"🇹🇼"},
+            {code:"tj", name:"طاجيكستان (Tajikistan)", flag:"🇹🇯"},
+            {code:"tz", name:"تنزانيا (Tanzania)", flag:"🇹🇿"},
+            {code:"th", name:"تايلاند (Thailand)", flag:"🇹🇭"},
+            {code:"tl", name:"تيمور الشرقية (East Timor)", flag:"🇹🇱"},
+            {code:"tg", name:"توغو (Togo)", flag:"🇹🇬"},
+            {code:"to", name:"تونغا (Tonga)", flag:"🇹🇴"},
+            {code:"tt", name:"ترينيداد وتوباغو (Trinidad and Tobago)", flag:"🇹🇹"},
+            {code:"tm", name:"تركمانستان (Turkmenistan)", flag:"🇹🇲"},
+            {code:"tv", name:"توفالو (Tuvalu)", flag:"🇹🇻"},
+            {code:"ug", name:"أوغندا (Uganda)", flag:"🇺🇬"},
+            {code:"ua", name:"أوكرانيا (Ukraine)", flag:"🇺🇦"},
+            {code:"uy", name:"أوروغواي (Uruguay)", flag:"🇺🇾"},
+            {code:"uz", name:"أوزبكستان (Uzbekistan)", flag:"🇺🇿"},
+            {code:"vu", name:"فانواتو (Vanuatu)", flag:"🇻🇺"},
+            {code:"va", name:"الفاتيكان (Vatican City)", flag:"🇻🇦"},
+            {code:"ve", name:"فنزويلا (Venezuela)", flag:"🇻🇪"},
+            {code:"vn", name:"فيتنام (Vietnam)", flag:"🇻🇳"},
+            {code:"zm", name:"زامبيا (Zambia)", flag:"🇿🇲"},
+            {code:"zw", name:"زيمبابوي (Zimbabwe)", flag:"🇿🇼"}
+        ];
+
+        let tempUser = { avatar: '' };
+
+        function populateLangSelect() {
+            const select = document.getElementById('langSelect');
+            if(!select) return;
+            select.innerHTML = globalLanguages.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
+            let current = localStorage.getItem('mygram_lang') || 'ar';
+            select.value = current;
+        }
+
+        function populateCountries(list) {
+            const select = document.getElementById('countrySelect');
+            if(!select) return;
+            select.innerHTML = list.map(c => `<option value="${c.code}">${c.flag} ${c.name}</option>`).join('');
+        }
+
+        function filterCountries(query) {
+            const q = query.toLowerCase().trim();
+            const filtered = allCountries.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+            populateCountries(filtered.length > 0 ? filtered : allCountries);
         }
 
         function setGlobalLanguage(code) {
             localStorage.setItem('mygram_lang', code);
+            const langObj = globalLanguages.find(l => l.code === code) || globalLanguages[0];
             document.getElementById('htmlRoot').setAttribute('lang', code);
-            document.getElementById('htmlRoot').setAttribute('dir', (code === 'ar' || code === 'fa' || code === 'ur') ? 'rtl' : 'ltr');
+            document.getElementById('htmlRoot').setAttribute('dir', langObj.rtl ? 'rtl' : 'ltr');
         }
 
-        function toggleMode() {
+        function showMsg(text) {
+            const box = document.getElementById('msgBox');
+            box.innerText = text;
+            box.className = 'msg-box msg-error';
+            box.style.display = 'block';
+        }
+
+        function calculateExactAge(birthdateStr) {
+            const birthDate = new Date(birthdateStr);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function nextStep(stepNum) {
+            if (stepNum === 2) {
+                const acc = document.getElementById('accountInput').value.trim();
+                const pass = document.getElementById('passwordInput').value.trim();
+                if (!acc || !pass) { showMsg('الرجاء إدخال البريد الإلكتروني أو رقم الهاتف وكلمة السر!'); return; }
+                tempUser.account = acc;
+                tempUser.pass = pass;
+                tempUser.country = document.getElementById('countrySelect').value;
+            }
+            if (stepNum === 3) {
+                const birth = document.getElementById('birthDate').value;
+                if (!birth) { showMsg('الرجاء إدخال تاريخ الميلاد!'); return; }
+                const exactAge = calculateExactAge(birth);
+                if (exactAge < 16) { showMsg('عذراً، يجب ألا يقل العمر عن 16 عاماً للتسجيل!'); return; }
+
+                const name = document.getElementById('fullName').value.trim();
+                tempUser.name = name || tempUser.account.split('@')[0];
+                tempUser.birthDate = birth;
+                tempUser.age = exactAge;
+            }
+            if (stepNum === 4) {
+                tempUser.gender = document.getElementById('genderSelect').value;
+                tempUser.relation = document.getElementById('relationSelect').value;
+                tempUser.hobbies = document.getElementById('hobbiesInput').value.trim() || 'الرياضة، السفر';
+            }
+
+            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+            document.getElementById('step' + stepNum).classList.add('active');
             document.getElementById('msgBox').style.display = 'none';
-            isSignup = !isSignup;
-            isRecovery = false;
-            document.getElementById('signupFields').style.display = isSignup ? 'block' : 'none';
-            document.getElementById('forgotDiv').style.display = isSignup ? 'none' : 'block';
-            document.getElementById('actionBtn').innerText = isSignup ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
-            document.getElementById('toggleText').innerText = isSignup ? 'لديك حساب بالفعل؟ سجل دخولك' : 'ليس لديك حساب؟ انضم إلينا الآن';
         }
 
-        function openRecovery() {
-            isRecovery = true;
-            document.getElementById('signupFields').style.display = 'none';
-            document.getElementById('passwordInput').style.display = 'none';
-            document.getElementById('actionBtn').innerText = 'إرسال رمز الاسترداد (SMS / Email)';
-            document.getElementById('forgotDiv').style.display = 'none';
-            document.getElementById('toggleText').innerHTML = '<span>العودة لتسجيل الدخول</span>';
+        function previewAvatar(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                tempUser.avatar = evt.target.result;
+                document.getElementById('avatarPreviewBox').innerHTML = `<img src="${tempUser.avatar}" style="width:100%;height:100%;border-radius:50%;">`;
+            };
+            reader.readAsDataURL(file);
         }
 
-        function handleAuth() {
-            const acc = document.getElementById('accountInput').value.trim();
-            const pass = document.getElementById('passwordInput').value.trim();
-
-            if (!acc) {
-                showMsg('الرجاء إدخال البريد الإلكتروني أو رقم الهاتف!');
-                return;
+        function saveFirstPost() {
+            const text = document.getElementById('firstPostText').value.trim();
+            if(text) {
+                let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+                posts.unshift({ id: Date.now(), author: tempUser.name, content: text, likes: 0, views: 1 });
+                localStorage.setItem('mygram_posts', JSON.stringify(posts));
             }
+            nextStep(6);
+        }
 
-            if (isRecovery) {
-                showMsg('تم إرسال رمز التحقق واسترداد كلمة السر بنجاح إلى: ' + acc, false);
-                setTimeout(() => { location.reload(); }, 3000);
-                return;
-            }
-
-            if (!pass) {
-                showMsg('الرجاء إدخال كلمة السر!');
-                return;
-            }
-
+        function finishSignup() {
             let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
-            let userObj = accounts.find(a => a.account === acc);
-
-            if (isSignup) {
-                const birthDate = document.getElementById('birthDate').value;
-                if (!birthDate) { showMsg('الرجاء إدخال تاريخ الميلاد!'); return; }
-                
-                // حساب العمر
-                const age = new Date().getFullYear() - new Date(birthDate).getFullYear();
-                if (age < 16) { showMsg('يجب أن يكون عمرك 16 سنة أو أكثر!'); return; }
-
-                const gender = document.getElementById('genderSelect').value || 'male';
-                const fullName = document.getElementById('fullName').value.trim() || acc.split('@')[0];
-
-                userObj = { account: acc, pass: pass, name: fullName, age: age, gender: gender, avatar: '' };
-                accounts.push(userObj);
-                localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
-            } else {
-                if (!userObj) {
-                    // تسجيل دخول لأول مرة بحساب جديد افتراضي أو تخزين مباشر
-                    userObj = { account: acc, pass: pass, name: acc.split('@')[0], age: 20, gender: 'male', avatar: '' };
-                    accounts.push(userObj);
-                    localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
-                }
-            }
-
-            // حفظ الحساب الحالي وحالة تسجيل الدخول الدائمة (Session)
-            localStorage.setItem('mygram_current_account', JSON.stringify(userObj));
+            accounts.push(tempUser);
+            localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
+            localStorage.setItem('mygram_current_account', JSON.stringify(tempUser));
             localStorage.setItem('mygram_is_logged', 'true');
             window.location.href = 'home.html';
         }
 
-        // التحقق مما إذا كان المستخدم مسجل دخول مسبقاً ليتم تحويله مباشرة دون إعادة إدخال البيانات
-        window.onload = function() {
-            let savedLang = localStorage.getItem('mygram_lang') || 'ar';
-            document.getElementById('langSelect').value = savedLang;
-            setGlobalLanguage(savedLang);
+        function toggleToLogin() {
+            let acc = prompt("أدخل بريدك الإلكتروني أو رقم هاتفك المسجل مسبقاً:");
+            if(acc) {
+                let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
+                let found = accounts.find(a => a.account === acc);
+                if(found) {
+                    localStorage.setItem('mygram_current_account', JSON.stringify(found));
+                    localStorage.setItem('mygram_is_logged', 'true');
+                    window.location.href = 'home.html';
+                } else {
+                    alert("الحساب غير موجود! أكمل خطوات التسجيل الجديد.");
+                }
+            }
+        }
 
+        window.onload = function() {
+            populateLangSelect();
+            populateCountries(allCountries);
             if (localStorage.getItem('mygram_is_logged') === 'true') {
                 window.location.href = 'home.html';
             }
