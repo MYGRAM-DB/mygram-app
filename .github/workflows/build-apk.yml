@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android WebApp Package
 
 on:
   workflow_dispatch:
@@ -8,61 +8,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-
-    - name: Set up Java 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-
-    - name: Install Bubblewrap & Build APK
+    - uses: actions/checkout@v4
+    
+    - name: Create Web Package
       run: |
-        npm install -g @bubblewrap/cli
-        mkdir android-build && cd android-build
-        cp ../index.html ./
-        
-        # إنشاء هيكل تطبيق بسيط جاهز للتحزيم
-        cat << 'EOF' > manifest.json
-        {
-          "name": "MYGRAM",
-          "short_name": "MYGRAM",
-          "start_url": "index.html",
-          "display": "standalone",
-          "background_color": "#0f172a",
-          "theme_color": "#0f172a",
-          "icons": [
-            {
-              "src": "https://via.placeholder.com/512",
-              "sizes": "512x512",
-              "type": "image/png"
-            }
-          ]
-        }
-        EOF
+        zip -r mygram-app.zip index.html
 
-        # بناء التطبيق باستخدام Android CLI
-        npx native-run android --app index.html || true
-
-    - name: Build Webview APK via Android Build Tools
-      run: |
-        npm install -g native-run
-        mkdir -p build-output
-        echo "Building App..."
-
-    - name: Upload Simple Web App Package
+    - name: Upload Package
       uses: actions/upload-artifact@v4
       with:
-        name: MYGRAM-Web-Files
-        path: index.html
+        name: MYGRAM-Web-APK-Source
+        path: mygram-app.zip
