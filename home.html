@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - المنصة الشاملة</title>
+    <title>MYGRAM - المنصة الاجتماعية</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -43,24 +43,17 @@
         .post-text { color: var(--text-color); font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
         .post-image { width: 100%; border-radius: 8px; margin-top: 8px; max-height: 300px; object-fit: cover; }
         
+        /* الملف الشخصي */
+        .profile-pic-container { position: relative; width: 100px; height: 100px; margin: 0 auto 10px; }
+        .profile-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); }
+        .profile-upload-label { position: absolute; bottom: 0; right: 0; background: var(--primary-color); color: #fff; border-radius: 50%; padding: 5px; cursor: pointer; font-size: 12px; }
+
         .post-actions { display: flex; gap: 15px; border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 12px; color: var(--secondary-text); align-items: center; }
         .action-item { cursor: pointer; transition: 0.2s; }
         .action-item:hover { color: var(--primary-color); }
         .delete-btn { color: #f87171; background: none; border: none; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        /* الشات والمراسلة والذكاء الاصطناعي */
-        .chat-container { display: flex; flex-direction: column; height: 55vh; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; background: var(--bg-color); border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); }
-        .chat-msg { margin-bottom: 8px; padding: 8px 10px; border-radius: 8px; max-width: 80%; font-size: 13px; line-height: 1.4; }
-        .chat-msg.user { background: var(--primary-color); color: #fff; margin-left: auto; }
-        .chat-msg.ai, .chat-msg.peer { background: var(--card-bg); border: 1px solid var(--border-color); margin-right: auto; }
-        .chat-input-box { display: flex; gap: 6px; }
-        .chat-input-box input { flex: 1; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px; border-radius: 6px; font-size: 13px; }
-
-        .friend-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border-color); }
-        .friend-name { color: var(--text-color); font-weight: bold; font-size: 13px; }
-
-        /* شريط التنقل السفلي الخماسي المدمج */
+        /* شريط التنقل السفلي */
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid var(--border-color); z-index: 100; }
         .nav-item { color: var(--secondary-text); text-decoration: none; font-size: 11px; text-align: center; cursor: pointer; }
         .nav-item.active { color: var(--primary-color); font-weight: bold; }
@@ -78,12 +71,8 @@
 
     <div class="container" id="mainContent"></div>
 
-    <!-- شريط تنقل شامل (فيسبوك، انستغرام، تيليجرام، واتساب، ذكاء اصطناعي) -->
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('home', this)">📰 الخلاصة</div>
-        <div class="nav-item" onclick="switchTab('ai', this)">🤖 المساعد</div>
-        <div class="nav-item" onclick="switchTab('messenger', this)">💬 مسنجر</div>
-        <div class="nav-item" onclick="switchTab('groups', this)">🛡️ مجموعات</div>
         <div class="nav-item" onclick="switchTab('profile', this)">⚙️ حسابي</div>
     </div>
 
@@ -120,64 +109,27 @@
                     <div id="postsContainer"></div>
                 `;
                 loadPosts();
-            } else if (currentTab === 'ai') {
-                document.getElementById('appTitle').innerText = 'المساعد الذكي (AI)';
-                content.innerHTML = `
-                    <div class="card-box chat-container">
-                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">دردش مع ذكاء MYGRAM الاصطناعي</h3>
-                        <div class="chat-messages" id="chatMessages">
-                            <div class="chat-msg ai">أهلاً بك يا ${currentUser}! أنا مساعدك الذكي المدمج، كيف يمكنني خدمتك اليوم؟</div>
-                        </div>
-                        <div class="chat-input-box">
-                            <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا...">
-                            <button class="action-btn" onclick="sendAiMessage()" style="margin-top:0;">إرسال</button>
-                        </div>
-                    </div>
-                `;
-            } else if (currentTab === 'messenger') {
-                document.getElementById('appTitle').innerText = 'محادثات المسنجر وواتساب';
-                content.innerHTML = `
-                    <div class="card-box chat-container">
-                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">دردشة مباشرة مع الأصدقاء</h3>
-                        <div class="chat-messages" id="msgMessages">
-                            <div class="chat-msg peer">سيف الدين: أهلاً بك في نظام الدردشة المباشر الخاص بالتطبيق!</div>
-                        </div>
-                        <div class="chat-input-box">
-                            <input type="text" id="msgInput" placeholder="اكتب رسالة لتبادلها...">
-                            <button class="action-btn" onclick="sendDirectMessage()" style="margin-top:0;">إرسال</button>
-                        </div>
-                    </div>
-                `;
-            } else if (currentTab === 'groups') {
-                document.getElementById('appTitle').innerText = 'المجموعات والقنوات';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">المجتمعات المتاحة</h3>
-                        <div class="friend-item">
-                            <span class="friend-name">🛡️ قناة المطورين والتقنية (تليجرام)</span>
-                            <button class="add-btn" onclick="alert('تم الانضمام للقناة بنجاح!')">انضمام</button>
-                        </div>
-                        <div class="friend-item">
-                            <span class="friend-name">💡 مجموعة راد الأعمال والمشاريع</span>
-                            <button class="add-btn" onclick="alert('تم الانضمام للمجموعة بنجاح!')">انضمام</button>
-                        </div>
-                    </div>
-                `;
             } else if (currentTab === 'profile') {
-                document.getElementById('appTitle').innerText = 'الملف الشخصي والحساب';
+                document.getElementById('appTitle').innerText = 'الملف الشخصي';
+                let userAvatar = localStorage.getItem('mygram_avatar') || 'https://via.placeholder.com/100';
                 let bio = localStorage.getItem('mygram_bio') || 'لم تضف نبذة تعريفية بعد...';
+                
                 content.innerHTML = `
                     <div class="card-box" style="text-align: center;">
-                        <div style="font-size: 45px; margin-bottom: 8px;">👤</div>
+                        <div class="profile-pic-container">
+                            <img src="${userAvatar}" class="profile-img" id="profileImageDisplay" alt="Profile">
+                            <label class="profile-upload-label" title="تغيير الصورة">📷
+                                <input type="file" accept="image/*" style="display:none" onchange="updateProfilePic(event)">
+                            </label>
+                        </div>
                         <div class="post-author" style="font-size: 16px; margin-bottom: 5px; justify-content: center;">${currentUser}</div>
-                        <p style="color: var(--secondary-text); font-size: 13px; margin-bottom: 12px;" id="bioText">${bio}</p>
+                        <p style="color: var(--secondary-text); font-size: 13px; margin-bottom: 12px;">${bio}</p>
                         <button class="action-btn" onclick="editBio()" style="margin-bottom:8px;">تعديل النبذة</button>
                     </div>
                 `;
             }
         }
 
-        // رفع صورة من الهاتف
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -185,21 +137,30 @@
             reader.onload = function(e) {
                 uploadedImage = e.target.result;
                 document.getElementById('imagePreviewContainer').innerHTML = `
-                    <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">تم تحميل الصورة من الهاتف بنجاح:</div>
+                    <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">تم اختيار الصورة بنجاح:</div>
                     <img src="${uploadedImage}" class="post-image" alt="Uploaded">
                 `;
             };
             reader.readAsDataURL(file);
         }
 
-        // توليد صورة بالذكاء الاصطناعي
+        function updateProfilePic(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem('mygram_avatar', e.target.result);
+                renderContent();
+            };
+            reader.readAsDataURL(file);
+        }
+
         function generateAIImage() {
-            let promptText = prompt('أدخل وصفاً للصورة المطلوبة بالـ AI:', 'futuristic cyberpunk city night');
+            let promptText = prompt('أدخل وصفاً للصورة المطلوبة بالـ AI:', 'futuristic cyberpunk city');
             if(!promptText) return;
-            alert('جاري التوليد الفوري...');
             uploadedImage = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}`;
             document.getElementById('imagePreviewContainer').innerHTML = `
-                <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">تم توليد صورة الذكاء الاصطناعي بنجاح:</div>
+                <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">صورة AI جاهزة للنشر:</div>
                 <img src="${uploadedImage}" class="post-image" alt="AI Generated">
             `;
         }
@@ -225,7 +186,7 @@
             let html = `
                 <div class="post-card" style="border: 1px dashed var(--primary-color);">
                     <div class="post-author">النظام الرسمي</div>
-                    <div class="post-text">أهلاً بك في منصة MYGRAM الشاملة والمزودة بخصائص التواصل والمساعد الذكي!</div>
+                    <div class="post-text">أهلاً بك في منصة MYGRAM. سجل دخولك، ارفع صورتك الشخصية، وغير الثيم بحرية!</div>
                 </div>
             `;
 
@@ -239,42 +200,12 @@
                         ${imageTag}
                         <div class="post-actions">
                             <span class="action-item" onclick="likePost(${p.id || index})">❤️ إعجاب (${p.likes || 0})</span>
-                            <span class="action-item" onclick="alert('خاصية التعليقات مفعلة وجاهزة للنقاش!')">💬 تعليق</span>
+                            <span class="action-item" onclick="alert('التعليقات مفعلة!')">💬 تعليق</span>
                         </div>
                     </div>
                 `;
             });
             container.innerHTML = html;
-        }
-
-        function sendAiMessage() {
-            const inputField = document.getElementById('chatInput');
-            const msg = inputField.value.trim();
-            if(!msg) return;
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML += `<div class="chat-msg user">${msg}</div>`;
-            inputField.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            setTimeout(() => {
-                chatMessages.innerHTML += `<div class="chat-msg ai">أهلاً بك، تم استلام استفسارك بنجاح. منصة MYGRAM تجمع أفضل ميزات التواصل والذكاء الاصطناعي لك!</div>`;
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 600);
-        }
-
-        function sendDirectMessage() {
-            const inputField = document.getElementById('msgInput');
-            const msg = inputField.value.trim();
-            if(!msg) return;
-            const msgMessages = document.getElementById('msgMessages');
-            msgMessages.innerHTML += `<div class="chat-msg user">${msg}</div>`;
-            inputField.value = '';
-            msgMessages.scrollTop = msgMessages.scrollHeight;
-
-            setTimeout(() => {
-                msgMessages.innerHTML += `<div class="chat-msg peer">سيف الدين: تم استلام رسالتك الفورية بنجاح وكأننا في محادثة واتساب!</div>`;
-                msgMessages.scrollTop = msgMessages.scrollHeight;
-            }, 600);
         }
 
         function likePost(id) {
@@ -303,7 +234,7 @@
         }
 
         function switchTab(tab, element) {
-            document.querySelectorAll('.nav-item').items = document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             element.classList.add('active');
             currentTab = tab;
             renderContent();
