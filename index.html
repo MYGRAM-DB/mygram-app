@@ -13,6 +13,7 @@
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
             --border: #1e293b;
+            --error-red: #ef4444;
         }
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box; }
         .auth-card { background: var(--card-bg); padding: 30px; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid #1e293b; text-align: center; }
@@ -25,6 +26,9 @@
         .toggle-link { margin-top: 15px; font-size: 12px; color: var(--text-sub); cursor: pointer; }
         .toggle-link span { color: var(--primary); font-weight: bold; }
         .age-warning { font-size: 10px; color: #ef4444; margin-top: -8px; margin-bottom: 10px; text-align: right; }
+        
+        /* رسالة الخطأ الأنيقة المدمجة بدلاً من alert المتصفح */
+        .inline-error-msg { display: none; color: var(--error-red); background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px; border-radius: 8px; font-size: 12px; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body>
@@ -60,6 +64,9 @@
         
         <button id="actionBtn" onclick="handleAuth()">تسجيل الدخول</button>
         
+        <!-- نص التنبيه الداخلي بدون نوافذ المنبثقة -->
+        <div class="inline-error-msg" id="errorMsg">الرجاء إدخال البريد الإلكتروني أو رقم الهاتف وكلمة السر!</div>
+
         <div class="toggle-link" onclick="toggleMode()">
             <span id="toggleText">ليس لديك حساب؟ انضم إلينا الآن</span>
         </div>
@@ -68,7 +75,18 @@
     <script>
         let isSignup = false;
 
+        function showError(msg) {
+            const errDiv = document.getElementById('errorMsg');
+            errDiv.innerText = msg;
+            errDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMsg').style.display = 'none';
+        }
+
         function toggleMode() {
+            hideError();
             isSignup = !isSignup;
             document.getElementById('signupFields').style.display = isSignup ? 'block' : 'none';
             document.getElementById('actionBtn').innerText = isSignup ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
@@ -85,12 +103,13 @@
         }
 
         function handleAuth() {
+            hideError();
             const email = document.getElementById('emailInput').value.trim();
             const phone = document.getElementById('phoneInput').value.trim();
             const password = document.getElementById('password').value.trim();
             
             if ((!email && !phone) || !password) {
-                alert('الرجاء إدخال البريد الإلكتروني أو رقم الهاتف وكلمة السر!');
+                showError('الرجاء إدخال البريد الإلكتروني أو رقم الهاتف وكلمة السر!');
                 return;
             }
 
@@ -106,12 +125,12 @@
                 relation = document.getElementById('relationSelect').value || "غير محدد";
 
                 if (!birthDate) {
-                    alert('الرجاء إدخال تاريخ الميلاد للتحقق من السن القانوني!');
+                    showError('الرجاء إدخال تاريخ الميلاد للتحقق من السن القانوني!');
                     return;
                 }
                 userAge = calculateAge(birthDate);
                 if (userAge < 16) {
-                    alert('عذراً، يجب أن يكون عمرك 16 سنة أو أكثر لإنشاء حساب على MYGRAM!');
+                    showError('عذراً، يجب أن يكون عمرك 16 سنة أو أكثر لإنشاء حساب على MYGRAM!');
                     return;
                 }
                 if (fullName) userName = fullName;
