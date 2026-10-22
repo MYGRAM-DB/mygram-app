@@ -5,47 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MYGRAM - التواصل الاجتماعي</title>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: #fff; margin: 0; padding-bottom: 70px; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 15px 20px; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 100; }
-        h2 { color: #38bdf8; margin: 0; font-size: 20px; }
-        .btn-logout { background: #f87171; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #fff;
+            --border-color: #334155;
+            --primary-color: #38bdf8;
+            --secondary-text: #94a3b8;
+        }
+        .light-mode {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --border-color: #cbd5e1;
+            --primary-color: #0284c7;
+            --secondary-text: #64748b;
+        }
+
+        body { font-family: sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding-bottom: 70px; transition: 0.3s; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
+        h2 { color: var(--primary-color); margin: 0; font-size: 20px; }
+        .header-btns { display: flex; gap: 8px; }
+        .btn-theme, .btn-logout { border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .btn-theme { background: #475569; color: #fff; }
+        .btn-logout { background: #f87171; color: #fff; }
         
         .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
         
-        /* صندوق كتابة المنشور */
-        .post-box, .card-box { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); border: 1px solid #334155; }
-        .post-box textarea { width: 100%; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 8px; padding: 10px; resize: none; box-sizing: border-box; height: 80px; font-family: sans-serif; }
-        .post-box button, .action-btn { background: #38bdf8; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .post-box, .card-box, .post-card, .ad-card { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .post-box textarea { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 8px; padding: 10px; resize: none; box-sizing: border-box; height: 80px; font-family: sans-serif; }
+        .post-box button, .action-btn, .add-btn { background: var(--primary-color); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .post-box button { float: left; }
         
-        /* شكل المنشورات والعناصر */
-        .post-card { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
-        .post-author { font-weight: bold; color: #38bdf8; margin-bottom: 8px; }
-        .post-text { color: #e2e8f0; font-size: 15px; line-height: 1.5; }
+        .post-author { font-weight: bold; color: var(--primary-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .post-text { color: var(--text-color); font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
+        
+        /* تنسيق الإعلان المميز */
+        .ad-card { border: 2px dashed #f59e0b; background: rgba(245, 158, 11, 0.05); }
+        .ad-tag { background: #f59e0b; color: #000; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
-        /* تنسيق قسم الأصدقاء */
-        .friend-item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #334155; }
-        .friend-name { color: #f8fafc; font-weight: bold; }
-        .add-btn { background: #4ade80; color: #0f172a; border: none; padding: 5px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        /* تفاعلات المنشور (إعجاب وحذف) */
+        .post-actions { display: flex; gap: 15px; border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 13px; color: var(--secondary-text); align-items: center; }
+        .action-item { cursor: pointer; transition: 0.2s; }
+        .action-item:hover { color: var(--primary-color); }
+        .delete-btn { color: #f87171; background: none; border: none; cursor: pointer; font-size: 12px; font-weight: bold; }
+
+        .friend-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); }
+        .friend-name { color: var(--text-color); font-weight: bold; }
 
         /* شريط التنقل السفلي */
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #334155; z-index: 100; }
-        .nav-item { color: #94a3b8; text-decoration: none; font-size: 12px; text-align: center; cursor: pointer; }
-        .nav-item.active { color: #38bdf8; font-weight: bold; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border-color); z-index: 100; }
+        .nav-item { color: var(--secondary-text); text-decoration: none; font-size: 12px; text-align: center; cursor: pointer; }
+        .nav-item.active { color: var(--primary-color); font-weight: bold; }
     </style>
 </head>
-<body>
+<body id="pageBody">
 
     <div class="header">
         <h2 id="appTitle">MYGRAM</h2>
-        <button class="btn-logout" onclick="logout()">خروج</button>
+        <div class="header-btns">
+            <button class="btn-theme" onclick="toggleTheme()">🌓 النمط</button>
+            <button class="btn-logout" onclick="logout()">خروج</button>
+        </div>
     </div>
 
-    <div class="container" id="mainContent">
-        <!-- المحتوى الافتراضي (الرئيسية) -->
-    </div>
+    <div class="container" id="mainContent"></div>
 
-    <!-- شريط التنقل السفلي -->
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('home', this)">🏠 الرئيسية</div>
         <div class="nav-item" onclick="switchTab('friends', this)">👥 الأصدقاء</div>
@@ -56,6 +81,21 @@
     <script>
         let currentUser = localStorage.getItem('mygram_username') || 'مستخدم مجهول';
         let currentTab = 'home';
+
+        // تحميل الوضع الليلي/النهاري المحفوظ
+        if (localStorage.getItem('mygram_theme') === 'light') {
+            document.getElementById('pageBody').classList.add('light-mode');
+        }
+
+        function toggleTheme() {
+            const body = document.getElementById('pageBody');
+            body.classList.toggle('light-mode');
+            if (body.classList.contains('light-mode')) {
+                localStorage.setItem('mygram_theme', 'light');
+            } else {
+                localStorage.setItem('mygram_theme', 'dark');
+            }
+        }
 
         function renderContent() {
             const content = document.getElementById('mainContent');
@@ -75,7 +115,7 @@
                 document.getElementById('appTitle').innerText = 'الأصدقاء والمشاهير';
                 content.innerHTML = `
                     <div class="card-box">
-                        <h3 style="color: #38bdf8; margin-top: 0;">اقتراحات المتابعة</h3>
+                        <h3 style="color: var(--primary-color); margin-top: 0;">اقتراحات المتابعة</h3>
                         <div class="friend-item">
                             <span class="friend-name">سيف الدين (مهندس برمجيات)</span>
                             <button class="add-btn" onclick="alert('تم إرسال طلب المتابعة بنجاح!')">متابعة</button>
@@ -84,23 +124,15 @@
                             <span class="friend-name">محمد الشامي (مصمم جرافيك)</span>
                             <button class="add-btn" onclick="alert('تم إرسال طلب المتابعة بنجاح!')">متابعة</button>
                         </div>
-                        <div class="friend-item">
-                            <span class="friend-name">عمر الفاروق (مطور تطبيقات)</span>
-                            <button class="add-btn" onclick="alert('تم إرسال طلب المتابعة بنجاح!')">متابعة</button>
-                        </div>
                     </div>
                 `;
             } else if (currentTab === 'groups') {
                 document.getElementById('appTitle').innerText = 'المجموعات العامة';
                 content.innerHTML = `
                     <div class="card-box">
-                        <h3 style="color: #38bdf8; margin-top: 0;">المجموعات المتاحة للانضمام</h3>
+                        <h3 style="color: var(--primary-color); margin-top: 0;">المجتمعات المتاحة</h3>
                         <div class="friend-item">
                             <span class="friend-name">🛡️ مجتمع تقنيات الويب والـ APK</span>
-                            <button class="add-btn" onclick="alert('انضممت للمجموعة بنجاح!')">انضمام</button>
-                        </div>
-                        <div class="friend-item">
-                            <span class="friend-name">💡 رواد الأعمال والمشاريع</span>
                             <button class="add-btn" onclick="alert('انضممت للمجموعة بنجاح!')">انضمام</button>
                         </div>
                     </div>
@@ -111,8 +143,8 @@
                 content.innerHTML = `
                     <div class="card-box" style="text-align: center;">
                         <div style="font-size: 50px; margin-bottom: 10px;">👤</div>
-                        <div class="post-author" style="font-size: 18px; margin-bottom: 5px;">${currentUser}</div>
-                        <p style="color: #94a3b8; font-size: 14px;" id="bioText">${bio}</p>
+                        <div class="post-author" style="font-size: 18px; margin-bottom: 5px; justify-content: center;">${currentUser}</div>
+                        <p style="color: var(--secondary-text); font-size: 14px;">${bio}</p>
                         <button class="action-btn" onclick="editBio()">تعديل النبذة التعريفية</button>
                     </div>
                 `;
@@ -124,7 +156,7 @@
             if (!text.trim()) return;
 
             let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts.unshift({ author: currentUser, content: text });
+            posts.unshift({ id: Date.now(), author: currentUser, content: text, likes: 0 });
             localStorage.setItem('mygram_posts', JSON.stringify(posts));
 
             document.getElementById('postText').value = '';
@@ -136,22 +168,55 @@
             const container = document.getElementById('postsContainer');
             if(!container) return;
             
+            // منشور إعلاني تجريبي ممول يظهر في أعلى الخلاصة
             let html = `
+                <div class="ad-card">
+                    <div class="post-author">
+                        <span>إعلان ممول 📢</span>
+                        <span class="ad-tag">مُعْلَن</span>
+                    </div>
+                    <div class="post-text">هل تبحث عن تطوير تطبيقات أسرع واحترافية؟ جرب منصات الويب الحديثة وحقق طموحك اليوم مع MYGRAM!</div>
+                </div>
                 <div class="post-card">
                     <div class="post-author">النظام (مرحباً بك)</div>
                     <div class="post-text">أهلاً بك في منصة MYGRAM الاجتماعية! ابدأ بنشر أول منشور لك الآن.</div>
                 </div>
             `;
 
-            posts.forEach(p => {
+            posts.forEach((p, index) => {
+                let deleteOption = p.author === currentUser ? `<button class="delete-btn" onclick="deletePost(${p.id || index})">حذف</button>` : '';
                 html += `
                     <div class="post-card">
-                        <div class="post-author">${p.author}</div>
+                        <div class="post-author">
+                            <span>${p.author}</span>
+                            ${deleteOption}
+                        </div>
                         <div class="post-text">${p.content}</div>
+                        <div class="post-actions">
+                            <span class="action-item" onclick="likePost(${p.id || index})">❤️ إعجاب (${p.likes || 0})</span>
+                            <span class="action-item" onclick="alert('خاصية التعليقات قادمة قريباً!')">💬 تعليق</span>
+                        </div>
                     </div>
                 `;
             });
             container.innerHTML = html;
+        }
+
+        function likePost(id) {
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            let post = posts.find(p => (p.id === id) || (posts.indexOf(p) === id));
+            if(post) {
+                post.likes = (post.likes || 0) + 1;
+                localStorage.setItem('mygram_posts', JSON.stringify(posts));
+                loadPosts();
+            }
+        }
+
+        function deletePost(id) {
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            posts = posts.filter(p => p.id !== id && posts.indexOf(p) !== id);
+            localStorage.setItem('mygram_posts', JSON.stringify(posts));
+            loadPosts();
         }
 
         function editBio() {
