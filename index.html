@@ -1,22 +1,84 @@
-    <script>
-        function register() {
-            const username = document.getElementById('username').value;
-            const msgDiv = document.getElementById('msg');
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MYGRAM - تسجيل الدخول</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-card {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        h2 {
+            color: #38bdf8;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #fff;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0ea5e9;
+        }
+    </style>
+</head>
+<body>
 
+    <div class="login-card">
+        <h2>MYGRAM</h2>
+        <input type="text" id="usernameInput" placeholder="أدخل اسم المستخدم أو لقبتك...">
+        <button onclick="loginUser()">دخول إلى التطبيق</button>
+    </div>
+
+    <script>
+        function loginUser() {
+            const username = document.getElementById('usernameInput').value.trim();
             if (!username) {
-                msgDiv.style.color = '#f87171';
-                msgDiv.innerText = 'الرجاء إدخال اسم المستخدم';
+                alert('الرجاء إدخال اسم المستخدم أولاً!');
                 return;
             }
-
-            // حفظ اسم المستخدم في ذاكرة التطبيق المحلية
+            
+            // حفظ اسم المستخدم في الذاكرة المحلية
             localStorage.setItem('mygram_username', username);
-
-            msgDiv.style.color = '#38bdf8';
-            msgDiv.innerText = 'جاري تسجيل الدخول...';
-
-            setTimeout(() => {
-                window.location.href = 'home.html';
-            }, 1000);
+            
+            // الانتقال إلى الصفحة الرئيسية بمسار صحيح ودقيق
+            window.location.href = 'home.html';
         }
     </script>
+
+</body>
+</html>
