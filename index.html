@@ -1,33 +1,56 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - البوابة العالمية</title>
+    <title>MYGRAM - Global Portal</title>
     <style>
         body { font-family: sans-serif; background: #0f172a; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .auth-card { background: #1e293b; padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); border: 1px solid #334155; text-align: center; }
-        h1 { color: #38bdf8; margin-bottom: 8px; font-size: 26px; }
-        p { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin-bottom: 12px; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        h1 { color: #38bdf8; margin-bottom: 5px; font-size: 26px; }
+        .sub-slogan { color: #94a3b8; font-size: 11px; margin-bottom: 15px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 12px; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
         button { width: 100%; padding: 12px; background: linear-gradient(135deg, #38bdf8, #0284c7); color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 5px; }
         button:hover { opacity: 0.9; }
         .toggle-link { margin-top: 15px; font-size: 13px; color: #94a3b8; cursor: pointer; }
         .toggle-link span { color: #38bdf8; font-weight: bold; }
+        .lang-select-box { margin-bottom: 15px; text-align: left; }
     </style>
 </head>
 <body>
 
     <div class="auth-card">
-        <h1>MYGRAM</h1>
-        <p>اتحاد منصات التواصل والذكاء الاصطناعي</p>
+        <div class="lang-select-box">
+            <select id="globalLangSelect" onchange="changeGlobalLanguage(this.value)">
+                <option value="ar">🇸🇾 العربية (Arabic)</option>
+                <option value="en">🇺🇸 English</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="zh">🇨🇳 中文</option>
+                <option value="ru">🇷🇺 Русский</option>
+            </select>
+        </div>
+
+        <h1 id="t_title">MYGRAM</h1>
+        <div class="sub-slogan" id="t_slogan">Everything you need is here</div>
         
         <div id="nameField" style="display:none;">
-            <input type="text" id="fullName" placeholder="الاسم الكامل">
+            <input type="text" id="fullName" placeholder="الاسم الكامل / Full Name">
         </div>
-        <input type="text" id="identifier" placeholder="البريد الإلكتروني أو رقم الهاتف">
-        <input type="password" id="password" placeholder="كلمة السر">
+        <input type="text" id="identifier" placeholder="البريد أو الهاتف مع الرمز / Email or Phone">
+        <input type="password" id="password" placeholder="كلمة السر / Password">
         
+        <select id="countrySelect">
+            <option value="+963">🇸🇾 سوريا (+963)</option>
+            <option value="+971">🇦🇪 الإمارات (+971)</option>
+            <option value="+966">🇸🇦 السعودية (+966)</option>
+            <option value="+20">🇪🇬 مصر (+20)</option>
+            <option value="+1">🇺🇸 الولايات المتحدة (+1)</option>
+            <option value="+44">🇬🇧 المملكة المتحدة (+44)</option>
+            <option value="+33">🇫🇷 فرنسا (+33)</option>
+        </select>
+
         <button id="actionBtn" onclick="handleAuth()">تسجيل الدخول</button>
         
         <div class="toggle-link" onclick="toggleMode()">
@@ -37,20 +60,45 @@
 
     <script>
         let isSignup = false;
+        
+        const translations = {
+            ar: { slogan: "Everything you need is here", btnLogin: "تسجيل الدخول", btnSignup: "إنشاء حساب جديد", toggleNew: "ليس لديك حساب؟ انضم إلينا الآن", toggleOld: "لديك حساب بالفعل؟ سجل دخولك" },
+            en: { slogan: "Everything you need is here", btnLogin: "Sign In", btnSignup: "Create Account", toggleNew: "Don't have an account? Join us", toggleOld: "Already have an account? Sign In" },
+            fr: { slogan: "Tout ce dont vous avez besoin est ici", btnLogin: "Se connecter", btnSignup: "Créer un compte", toggleNew: "Pas de compte? Rejoignez-nous", toggleOld: "Déjà un compte? Connectez-vous" },
+            de: { slogan: "Alles was Sie brauchen ist hier", btnLogin: "Anmelden", btnSignup: "Konto erstellen", toggleNew: "Kein Konto? Mach mit", toggleOld: "Schon ein Konto? Anmelden" },
+            es: { slogan: "Todo lo que necesitas está aquí", btnLogin: "Iniciar sesión", btnSignup: "Crear cuenta", toggleNew: "¿No tienes cuenta? Únete", toggleOld: "¿Ya tienes cuenta? Inicia sesión" },
+            zh: { slogan: "您所需的一切尽在这里", btnLogin: "登录", btnSignup: "注册账号", toggleNew: "没有账号？加入我们", toggleOld: "已有账号？登录" },
+            ru: { slogan: "Все, что вам нужно, здесь", btnLogin: "Войти", btnSignup: "Создать аккаунт", toggleNew: "Нет аккаунта? Присоединяйтесь", toggleOld: "Уже есть аккаунт? Войти" }
+        };
+
+        function changeGlobalLanguage(lang) {
+            localStorage.setItem('mygram_lang', lang);
+            const htmlTag = document.getElementById('htmlRoot');
+            htmlTag.setAttribute('lang', lang);
+            htmlTag.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            
+            const t = translations[lang] || translations.en;
+            document.getElementById('t_slogan').innerText = t.slogan;
+            document.getElementById('actionBtn').innerText = isSignup ? t.btnSignup : t.btnLogin;
+            document.getElementById('toggleText').innerText = isSignup ? t.toggleOld : t.toggleNew;
+        }
 
         function toggleMode() {
             isSignup = !isSignup;
+            let lang = localStorage.getItem('mygram_lang') || 'ar';
+            let t = translations[lang] || translations.en;
             document.getElementById('nameField').style.display = isSignup ? 'block' : 'none';
-            document.getElementById('actionBtn').innerText = isSignup ? 'إنشاء حساب عالمي' : 'تسجيل الدخول';
-            document.getElementById('toggleText').innerText = isSignup ? 'لديك حساب بالفعل؟ سجل دخولك' : 'ليس لديك حساب؟ انضم إلينا الآن';
+            document.getElementById('actionBtn').innerText = isSignup ? t.btnSignup : t.btnLogin;
+            document.getElementById('toggleText').innerText = isSignup ? t.toggleOld : t.toggleNew;
         }
 
         function handleAuth() {
             const identifier = document.getElementById('identifier').value.trim();
             const password = document.getElementById('password').value.trim();
+            const country = document.getElementById('countrySelect').value;
             
             if (!identifier || !password) {
-                alert('الرجاء تعبئة بيانات الدخول!');
+                alert('الرجاء تعبئة بيانات الدخول المطلوبة!');
                 return;
             }
 
@@ -65,7 +113,14 @@
                 localStorage.setItem('mygram_username', identifier.split('@')[0]);
             }
 
+            localStorage.setItem('mygram_phone_auth', country + ' ' + identifier);
             window.location.href = 'home.html';
+        }
+
+        window.onload = function() {
+            let savedLang = localStorage.getItem('mygram_lang') || 'ar';
+            document.getElementById('globalLangSelect').value = savedLang;
+            changeGlobalLanguage(savedLang);
         }
     </script>
 </body>
