@@ -3,102 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - Global Super Ecosystem (Secure Production Version)</title>
+    <title>MYGRAM - Global Super Ecosystem</title>
     <style>
         :root{--bg:#0b1120;--card:#152238;--p:#38bdf8;--ink:#f8fafc;--mute:#94a3b8;--line:#1e293b;--red:#ef4444;--ok:#22c55e;--gold:#f59e0b}
         .light{--bg:#f1f5f9;--card:#fff;--ink:#0f172a;--mute:#64748b;--line:#cbd5e1}
         *{box-sizing:border-box;margin:0}
         body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-top:65px;padding-bottom:80px;transition:0.3s}
-        
         input,select,textarea{width:100%;padding:11px 13px;margin-bottom:10px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:10px;font:inherit;font-size:13px}
         textarea{resize:vertical;min-height:70px}
-        :focus-visible{outline:2px solid var(--p);outline-offset:2px}
-        
-        button,.b{font:inherit;font-size:12px;cursor:pointer;border:1px solid var(--line);background:var(--line);color:var(--ink);border-radius:10px;padding:8px 14px;display:inline-flex;gap:6px;align-items:center;transition:0.2s}
-        button:hover,.b:hover{border-color:var(--p);color:var(--p)}
+        button,.b{font:inherit;font-size:12px;cursor:pointer;border:1px solid var(--line);background:var(--line);color:var(--ink);border-radius:10px;padding:8px 14px;display:inline-flex;gap:6px;align-items:center}
         .pr{background:var(--p);color:#06101d;border:0;font-weight:800}
-        .pr:hover{background:var(--p);color:#06101d;opacity:0.9}
         .wide{width:100%;justify-content:center;margin-top:4px}
         .ic{background:none;border:0;font-size:18px;padding:4px;cursor:pointer;color:var(--ink)}
-        
         .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3)}
         .mute{color:var(--mute);font-size:12px}
         .empty{text-align:center;color:var(--mute);padding:26px 8px}
-        
         .av{width:42px;height:42px;border-radius:50%;border:2px solid var(--p);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--bg);flex-shrink:0}
         .av img{width:100%;height:100%;object-fit:cover}
-        
         .toast{position:fixed;top:78px;left:50%;transform:translateX(-50%);background:var(--p);color:#06101d;padding:9px 20px;border-radius:20px;font-size:12px;font-weight:800;z-index:3000;opacity:0;transition:opacity .3s;pointer-events:none}
         .toast.on{opacity:1}
-
         .header { display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); padding: 12px 20px; border-bottom: 1px solid var(--line); position: fixed; top: 0; width: 100%; z-index: 1000; box-sizing: border-box; }
         .header-title-box { text-align: center; }
         h2 { color: var(--p); margin: 0; font-size: 16px; font-weight: 900; }
         .sub-slogan-header { font-size: 8px; color: var(--mute); }
-        
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--line); z-index: 1000; }
         .nav-item { color: var(--mute); font-size: 10px; text-align: center; cursor: pointer; flex: 1; font-weight: 600; }
         .nav-item.active { color: var(--p); font-weight: 800; }
-
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background: var(--card); overflow-x: hidden; transition: 0.3s; padding-top: 60px; border-left: 1px solid var(--line); }
-        .sidebar a { padding: 14px 22px; text-decoration: none; font-size: 13px; color: var(--ink); display: block; border-bottom: 1px solid var(--line); transition: 0.2s; }
+        .sidebar a { padding: 14px 22px; text-decoration: none; font-size: 13px; color: var(--ink); display: block; border-bottom: 1px solid var(--line); }
         .sidebar a:hover { background: var(--p); color: #06101d; font-weight: bold; }
         .sidebar .close-btn { position: absolute; top: 12px; font-size: 24px; cursor: pointer; color: var(--p); left: 18px; }
-
         .container { max-width: 600px; margin: 10px auto; padding: 0 12px; }
-        
-        .chat-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--line); cursor: pointer; transition: 0.2s; border-radius: 10px; margin-bottom: 4px; }
+        .chat-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--line); cursor: pointer; border-radius: 10px; margin-bottom: 4px; }
         .chat-item:hover { background: var(--bg); }
         .chat-info { flex: 1; min-width: 0; }
         .chat-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
         .chat-name { font-weight: bold; font-size: 13px; color: var(--ink); direction: ltr; text-align: right; }
         .chat-msg { font-size: 11px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
         .chat-container { display: flex; flex-direction: column; height: 60vh; }
         .chat-messages { flex: 1; overflow-y: auto; padding: 12px; background: var(--bg); border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--line); }
         .chat-msg-box { margin-bottom: 10px; padding: 10px 14px; border-radius: 10px; max-width: 80%; font-size: 12px; line-height: 1.5; }
         .chat-msg-box.user { background: var(--p); color: #06101d; font-weight: 600; margin-left: auto; }
         .chat-msg-box.peer { background: var(--card); border: 1px solid var(--line); margin-right: auto; }
-
         .tab-sub-bar { display: flex; gap: 8px; margin-bottom: 14px; }
         .tab-sub-btn { flex: 1; padding: 9px; text-align: center; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; font-size: 11px; cursor: pointer; color: var(--ink); font-weight: 600; }
         .tab-sub-btn.active { background: var(--p); color: #06101d; font-weight: 800; border-color: var(--p); }
-        
         .phone-num { direction: ltr; unicode-bidi: embed; text-align: right; font-family: monospace; font-weight: bold; }
     </style>
 </head>
 <body id="pageBody">
-
     <div class="toast" id="toastMsg"></div>
-
     <div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="close-btn" onclick="closeSidebar()">&times;</a>
         <a href="#" onclick="switchTab('feed'); closeSidebar();">🏠 ماذا يدور الآن؟</a>
-        <a href="#" onclick="switchTab('reels'); closeSidebar();">🎬 ريلز وشورتس العالمية</a>
-        <a href="#" onclick="switchTab('live'); closeSidebar();">🔴 البث المباشر (LIVE)</a>
-        <a href="#" onclick="switchTab('create_page'); closeSidebar();">📄 إنشاء صفحة جديدة</a>
-        <a href="#" onclick="switchTab('create_group'); closeSidebar();">👥 إنشاء مجموعة جديدة</a>
-        <a href="#" onclick="switchTab('ads_manager'); closeSidebar();">📣 مدير الإعلانات (MYGRAM Ads)</a>
-        <a href="#" onclick="switchTab('profile'); closeSidebar();">👤 الملف الشخصي والبيانات</a>
-        <a href="#" onclick="switchTab('accounts'); closeSidebar();">🔄 إدارة الحسابات والتبديل</a>
-        <a href="#" onclick="switchTab('news'); closeSidebar();">🌐 MYGRAM NEWS</a>
+        <a href="#" onclick="switchTab('profile'); closeSidebar();">👤 الملف الشخصي</a>
+        <a href="#" onclick="switchTab('chats'); closeSidebar();">💬 CHAT (Messenger & WhatsApp)</a>
         <a href="#" onclick="logoutApp();">🚪 تسجيل الخروج</a>
     </div>
-
     <div class="header" id="mainHeader">
         <button class="ic" onclick="openSidebar()">☰</button>
         <div class="header-title-box">
             <h2 id="appTitle">MYGRAM</h2>
             <div class="sub-slogan-header">Everything you need is here</div>
         </div>
-        <div style="display:flex; gap:6px; align-items:center;">
-            <select id="appLangSelect" onchange="changeLanguage(this.value)" style="width:auto; margin:0; padding:4px 8px; font-size:11px;"></select>
-            <button class="ic" onclick="toggleThemeMode()">🌓</button>
-        </div>
+        <button class="ic" onclick="toggleThemeMode()">🌓</button>
     </div>
-
     <div class="container" id="mainContentArea"></div>
-
     <div class="nav-bar" id="mainNavBar">
         <div class="nav-item active" onclick="switchTab('feed', this)">ما يدور</div>
         <div class="nav-item" onclick="switchTab('reels', this)">ريلز</div>
@@ -106,79 +76,34 @@
         <div class="nav-item" onclick="switchTab('chats', this)">CHAT</div>
         <div class="nav-item" onclick="switchTab('profile', this)">حسابي</div>
     </div>
-
     <script>
-        // دالة تنظيف النصوص ضد ثغرات الحقن (XSS Protection)
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/&/g, '&amp;')
-                      .replace(/</g, '&lt;')
-                      .replace(/>/g, '&gt;')
-                      .replace(/"/g, '&quot;')
-                      .replace(/'/g, '&#039;');
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
 
-        const globalLanguages = [
-            {code:"ar", name:"العربية (Arabic)", rtl:true}, {code:"en", name:"English", rtl:false},
-            {code:"fr", name:"Français", rtl:false}, {code:"de", name:"Deutsch", rtl:false},
-            {code:"es", name:"Español", rtl:false}, {code:"tr", name:"Türkçe", rtl:false},
-            {code:"ru", name:"Русский", rtl:false}, {code:"zh", name:"中文", rtl:false}
-        ];
-
-        // التحقق الآمن من تسجيل الدخول وجلسة المستخدم
         let currentAccount = null;
-        try {
-            currentAccount = JSON.parse(localStorage.getItem('mygram_current_account'));
-        } catch(e) {
-            currentAccount = null;
-        }
-
+        try { currentAccount = JSON.parse(localStorage.getItem('mygram_current_account')); } catch(e) {}
         if (!currentAccount || !currentAccount.account) {
-            // توجيه آمن لصفحة الدخول في حال عدم وجود جلسة صالحة
-            window.location.href = 'index.html';
+            currentAccount = {
+                name: "Louay Chaghal",
+                account: "louay@mygram.com",
+                gender: "male",
+                birthDate: "1995-01-01",
+                age: 31,
+                relation: "متزوج",
+                hobbies: "البرمجة وتقنية المصاعد",
+                avatar: ""
+            };
+            localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
         }
 
         let currentUser = escapeHtml(currentAccount.name || 'مستخدم MYGRAM');
         let userGender = escapeHtml(currentAccount.gender || 'male');
-        
-        function calculateExactAge(birthdateStr) {
-            if(!birthdateStr) return currentAccount.age || 25;
-            const birthDate = new Date(birthdateStr);
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const m = today.getMonth() - birthDate.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-            return age;
-        }
-
-        let userAge = calculateExactAge(currentAccount.birthDate);
         let currentTab = 'feed';
         let chatSubTab = 'messenger';
         let activeChatPeer = null;
         let attachedMedia = '';
-
-        function initApp() {
-            const select = document.getElementById('appLangSelect');
-            if(select) {
-                select.innerHTML = globalLanguages.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
-                select.value = localStorage.getItem('mygram_lang') || 'ar';
-            }
-            renderAppContent();
-        }
-
-        function changeLanguage(code) {
-            localStorage.setItem('mygram_lang', code);
-            const langObj = globalLanguages.find(l => l.code === code) || globalLanguages[0];
-            const htmlTag = document.getElementById('htmlRoot');
-            if(htmlTag) {
-                htmlTag.setAttribute('lang', code);
-                htmlTag.setAttribute('dir', langObj.rtl ? 'rtl' : 'ltr');
-            }
-            showToast('تم تحديث لغة التطبيق بنجاح!');
-            renderAppContent();
-        }
 
         function showToast(msg) {
             const t = document.getElementById('toastMsg');
@@ -190,11 +115,7 @@
 
         function openSidebar() { document.getElementById("mySidebar").style.width = "270px"; }
         function closeSidebar() { document.getElementById("mySidebar").style.width = "0"; }
-
-        function toggleThemeMode() {
-            document.body.classList.toggle('light');
-            showToast('تم تغيير مظهر التطبيق بنجاح!');
-        }
+        function toggleThemeMode() { document.body.classList.toggle('light'); showToast('تم تغيير المظهر!'); }
 
         function switchTab(tab, el) {
             if(el) {
@@ -209,33 +130,17 @@
         function renderAppContent() {
             const area = document.getElementById('mainContentArea');
             if(!area) return;
-
             let userAvatarImg = currentAccount.avatar || '';
             let genderIcon = userGender === 'female' ? '👩' : '👨';
 
             if (currentTab === 'feed') {
                 document.getElementById('appTitle').innerText = 'ماذا يدور الآن؟';
                 area.innerHTML = `
-                    <div style="display:flex; gap:12px; margin-bottom:14px; overflow-x:auto; padding-bottom:6px;">
-                        <div style="display:flex; flex-direction:column; align-items:center; cursor:pointer;" onclick="showToast('رفع قصة جديدة...')">
-                            <div class="av">${userAvatarImg ? `<img src="${escapeHtml(userAvatarImg)}">` : genderIcon}</div>
-                            <div class="mute" style="margin-top:4px;">قصتك +</div>
-                        </div>
-                    </div>
-
-                    <div style="display:flex; gap:8px; margin-bottom:14px; overflow-x:auto;">
-                        <button class="b" onclick="switchTab('reels')">🎬 ريلز</button>
-                        <button class="b" onclick="switchTab('live')">🔴 بث مباشر</button>
-                        <button class="b" onclick="switchTab('ads_manager')">📣 إعلان</button>
-                        <button class="b" onclick="switchTab('news')">🌐 أخبار</button>
-                    </div>
-
                     <div class="card">
                         <textarea id="postText" placeholder="بماذا تفكر؟ شارك أفكارك مع العالم..."></textarea>
                         <div id="mediaPreview"></div>
-                        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center;">
-                            <label class="b" style="cursor:pointer;">📷 الجاليري<input type="file" accept="image/*,video/*" style="display:none" onchange="handleAppMediaUpload(event)"></label>
-                            <button class="b" onclick="enhancePostWithAI()">✨ تحسين AI</button>
+                        <div style="display:flex; gap:8px; margin-top:10px; align-items:center;">
+                            <label class="b" style="cursor:pointer;">📷 صورة<input type="file" accept="image/*" style="display:none" onchange="handleAppMediaUpload(event)"></label>
                             <label style="font-size:11px; margin-right:auto; cursor:pointer;"><input type="checkbox" id="sensitiveCheck"> +18</label>
                             <button class="b pr" onclick="publishAppPost()">نشر</button>
                         </div>
@@ -243,20 +148,162 @@
                     <div id="postsContainer"></div>
                 `;
                 loadAppPosts();
-            } else if (currentTab === 'reels') {
-                document.getElementById('appTitle').innerText = 'MYGRAM Reels & Shorts';
-                area.innerHTML = `
-                    <div class="card" style="text-align:center; padding:35px 15px;">
-                        <h3 style="color:var(--p); margin-top:0;">🎬 الفيديوهات القصيرة (Reels & Shorts)</h3>
-                        <p class="mute" style="margin-bottom:14px;">استعرض أحدث مقاطع الفيديو القصيرة التفاعلية حول العالم.</p>
-                        <div style="background:var(--bg); height:280px; border-radius:12px; display:flex; justify-content:center; align-items:center; border:1px solid var(--line); margin-bottom:14px; font-size:40px;">▶️</div>
-                        <div style="display:flex; justify-content:space-around;">
-                            <button class="b" onclick="showToast('❤️ إعجاب')">❤️ إعجاب</button>
-                            <button class="b" onclick="showToast('💬 تعليق')">💬 تعليق</button>
-                            <button class="b" onclick="showToast('🚀 مشاركة')">🚀 مشاركة</button>
+            } else if (currentTab === 'chats') {
+                document.getElementById('appTitle').innerText = 'MYGRAM & WHATSMYGRAM';
+                if (!activeChatPeer) {
+                    area.innerHTML = `
+                        <div class="card">
+                            <div class="tab-sub-bar">
+                                <div class="tab-sub-btn ${chatSubTab === 'messenger' ? 'active' : ''}" onclick="chatSubTab='messenger'; renderAppContent();">💬 MYGRAM مسنجر</div>
+                                <div class="tab-sub-btn ${chatSubTab === 'whatsmygram' ? 'active' : ''}" onclick="chatSubTab='whatsmygram'; renderAppContent();">📞 WHATSMYGRAM</div>
+                            </div>
+                            ${chatSubTab === 'messenger' ? `
+                                <div class="mute" style="margin-bottom:8px; font-weight:bold;">المحادثات والأصدقاء:</div>
+                                <div class="chat-item" onclick="openChat('منصة MYGRAM الرسمية', 'official', '🌐')">
+                                    <div class="av" style="width:38px; height:38px; font-size:18px;">🌐</div>
+                                    <div class="chat-info">
+                                        <div class="chat-top-row"><span class="chat-name">منصة MYGRAM</span><span class="mute">الآن</span></div>
+                                        <div class="chat-msg">أهلاً بك في مسنجر MYGRAM الذكي!</div>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                                    <input type="text" id="phoneContactInput" placeholder="أدخل رقم هاتف..." style="margin:0; flex:1;">
+                                    <button class="b pr" onclick="addPhoneContact()">إضافة</button>
+                                </div>
+                                <div class="mute" style="margin-bottom:8px; font-weight:bold;">جهات الاتصال (WHATSMYGRAM):</div>
+                                <div id="phoneContactsList">
+                                    <div class="chat-item" onclick="openChat('+963 932 557 593', '+963 932 557 593', '📱')">
+                                        <div class="av" style="width:38px; height:38px; font-size:18px;">📱</div>
+                                        <div class="chat-info">
+                                            <div class="chat-top-row"><span class="chat-name phone-num">+963 932 557 593</span><span class="mute">نشط</span></div>
+                                            <div class="chat-msg">اضغط للمراسلة الفورية</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `}
                         </div>
+                    `;
+                } else {
+                    area.innerHTML = `
+                        <div class="card chat-container">
+                            <div style="display:flex; align-items:center; gap:10px; padding-bottom:10px; border-bottom:1px solid var(--line); margin-bottom:10px;">
+                                <button class="b" onclick="activeChatPeer=null; renderAppContent();">⬅ رجوع</button>
+                                <div class="av" style="width:36px; height:36px; font-size:18px;">${escapeHtml(activeChatPeer.icon)}</div>
+                                <div>
+                                    <div style="font-weight:bold; font-size:13px; color:var(--p);" class="phone-num">${escapeHtml(activeChatPeer.name)}</div>
+                                </div>
+                            </div>
+                            <div class="chat-messages" id="activeChatMessagesBox">
+                                <div class="chat-msg-box peer">مرحباً بك! تم فتح المحادثة بنجاح.</div>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="activeChatInput" placeholder="اكتب رسالة..." style="margin:0; flex:1;">
+                                <button class="b pr" onclick="sendActiveChatMessage()">إرسال</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else if (currentTab === 'profile') {
+                document.getElementById('appTitle').innerText = 'الملف الشخصي';
+                area.innerHTML = `
+                    <div class="card" style="text-align:center;">
+                        <div class="av" style="width:80px; height:80px; margin:0 auto 10px; font-size:40px;">${userAvatarImg ? `<img src="${userAvatarImg}">` : genderIcon}</div>
+                        <h3>${currentUser}</h3>
+                        <p class="mute">${currentAccount.account}</p>
                     </div>
                 `;
-            } else if (currentTab === 'live') {
-                document.getElementById('appTitle').innerText = 'البث المباشر LIVE';
-                area.innerHTML
+            } else if (currentTab === 'ai') {
+                document.getElementById('appTitle').innerText = 'المساعد الذكي AI';
+                area.innerHTML = `<div class="card"><p>المساعد الذكي يعمل بكفاءة تامة.</p></div>`;
+            } else if (currentTab === 'reels') {
+                document.getElementById('appTitle').innerText = 'ريلز MYGRAM';
+                area.innerHTML = `<div class="card" style="text-align:center; padding:30px;">🎬 استعراض الريلز والفيديوهات القصيرة</div>`;
+            }
+        }
+
+        function openChat(name, id, icon) { activeChatPeer = { name, id, icon }; renderAppContent(); }
+        function addPhoneContact() {
+            const val = document.getElementById('phoneContactInput').value.trim();
+            if(!val) { showToast('أدخل رقم الهاتف!'); return; }
+            const safe = escapeHtml(val);
+            document.getElementById('phoneContactsList').innerHTML += `
+                <div class="chat-item" onclick="openChat('${safe}', '${safe}', '📱')">
+                    <div class="av" style="width:38px; height:38px; font-size:18px;">📱</div>
+                    <div class="chat-info">
+                        <div class="chat-top-row"><span class="chat-name phone-num">${safe}</span><span class="mute">جديد</span></div>
+                        <div class="chat-msg">انقر للمراسلة</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('phoneContactInput').value = '';
+            showToast('تمت الإضافة بنجاح!');
+        }
+
+        function sendActiveChatMessage() {
+            const input = document.getElementById('activeChatInput');
+            if(!input || !input.value.trim()) return;
+            const safe = escapeHtml(input.value.trim());
+            const box = document.getElementById('activeChatMessagesBox');
+            if(box) {
+                box.innerHTML += `<div class="chat-msg-box user">${safe}</div>`;
+                input.value = '';
+                box.scrollTop = box.scrollHeight;
+            }
+        }
+
+        function handleAppMediaUpload(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                attachedMedia = evt.target.result;
+                document.getElementById('mediaPreview').innerHTML = `<img src="${escapeHtml(attachedMedia)}" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin-top:8px;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function publishAppPost() {
+            const text = document.getElementById('postText').value;
+            const isSens = document.getElementById('sensitiveCheck') ? document.getElementById('sensitiveCheck'].checked : false;
+            if(!text.trim() && !attachedMedia) return;
+            let posts = [];
+            try { posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]'); } catch(e){}
+            posts.unshift({ author: currentUser, content: escapeHtml(text), image: attachedMedia, sensitive: isSens, likes: 0 });
+            try { localStorage.setItem('mygram_posts', JSON.stringify(posts)); } catch(e){}
+            attachedMedia = '';
+            document.getElementById('postText').value = '';
+            showToast('تم النشر بنجاح!');
+            loadAppPosts();
+        }
+
+        function loadAppPosts() {
+            let posts = [];
+            try { posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]'); } catch(e){}
+            const container = document.getElementById('postsContainer');
+            if(!container) return;
+            let html = '';
+            posts.forEach((p, idx) => {
+                let media = p.image ? `<img src="${escapeHtml(p.image)}" style="width:100%; max-height:250px; object-fit:cover; border-radius:8px; margin-top:8px;">` : '';
+                html += `
+                    <div class="card">
+                        <div style="font-weight:bold; color:var(--p); margin-bottom:6px;">${escapeHtml(p.author)}</div>
+                        <div style="font-size:13px; line-height:1.4;">${p.content}</div>
+                        ${media}
+                    </div>
+                `;
+            });
+            container.innerHTML = html || '<p class="empty">لا توجد منشورات حالياً.</p>';
+        }
+
+        function logoutApp() {
+            localStorage.removeItem('mygram_is_logged');
+            localStorage.removeItem('mygram_current_account');
+            window.location.href = 'index.html';
+        }
+
+        window.onload = function() { initApp(); };
+        function initApp() { renderAppContent(); }
+    </script>
+</body>
+</html>
