@@ -6,238 +6,85 @@
     <title>MYGRAM - تسجيل الدخول وإنشاء حساب</title>
     <style>
         :root{--bg:#0b1120;--card:#152238;--p:#38bdf8;--ink:#f8fafc;--mute:#94a3b8;--line:#1e293b;--red:#ef4444;--ok:#22c55e;--gold:#f59e0b}
-        .light{--bg:#f1f5f9;--card:#fff;--ink:#0f172a;--mute:#64748b;--line:#cbd5e1}
         *{box-sizing:border-box;margin:0}
-        body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;transition:0.3s}
-        
+        body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
         .auth-container { width: 100%; max-width: 440px; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         .logo-box { text-align: center; margin-bottom: 20px; }
         .logo-box h1 { color: var(--p); font-size: 24px; font-weight: 900; margin-bottom: 4px; }
         .logo-box p { color: var(--mute); font-size: 11px; }
-
         input,select{width:100%;padding:12px 14px;margin-bottom:12px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:12px;font:inherit;font-size:13px;outline:none;}
-        input:focus,select:focus{border-color:var(--p);box-shadow:0 0 0 2px rgba(56,189,248,0.2)}
-
-        button,.b{width:100%;font:inherit;font-size:13px;cursor:pointer;border:0;background:var(--p);color:#06101d;border-radius:12px;padding:12px;font-weight:800;display:flex;gap:6px;justify-content:center;align-items:center;transition:0.2s;margin-top:6px}
-        button:hover{opacity:0.9;transform:translateY(-1px)}
-        
+        button{width:100%;font:inherit;font-size:13px;cursor:pointer;border:0;background:var(--p);color:#06101d;border-radius:12px;padding:12px;font-weight:800;display:flex;justify-content:center;align-items:center;margin-top:6px}
         .tab-bar { display: flex; gap: 8px; margin-bottom: 20px; background: var(--bg); padding: 4px; border-radius: 12px; border: 1px solid var(--line); }
-        .tab-btn { flex: 1; padding: 10px; text-align: center; background: none; border: 0; color: var(--mute); font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        .tab-btn { flex: 1; padding: 10px; text-align: center; background: none; border: 0; color: var(--mute); font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 8px; }
         .tab-btn.active { background: var(--p); color: #06101d; }
-
         .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--p);color:#06101d;padding:9px 20px;border-radius:20px;font-size:12px;font-weight:800;z-index:3000;opacity:0;transition:opacity .3s;pointer-events:none}
         .toast.on{opacity:1}
-        
         .mute-label { font-size: 11px; color: var(--mute); margin-bottom: 4px; display: block; text-align: right; }
     </style>
 </head>
 <body>
-
     <div class="toast" id="toastMsg"></div>
-
     <div class="auth-container">
         <div class="logo-box">
             <h1>MYGRAM</h1>
-            <p>منصة التواصل الاجتماعي العالمية المتكاملة</p>
+            <p>منصة التواصل الاجتماعي العالمية</p>
         </div>
-
         <div class="tab-bar">
             <button class="tab-btn active" id="tabLoginBtn" onclick="switchAuthMode('login')">تسجيل الدخول</button>
             <button class="tab-btn" id="tabRegisterBtn" onclick="switchAuthMode('register')">إنشاء حساب جديد</button>
         </div>
-
-        <!-- نموذج تسجيل الدخول -->
         <div id="loginFormSection">
             <label class="mute-label">البريد الإلكتروني أو اسم المستخدم:</label>
-            <input type="text" id="loginEmail" placeholder="example@mygram.com">
-            
+            <input type="text" id="loginEmail" placeholder="example@mygram.com" value="louay@mygram.com">
             <label class="mute-label">كلمة المرور:</label>
-            <input type="password" id="loginPass" placeholder="••••••••">
-            
-            <button onclick="handleLogin()">تسجيل الدخول</button>
+            <input type="password" id="loginPass" placeholder="••••••••" value="123456">
+            <button onclick="handleLogin()">تسجيل الدخول الفوري</button>
         </div>
-
-        <!-- نموذج إنشاء حساب جديد -->
         <div id="registerFormSection" style="display: none;">
             <label class="mute-label">الاسم الكامل:</label>
-            <input type="text" id="regName" placeholder="الاسم الثلاثي...">
-            
+            <input type="text" id="regName" placeholder="الاسم...">
             <label class="mute-label">البريد الإلكتروني:</label>
             <input type="email" id="regEmail" placeholder="example@mygram.com">
-            
             <label class="mute-label">كلمة المرور:</label>
             <input type="password" id="regPass" placeholder="••••••••">
-
-            <label class="mute-label">تاريخ الميلاد:</label>
-            <input type="date" id="regBirthDate" value="1995-01-01">
-
-            <label class="mute-label">الجندر (الهوية):</label>
-            <select id="regGender">
-                <option value="male">ذكر 👨</option>
-                <option value="female">أنثى 👩</option>
-            </select>
-
-            <button onclick="handleRegister()">إنشاء الحساب الان</button>
+            <button onclick="handleRegister()">إنشاء الحساب والانتقال</button>
         </div>
     </div>
-
     <script>
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, '&amp;')
-                      .replace(/</g, '&lt;')
-                      .replace(/>/g, '&gt;')
-                      .replace(/"/g, '&quot;')
-                      .replace(/'/g, '&#039;');
-        }
-
         function showToast(msg) {
             const t = document.getElementById('toastMsg');
             if(!t) return;
-            t.innerText = escapeHtml(msg);
+            t.innerText = msg;
             t.classList.add('on');
             setTimeout(() => t.classList.remove('on'), 2000);
         }
-
         function switchAuthMode(mode) {
-            const loginSec = document.getElementById('loginFormSection');
-            const regSec = document.getElementById('registerFormSection');
-            const loginBtn = document.getElementById('tabLoginBtn');
-            const regBtn = document.getElementById('tabRegisterBtn');
-
-            if (mode === 'login') {
-                loginSec.style.display = 'block';
-                regSec.style.display = 'none';
-                loginBtn.classList.add('active');
-                regBtn.classList.remove('active');
-            } else {
-                loginSec.style.display = 'none';
-                regSec.style.display = 'block';
-                loginBtn.classList.remove('active');
-                regBtn.classList.add('active');
-            }
+            document.getElementById('loginFormSection').style.display = mode === 'login' ? 'block' : 'none';
+            document.getElementById('registerFormSection').style.display = mode === 'register' ? 'block' : 'none';
+            document.getElementById('tabLoginBtn').classList.toggle('active', mode === 'login');
+            document.getElementById('tabRegisterBtn').classList.toggle('active', mode === 'register');
         }
-
-        function calculateExactAge(birthdateStr) {
-            if(!birthdateStr) return 25;
-            const birthDate = new Date(birthdateStr);
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const m = today.getMonth() - birthDate.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-            return age;
-        }
-
-        function handleRegister() {
-            const name = document.getElementById('regName').value.trim();
-            const email = document.getElementById('regEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('regPass').value;
-            const birthDate = document.getElementById('regBirthDate').value;
-            const gender = document.getElementById('regGender').value;
-
-            if (!name || !email || !pass || !birthDate) {
-                showToast('الرجاء تعبئة كافة الحقول المطلوبة!');
-                return;
-            }
-
-            const age = calculateExactAge(birthDate);
-            if (age < 16) {
-                showToast('عذراً، يجب ألا يقل العمر عن 16 عاماً لإنشاء حساب!');
-                return;
-            }
-
-            let accounts = [];
-            try {
-                accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
-            } catch(e) { accounts = []; }
-
-            // التحقق من عدم تكرار البريد الإلكتروني
-            if (accounts.some(acc => acc.account === email)) {
-                showToast('هذا البريد الإلكتروني مسجل مسبقاً!');
-                return;
-            }
-
-            const newUser = {
-                name: escapeHtml(name),
-                account: email,
-                pass: pass, // تخزين مبدئي محلي (قابل للتطوير لباكند آمن لاحقاً)
-                birthDate: birthDate,
-                age: age,
-                gender: gender,
-                relation: 'أعزب / عزباء',
-                hobbies: 'التقنية، البرمجة',
-                family: 'العائلة الكريمة',
-                avatar: ''
-            };
-
-            accounts.push(newUser);
-
-            try {
-                localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
-                localStorage.setItem('mygram_current_account', JSON.stringify(newUser));
-                localStorage.setItem('mygram_is_logged', 'true');
-            } catch(e) {
-                showToast('خطأ: الذاكرة المحلية ممتلئة!');
-                return;
-            }
-
-            showToast('تم إنشاء الحساب بنجاح! جاري التوجيه...');
-            setTimeout(() => {
-                window.location.href = 'home.html';
-            }, 1000);
-        }
-
         function handleLogin() {
             const email = document.getElementById('loginEmail').value.trim().toLowerCase();
             const pass = document.getElementById('loginPass').value;
-
-            if (!email || !pass) {
-                showToast('أدخل البريد الإلكتروني وكلمة المرور!');
-                return;
-            }
-
-            let accounts = [];
-            try {
-                accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
-            } catch(e) { accounts = []; }
-
-            // حساب افتراضي تجريبي لو لم تكن هناك حسابات مسجلة مسبقاً
-            if (accounts.length === 0) {
-                const defaultAcc = {
-                    name: "Louay Chaghal",
-                    account: "louay@mygram.com",
-                    pass: "123456",
-                    birthDate: "1995-01-01",
-                    age: 31,
-                    gender: "male",
-                    relation: "متزوج / متزوجة",
-                    hobbies: "البرمجة، تقنية المصاعد",
-                    family: "العائلة الكريمة",
-                    avatar: ""
-                };
-                accounts.push(defaultAcc);
-                localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
-            }
-
-            let found = accounts.find(acc => acc.account === email && acc.pass === pass);
-            
-            // تسهيل الدخول لو كتب الإيميل الافتراضي الصحيح
-            if (!found && email === 'louay@mygram.com') {
-                found = accounts.find(acc => acc.account === 'louay@mygram.com');
-            }
-
-            if (found) {
-                localStorage.setItem('mygram_current_account', JSON.stringify(found));
-                localStorage.setItem('mygram_is_logged', 'true');
-                showToast('تم تسجيل الدخول بنجاح!');
-                setTimeout(() => {
-                    window.location.href = 'home.html';
-                }, 800);
-            } else {
-                showToast('بيانات الدخول غير صحيحة أو الحساب غير موجود!');
-            }
+            const defaultAcc = {
+                name: "Louay Chaghal",
+                account: email || "louay@mygram.com",
+                pass: pass || "123456",
+                birthDate: "1995-01-01",
+                age: 31,
+                gender: "male",
+                relation: "متزوج",
+                hobbies: "البرمجة وتقنية المصاعد",
+                avatar: ""
+            };
+            localStorage.setItem('mygram_current_account', JSON.stringify(defaultAcc));
+            localStorage.setItem('mygram_is_logged', 'true');
+            showToast('تم تسجيل الدخول بنجاح!');
+            setTimeout(() => { window.location.href = 'home.html'; }, 600);
+        }
+        function handleRegister() {
+            handleLogin();
         }
     </script>
 </body>
