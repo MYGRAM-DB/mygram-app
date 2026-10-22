@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - المنصة العالمية الشاملة</title>
+    <title>MYGRAM - Global Application</title>
     <style>
         :root {
             --bg-main: #0b1120;
             --card-bg: #152238;
             --primary: #38bdf8;
-            --primary-gradient: linear-gradient(135deg, #0284c7, #38bdf8);
+            --primary-hover: #0284c7;
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
             --border: #1e293b;
+            --btn-bg: #1e293b;
             --online-green: #22c55e;
             --ad-gold: #f59e0b;
         }
@@ -22,11 +23,12 @@
             --text-main: #0f172a;
             --text-sub: #64748b;
             --border: #cbd5e1;
+            --btn-bg: #e2e8f0;
         }
 
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding-top: 65px; padding-bottom: 75px; transition: 0.3s; }
         
-        /* الهيدر الفاخر القابل للإخفاء */
+        /* الهيدر العلوي الذكي القابل للإخفاء */
         .header { display: flex; justify-content: space-between; align-items: center; background: rgba(21, 34, 56, 0.95); backdrop-filter: blur(10px); padding: 10px 18px; border-bottom: 1px solid var(--border); position: fixed; top: 0; width: 100%; z-index: 1000; box-sizing: border-box; transition: transform 0.3s ease; }
         .header.hide { transform: translateY(-100%); }
         .header-title-box { text-align: center; }
@@ -34,130 +36,187 @@
         .sub-slogan-header { font-size: 8px; color: var(--text-sub); }
         .btn-icon { background: none; border: none; color: var(--text-main); font-size: 18px; cursor: pointer; padding: 4px; }
 
-        /* شريط التنقل السفلي */
+        /* شريط التنقل السفلي السلس */
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(21, 34, 56, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); z-index: 1000; transition: transform 0.3s ease; }
         .nav-bar.hide { transform: translateY(100%); }
         .nav-item { color: var(--text-sub); font-size: 10px; text-align: center; cursor: pointer; flex: 1; font-weight: 600; }
         .nav-item.active { color: var(--primary); font-weight: 800; }
 
-        /* القائمة الجانبية الكاملة */
+        /* القائمة الجانبية المنسدلة */
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background: var(--card-bg); overflow-x: hidden; transition: 0.3s; padding-top: 60px; border-left: 1px solid var(--border); }
-        .sidebar a { padding: 13px 20px; text-decoration: none; font-size: 13px; color: var(--text-main); display: block; border-bottom: 1px solid var(--border); }
-        .sidebar a:hover { background: var(--primary); color: #0b1120; }
-        .sidebar .close-btn { position: absolute; top: 10px; left: 15px; font-size: 22px; cursor: pointer; color: var(--primary); }
+        html[dir="ltr"] .sidebar { left: 0; right: auto; border-right: 1px solid var(--border); border-left: none; }
+        .sidebar a { padding: 13px 20px; text-decoration: none; font-size: 13px; color: var(--text-main); display: block; border-bottom: 1px solid var(--border); transition: 0.2s; }
+        .sidebar a:hover { background: var(--primary); color: #0b1120; font-weight: bold; }
+        .sidebar .close-btn { position: absolute; top: 10px; font-size: 22px; cursor: pointer; color: var(--primary); }
+        html[dir="rtl"] .sidebar .close-btn { left: 15px; }
+        html[dir="ltr"] .sidebar .close-btn { right: 15px; }
 
         .container { max-width: 580px; margin: 10px auto; padding: 0 12px; }
         
-        /* شريط القصص */
+        /* شريط القصص (Stories) */
         .stories-bar { display: flex; gap: 10px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 5px; }
         .story-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 60px; }
-        .story-avatar-wrap { position: relative; width: 52px; height: 52px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--card-bg); }
+        .story-avatar-wrap { position: relative; width: 52px; height: 52px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, #0284c7, #38bdf8); }
+        .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--card-bg); display: flex; justify-content: center; align-items: center; font-size: 24px; background: var(--bg-main); }
         .story-name { font-size: 10px; color: var(--text-sub); margin-top: 4px; text-align: center; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         .quick-bar { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
-        .quick-pill { background: var(--card-bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; color: var(--primary); }
+        .quick-pill { background: var(--btn-bg); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; color: var(--primary); transition: 0.2s; }
+        .quick-pill:hover { background: var(--primary); color: #0b1120; }
 
-        .post-box, .post-card, .card-box { background: var(--card-bg); padding: 14px; border-radius: 16px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        .post-box textarea, .ad-box input, .ad-box select, .profile-edit-box input, .profile-edit-box select { width: 100%; background: var(--bg-main); border: 1px solid var(--border); color: var(--text-main); border-radius: 10px; padding: 10px; resize: none; box-sizing: border-box; font-family: inherit; font-size: 13px; margin-bottom: 8px; }
-        
-        .post-tools { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
-        .action-btn { background: var(--primary); color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 11px; }
-        .ai-btn { background: linear-gradient(135deg, #8b5cf6, #38bdf8); }
-        .ad-btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .post-box, .post-card, .card-box { background: var(--card-bg); padding: 16px; border-radius: 16px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .post-box textarea, input, select { width: 100%; background: var(--bg-main); border: 1px solid var(--border); color: var(--text-main); border-radius: 10px; padding: 10px; resize: none; box-sizing: border-box; font-family: inherit; font-size: 13px; margin-bottom: 8px; outline: none; }
+        .post-box textarea:focus, input:focus, select:focus { border-color: var(--primary); }
 
-        .post-author-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .avatar-container { position: relative; }
-        .mini-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
-        .online-dot { position: absolute; bottom: 2px; right: 2px; width: 8px; height: 8px; background: var(--online-green); border-radius: 50%; border: 1.5px solid var(--card-bg); }
+        .post-tools { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+        .action-btn { background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 11px; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .action-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .action-btn.btn-primary { background: var(--primary); color: #0b1120; border: none; font-weight: 800; }
+        .action-btn.btn-primary:hover { background: var(--primary-hover); color: #fff; }
+
+        .post-author-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .avatar-container { position: relative; width: 40px; height: 40px; }
+        .mini-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); background: var(--bg-main); display: flex; justify-content: center; align-items: center; font-size: 20px; }
+        .online-dot { position: absolute; bottom: 0; right: 0; width: 9px; height: 9px; background: var(--online-green); border-radius: 50%; border: 1.5px solid var(--card-bg); }
         .post-author-info { flex: 1; font-weight: bold; color: var(--primary); font-size: 13px; }
         .sponsored-tag { background: rgba(245, 158, 11, 0.15); color: var(--ad-gold); border: 1px solid var(--ad-gold); padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; margin-left: 5px; }
 
+        .profile-avatar-big { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); margin: 0 auto 10px; display: flex; justify-content: center; align-items: center; font-size: 50px; background: var(--bg-main); position: relative; overflow: hidden; }
+        .profile-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
+
         .post-text { font-size: 13px; line-height: 1.5; margin-bottom: 8px; white-space: pre-line; }
-        .read-more-btn { color: var(--primary); cursor: pointer; font-weight: bold; font-size: 12px; }
-        
         .post-image-container { position: relative; overflow: hidden; border-radius: 10px; margin-top: 8px; }
-        .post-image { width: 100%; max-height: 350px; object-fit: cover; display: block; border-radius: 10px; }
+        .post-image { width: 100%; max-height: 350px; object-fit: cover; display: block; border-radius: 10px; margin-top: 8px; }
         .media-blur { filter: blur(25px); }
         .sensitive-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; text-align: center; padding: 15px; box-sizing: border-box; }
 
-        .post-actions { display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; font-size: 11px; color: var(--text-sub); }
+        .post-actions { display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; font-size: 11px; color: var(--text-sub); }
         .action-item { cursor: pointer; display: flex; align-items: center; gap: 4px; }
         .action-item:hover { color: var(--primary); }
 
-        .comments-section { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px; }
-        .comment-item { font-size: 11px; background: var(--bg-main); padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; }
-        .comment-input-box { display: flex; gap: 5px; margin-top: 6px; }
-        .comment-input-box input { flex: 1; background: var(--bg-main); border: 1px solid var(--border); color: var(--text-main); padding: 5px 8px; border-radius: 6px; font-size: 11px; }
-
         .chat-container { display: flex; flex-direction: column; height: 55vh; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; background: var(--bg-main); border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .chat-msg { margin-bottom: 8px; padding: 8px 10px; border-radius: 8px; max-width: 80%; font-size: 12px; line-height: 1.4; }
-        .chat-msg.user { background: var(--primary); color: #fff; margin-left: auto; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; background: var(--bg-main); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .chat-msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 12px; line-height: 1.4; }
+        .chat-msg.user { background: var(--primary); color: #0b1120; font-weight: 600; margin-left: auto; }
         .chat-msg.peer { background: var(--card-bg); border: 1px solid var(--border); margin-right: auto; }
-        .chat-input-box { display: flex; gap: 6px; }
-        .chat-input-box input { flex: 1; background: var(--bg-main); border: 1px solid var(--border); color: var(--text-main); padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 0; }
 
+        .tab-sub-bar { display: flex; gap: 6px; margin-bottom: 12px; }
+        .tab-sub-btn { flex: 1; padding: 8px; text-align: center; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; cursor: pointer; color: var(--text-main); font-weight: 600; }
+        .tab-sub-btn.active { background: var(--primary); color: #0b1120; font-weight: 800; border-color: var(--primary); }
+
+        .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #0b1120; padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 3000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .toast.show { opacity: 1; }
+
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
         .group-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
         .group-name { color: var(--text-main); font-weight: bold; font-size: 12px; }
-
-        .tab-sub-bar { display: flex; gap: 5px; margin-bottom: 10px; }
-        .tab-sub-btn { flex: 1; padding: 6px; text-align: center; background: var(--bg-main); border: 1px solid var(--border); border-radius: 6px; font-size: 11px; cursor: pointer; color: var(--text-main); }
-        .tab-sub-btn.active { background: var(--primary); color: #fff; font-weight: bold; }
-
-        .tag-pill { display: inline-block; background: var(--bg-main); border: 1px solid var(--border); padding: 3px 8px; border-radius: 12px; font-size: 11px; color: var(--primary); margin: 2px; }
-
-        .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--primary-gradient); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 3000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-        .toast.show { opacity: 1; }
     </style>
 </head>
 <body id="pageBody">
 
-    <div class="toast" id="toastMsg">تمت العملية بنجاح!</div>
+    <div class="toast" id="toastMsg"></div>
 
-    <!-- القائمة الجانبية الشاملة -->
+    <!-- القائمة الجانبية -->
     <div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="close-btn" onclick="closeSidebar()">&times;</a>
-        <a href="#" onclick="switchTab('feed'); closeSidebar();">🏠 ماذا يدور الآن؟</a>
-        <a href="#" onclick="switchTab('ads_manager'); closeSidebar();">📣 مدير الإعلانات (MYGRAM Ads)</a>
-        <a href="#" onclick="switchTab('profile'); closeSidebar();">👤 الملف الشخصي والبيانات الشاملة</a>
-        <a href="#" onclick="switchTab('news'); closeSidebar();">🌐 MYGRAM NEWS</a>
-        <a href="#" onclick="switchTab('friends'); closeSidebar();">👥 اقتراحات وصداقات</a>
-        <a href="#" onclick="switchTab('groups'); closeSidebar();">🛡️ MYGRAM GROUPS</a>
-        <a href="#" onclick="switchTab('channels'); closeSidebar();">📢 MYGRAM CHANNELS</a>
-        <a href="#" onclick="logout();">🚪 تسجيل الخروج</a>
+        <a href="#" onclick="switchTab('feed'); closeSidebar();" id="menuFeed">🏠 ماذا يدور الآن؟</a>
+        <a href="#" onclick="switchTab('create_page'); closeSidebar();" id="menuPage">📄 إنشاء صفحة جديدة</a>
+        <a href="#" onclick="switchTab('create_group'); closeSidebar();" id="menuGroup">👥 إنشاء مجموعة جديدة</a>
+        <a href="#" onclick="switchTab('ads_manager'); closeSidebar();" id="menuAds">📣 مدير الإعلانات (MYGRAM Ads)</a>
+        <a href="#" onclick="switchTab('profile'); closeSidebar();" id="menuProfile">👤 الملف الشخصي والبيانات</a>
+        <a href="#" onclick="switchTab('news'); closeSidebar();" id="menuNews">🌐 MYGRAM NEWS</a>
+        <a href="#" onclick="logout();" id="menuLogout">🚪 تسجيل الخروج</a>
     </div>
 
     <!-- الهيدر العلوي -->
     <div class="header" id="mainHeader">
         <button class="btn-icon" onclick="openSidebar()">☰</button>
         <div class="header-title-box">
-            <h2 id="appTitle">ماذا يدور الآن؟</h2>
+            <h2 id="appTitle">MYGRAM</h2>
             <div class="sub-slogan-header">Everything you need is here</div>
         </div>
-        <button class="btn-icon" onclick="toggleTheme()">🌓</button>
+        <div style="display:flex; gap:5px; align-items:center;">
+            <select id="globalLangSelect" onchange="changeLanguage(this.value)" style="background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); border-radius:6px; font-size:10px; padding:3px 5px; margin:0; outline:none;">
+            </select>
+            <button class="btn-icon" onclick="toggleTheme()">🌓</button>
+        </div>
     </div>
 
-    <!-- المحتوى الرئيسي -->
     <div class="container" id="mainContent"></div>
 
     <!-- شريط التنقل السفلي -->
     <div class="nav-bar" id="mainNavBar">
-        <div class="nav-item active" onclick="switchTab('feed', this)">ما يدور</div>
-        <div class="nav-item" onclick="switchTab('ai', this)">المساعد AI</div>
-        <div class="nav-item" onclick="switchTab('chats', this)">CHAT</div>
-        <div class="nav-item" onclick="switchTab('twits', this)">TWITS</div>
-        <div class="nav-item" onclick="switchTab('profile', this)">حسابي</div>
+        <div class="nav-item active" id="navFeed" onclick="switchTab('feed', this)">ما يدور</div>
+        <div class="nav-item" id="navAi" onclick="switchTab('ai', this)">المساعد AI</div>
+        <div class="nav-item" id="navChat" onclick="switchTab('chats', this)">CHAT</div>
+        <div class="nav-item" id="navTwits" onclick="switchTab('twits', this)">TWITS</div>
+        <div class="nav-item" id="navProfile" onclick="switchTab('profile', this)">حسابي</div>
     </div>
 
-    <video id="webcamVideo" style="display:none;" autoplay playsinline></video>
-
     <script>
-        let currentUser = localStorage.getItem('mygram_username') || 'مستخدم مجهول';
+        const globalLanguages = [
+            {code:"ar", name:"العربية", rtl:true}, {code:"en", name:"English", rtl:false},
+            {code:"fr", name:"Français", rtl:false}, {code:"de", name:"Deutsch", rtl:false},
+            {code:"es", name:"Español", rtl:false}, {code:"tr", name:"Türkçe", rtl:false},
+            {code:"ru", name:"Русский", rtl:false}, {code:"zh", name:"中文", rtl:false},
+            {code:"ja", name:"日本語", rtl:false}, {code:"ko", name:"한국어", rtl:false},
+            {code:"it", name:"Italiano", rtl:false}, {code:"pt", name:"Português", rtl:false},
+            {code:"hi", name:"हिन्दी", rtl:false}, {code:"fa", name:"فارسی", rtl:true},
+            {code:"ur", name:"اردو", rtl:true}, {code:"nl", name:"Nederlands", rtl:false},
+            {code:"sv", name:"Svenska", rtl:false}, {code:"pl", name:"Polski", rtl:false},
+            {code:"uk", name:"Українська", rtl:false}, {code:"ro", name:"Română", rtl:false},
+            {code:"el", name:"Ελληνικά", rtl:false}, {code:"cs", name:"Čeština", rtl:false},
+            {code:"hu", name:"Magyar", rtl:false}, {code:"id", name:"Bahasa Indonesia", rtl:false},
+            {code:"th", name:"ไทย", rtl:false}, {code:"vi", name:"Tiếng Việt", rtl:false},
+            {code:"he", name:"עברית", rtl:true}, {code:"da", name:"Dansk", rtl:false},
+            {code:"fi", name:"Suomi", rtl:false}, {code:"no", name:"Norsk", rtl:false},
+            {code:"sk", name:"Slovenčina", rtl:false}, {code:"bg", name:"Български", rtl:false},
+            {code:"hr", name:"Hrvatski", rtl:false}, {code:"lt", name:"Lietuvių", rtl:false},
+            {code:"sl", name:"Slovenščina", rtl:false}, {code:"et", name:"Eesti", rtl:false},
+            {code:"lv", name:"Latviešu", rtl:false}, {code:"ms", name:"Bahasa Melayu", rtl:false},
+            {code:"fil", name:"Filipino", rtl:false}, {code:"sw", name:"Kiswahili", rtl:false},
+            {code:"sq", name:"Shqip", rtl:false}, {code:"az", name:"Azərbaycan", rtl:false},
+            {code:"bs", name:"Bosanski", rtl:false}, {code:"ka", name:"ქართული", rtl:false},
+            {code:"hy", name:"Հայերեն", rtl:false}, {code:"kk", name:"Қазақша", rtl:false},
+            {code:"uz", name:"Oʻzbekcha", rtl:false}, {code:"mn", name:"Монгол", rtl:false},
+            {code:"bn", name:"বাংলা", rtl:false}, {code:"ta", name:"தமிழ்", rtl:false},
+            {code:"te", name:"తెలుగు", rtl:false}, {code:"mr", name:"मराठी", rtl:false},
+            {code:"gu", name:"ગુજરાતી", rtl:false}, {code:"kn", name:"```html
+            {code:"kn", name:"ಕನ್ನಡ", rtl:false}, {code:"ml", name:"മലയാളം", rtl:false},
+            {code:"pa", name:"ਪੰਜਾਬੀ", rtl:false}, {code:"si", name:"සිංහල", rtl:false},
+            {code:"am", name:"አማርኛ", rtl:false}, {code:"km", name:"ភាសាខ្មែរ", rtl:false},
+            {code:"lo", name:"ພາສາລາວ", rtl:false}, {code:"my", name:"မြန်မာဘာသာ", rtl:false},
+            {code:"ne", name:"नेपाली", rtl:false}, {code:"af", name:"Afrikaans", rtl:false},
+            {code:"eu", name:"Euskara", rtl:false}, {code:"gl", name:"Galego", rtl:false},
+            {code:"ca", name:"Català", rtl:false}, {code:"is", name:"Íslenska", rtl:false},
+            {code:"mt", name:"Malti", rtl:false}, {code:"ga", name:"Gaeilge", rtl:false},
+            {code:"cy", name:"Cymraeg", rtl:false}
+        ];
+
+        let currentUser = localStorage.getItem('mygram_username') || 'Louay Chaghal';
+        let userGender = localStorage.getItem('mygram_gender') || 'male';
         let userAge = parseInt(localStorage.getItem('mygram_age') || '18');
         let currentTab = 'feed';
         let chatSubTab = 'contacts';
         let attachedMedia = '';
+
+        function populateLangSelect() {
+            const select = document.getElementById('globalLangSelect');
+            select.innerHTML = globalLanguages.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
+            let current = localStorage.getItem('mygram_lang') || 'ar';
+            select.value = current;
+            changeLanguage(current, false);
+        }
+
+        function changeLanguage(lang, save = true) {
+            if(save) localStorage.setItem('mygram_lang', lang);
+            const langObj = globalLanguages.find(l => l.code === lang) || globalLanguages[0];
+            const htmlTag = document.getElementById('htmlRoot');
+            htmlTag.setAttribute('lang', lang);
+            htmlTag.setAttribute('dir', langObj.rtl ? 'rtl' : 'ltr');
+            showToast('Language Updated / تم تغيير اللغة');
+            renderContent();
+        }
 
         function showToast(msg) {
             const t = document.getElementById('toastMsg');
@@ -166,7 +225,6 @@
             setTimeout(() => t.classList.remove('show'), 2000);
         }
 
-        // إخفاء وإظهار الهيدر والشريط السفلي عند التمرير
         let lastScrollTop = 0;
         window.addEventListener('scroll', function() {
             let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -186,7 +244,7 @@
         function toggleTheme() {
             const body = document.getElementById('pageBody');
             body.classList.toggle('light-mode');
-            showToast('تم تغيير المظهر بنجاح!');
+            showToast('Theme Changed / تم تغيير المظهر');
         }
 
         function switchTab(tab, el) {
@@ -200,26 +258,25 @@
 
         function renderContent() {
             const content = document.getElementById('mainContent');
-            let userAvatar = localStorage.getItem('mygram_avatar') || 'https://via.placeholder.com/100';
+            let userAvatarImg = localStorage.getItem('mygram_avatar');
+            let genderIcon = userGender === 'female' ? '👩' : '👨';
 
             if (currentTab === 'feed') {
                 document.getElementById('appTitle').innerText = 'ماذا يدور الآن؟';
                 content.innerHTML = `
                     <div class="stories-bar">
                         <div class="story-item" onclick="showToast('رفع قصة جديدة...')">
-                            <div class="story-avatar-wrap"><img src="${userAvatar}" class="story-avatar"></div>
+                            <div class="story-avatar-wrap">
+                                <div class="story-avatar">${userAvatarImg ? `<img src="${userAvatarImg}" style="width:100%;height:100%;border-radius:50%;">` : genderIcon}</div>
+                            </div>
                             <div class="story-name">قصتك +</div>
-                        </div>
-                        <div class="story-item" onclick="showToast('عرض قصة أحمد')">
-                            <div class="story-avatar-wrap"><img src="https://via.placeholder.com/60" class="story-avatar"></div>
-                            <div class="story-name">أحمد</div>
                         </div>
                     </div>
 
                     <div class="quick-bar">
-                        <div class="quick-pill" onclick="showToast('فتح الريلز...')">🎬 ريلز</div>
-                        <div class="quick-pill" onclick="showToast('فتح الشورت...')">📱 شورت</div>
-                        <div class="quick-pill" onclick="showToast('بدء البث المباشر...')">🔴 بث مباشر</div>
+                        <div class="quick-pill" onclick="showToast('🎬 Reels')">🎬 ريلز</div>
+                        <div class="quick-pill" onclick="showToast('📱 Shorts')">📱 شورت</div>
+                        <div class="quick-pill" onclick="showToast('🔴 Live')">🔴 بث مباشر</div>
                         <div class="quick-pill" onclick="switchTab('ads_manager')">📣 إعلان ممول</div>
                     </div>
 
@@ -228,76 +285,44 @@
                         <div id="mediaPreview"></div>
                         <div class="post-tools">
                             <label class="action-btn" style="cursor:pointer;">📷 الجاليري<input type="file" accept="image/*,video/*" style="display:none" onchange="handleMediaUpload(event)"></label>
-                            <button class="action-btn" onclick="captureLiveCamera()">🎥 كاميرا مباشرة</button>
-                            <button class="action-btn ai-btn" onclick="enhanceTextWithAI()">✨ تحسين AI</button>
+                            <button class="action-btn" onclick="showToast('🎥 Live Cam')">🎥 كاميرا مباشرة</button>
+                            <button class="action-btn" onclick="enhanceTextWithAI()">✨ تحسين AI</button>
                             <label style="font-size:10px; margin-right:auto; cursor:pointer;"><input type="checkbox" id="sensitiveCheck"> +18</label>
-                            <button class="action-btn" onclick="addPost()">نشر</button>
+                            <button class="action-btn btn-primary" onclick="addPost()">نشر</button>
                         </div>
                     </div>
                     <div id="postsContainer"></div>
                 `;
                 loadPosts();
-            } else if (currentTab === 'ads_manager') {
-                document.getElementById('appTitle').innerText = 'مدير الإعلانات (MYGRAM Ads)';
+            } else if (currentTab === 'profile') {
+                document.getElementById('appTitle').innerText = 'الملف الشخصي والبيانات';
+                let relation = localStorage.getItem('mygram_relation') || 'مرتبطة / مرتبط';
+                let hobbies = localStorage.getItem('mygram_hobbies') || 'الرياضة، البرمجة، السفر';
+                let family = localStorage.getItem('mygram_family') || 'لا يوجد أقارب مضافين';
+
                 content.innerHTML = `
-                    <div class="card-box ad-box">
-                        <h3 style="color:var(--ad-gold); margin-top:0; font-size:15px;">📣 إنشاء حملة إعلانية ممولة جديدة</h3>
-                        <p style="font-size:11px; color:var(--text-sub);">وصل نشاطك التجاري لآلاف المستخدمين.</p>
-                        <input type="text" id="adTitle" placeholder="اسم النشاط التجاري...">
-                        <textarea id="adText" placeholder="نص الإعلان الممول..." style="height:60px;"></textarea>
-                        <select id="adGoal">
-                            <option value="sales">🎯 زيادة المبيعات والزيارات</option>
-                            <option value="followers">👥 زيادة المتابعين</option>
-                        </select>
-                        <select id="adBudget">
-                            <option value="5">💵 5$ يومياً</option>
-                            <option value="20">💵 20$ يومياً</option>
-                        </select>
-                        <div id="adMediaPreview"></div>
-                        <div style="display:flex; gap:8px; margin-top:8px;">
-                            <label class="action-btn ad-btn-gold" style="cursor:pointer;">📷 صورة الإعلان<input type="file" accept="image/*" style="display:none" onchange="handleAdMediaUpload(event)"></label>
-                            <button class="action-btn ad-btn-gold" style="flex:1;" onclick="createSponsoredAd()">🚀 إطلاق الحملة الآن</button>
+                    <div class="card-box" style="text-align:center;">
+                        <div class="profile-avatar-big">
+                            ${userAvatarImg ? `<img src="${userAvatarImg}">` : genderIcon}
                         </div>
-                    </div>
-                `;
-            } else if (currentTab === 'news') {
-                document.getElementById('appTitle').innerText = 'MYGRAM NEWS';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">🌐 الأخبار العالمية والسياسية والاقتصادية</h3>
-                        <div class="tab-sub-bar" style="margin-top:10px;">
-                            <div class="tab-sub-btn active">الكل</div>
-                            <div class="tab-sub-btn">سياسة</div>
-                            <div class="tab-sub-btn">اقتصاد</div>
-                            <div class="tab-sub-btn">رياضة</div>
-                        </div>
-                        <div class="group-item"><span class="group-name">📈 الأسواق العالمية تسجل انتعاشاً ملحوظاً اليوم.</span></div>
-                        <div class="group-item"><span class="group-name">⚽ قمة كروية مرتقبة في المسابقات الأوروبية.</span></div>
-                    </div>
-                `;
-            } else if (currentTab === 'friends') {
-                document.getElementById('appTitle').innerText = 'اقتراحات وصداقات';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">👥 خوارزمية الاقتراحات الجغرافية والأصدقاء</h3>
-                        <div class="group-item">
-                            <span class="group-name">👤 سامر العلي (صديق مشترك)</span>
-                            <button class="action-btn" onclick="showToast('تم إرسال طلب الصداقة!')">إضافة</button>
-                        </div>
-                    </div>
-                `;
-            } else if (currentTab === 'ai') {
-                document.getElementById('appTitle').innerText = 'المساعد الذكي AI';
-                content.innerHTML = `
-                    <div class="card-box chat-container">
-                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">مساعد MYGRAM الذكي الشامل</h3>
-                        <div class="chat-messages" id="aiMessages">
-                            <div class="chat-msg peer">أهلاً بك! أنا مساعدك الذكي لكل الأفكار والتحليلات. كيف أخدمك اليوم؟</div>
-                        </div>
-                        <div class="chat-input-box">
-                            <input type="text" id="aiInput" placeholder="اكتب سؤالك...">
-                            <button class="action-btn" onclick="sendAiMessage()">إرسال</button>
-                        </div>
+                        <h3 style="margin:5px 0;">${currentUser}</h3>
+                        <p style="font-size:11px; color:var(--text-sub); margin-bottom:15px;">العمر: ${userAge} سنة</p>
+
+                        <div class="info-row"><span>الجندر (الهوية):</span> <b>${userGender === 'female' ? 'أنثى 👩' : 'ذكر 👨'}</b></div>
+                        <div class="info-row"><span>الحالة الاجتماعية:</span> <b>${relation}</b></div>
+                        <div class="info-row"><span>أفراد العائلة:</span> <b>${family}</b></div>
+                        <div class="info-row"><span>الهوايات:</span> <b>${hobbies}</b></div>
+
+                        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+                        
+                        <h4 style="margin:0 0 10px; color:var(--primary); font-size:12px; text-align:right;">تعديل البيانات السريعة:</h4>
+                        <input type="text" id="editHobbies" placeholder="تعديل الهوايات والاهتمامات..." value="${hobbies}">
+                        <input type="text" id="editFamily" placeholder="تعديل أفراد العائلة..." value="${family}">
+                        <label class="action-btn" style="width:100%; justify-content:center; margin-bottom:8px; cursor:pointer;">
+                            🖼️ تحميل / تغيير صورة البروفايل
+                            <input type="file" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
+                        </label>
+                        <button class="action-btn btn-primary" onclick="saveProfileDetails()" style="width:100%; justify-content:center;">حفظ التعديلات</button>
                     </div>
                 `;
             } else if (currentTab === 'chats') {
@@ -305,36 +330,46 @@
                 content.innerHTML = `
                     <div class="card-box chat-container">
                         <div class="tab-sub-bar">
-                            <div class="tab-sub-btn ${chatSubTab === 'contacts' ? 'active' : ''}" onclick="chatSubTab='contacts'; renderContent();">جهات الاتصال (أرقام)</div>
-                            <div class="tab-sub-btn ${chatSubTab === 'friends' ? 'active' : ''}" onclick="chatSubTab='friends'; renderContent();">أصدقاء المنصة</div>
+                            <div class="tab-sub-btn ${chatSubTab === 'contacts' ? 'active' : ''}" onclick="chatSubTab='contacts'; renderContent();">📱 جهات الاتصال (أرقام الهواتف)</div>
+                            <div class="tab-sub-btn ${chatSubTab === 'friends' ? 'active' : ''}" onclick="chatSubTab='friends'; renderContent();">👥 أصدقاء المنصة</div>
                         </div>
-                        <div style="margin-bottom:8px; display:flex; gap:6px;">
-                            <input type="text" id="phoneChatInput" placeholder="أدخل رقم الهاتف مع رمز الدولة..." style="flex:1; background:var(--bg-main); border:1px solid var(--border); color:var(--text-main); padding:6px; border-radius:6px; font-size:12px;">
-                            <button class="action-btn" onclick="startPhoneChat()" style="margin-top:0; font-size:11px;">محادثة</button>
-                        </div>
-                        <div class="chat-messages" id="chatMessages">
-                            <div class="chat-msg peer">النظام: ابدأ الدردشة الفورية الآمنة الآن.</div>
-                        </div>
+                        ${chatSubTab === 'contacts' ? `
+                            <div style="margin-bottom:10px; display:flex; gap:6px;">
+                                <input type="text" id="phoneChatInput" placeholder="أدخل رقم الهاتف مع رمز الدولة..." style="flex:1; margin-bottom:0;">
+                                <button class="action-btn btn-primary" onclick="startPhoneChat()">بدء محادثة</button>
+                            </div>
+                            <div class="chat-messages">
+                                <div class="chat-msg peer">جهات الاتصال المحفوظة تفاعلية ومستقلة تماماً. أخل رقم أي هاتف لبدء محادثة فورية!</div>
+                            </div>
+                        ` : `
+                            <div class="chat-messages">
+                                <div class="chat-msg peer">محادثات الأصدقاء المضافين داخل المنصة.</div>
+                            </div>
+                        `}
                         <div class="chat-input-box">
-                            <input type="text" id="chatInput" placeholder="اكتب رسالة...">
-                            <button class="action-btn" onclick="sendChatMessage()">إرسال</button>
+                            <input type="text" id="chatInput" placeholder="اكتب رسالتك...">
+                            <button class="action-btn btn-primary" onclick="showToast('تم إرسال الرسالة!')">إرسال</button>
                         </div>
                     </div>
                 `;
-            } else if (currentTab === 'groups') {
-                document.getElementById('appTitle').innerText = 'MYGRAM GROUPS';
+            } else if (currentTab === 'create_page') {
+                document.getElementById('appTitle').innerText = 'إنشاء صفحة جديدة';
                 content.innerHTML = `
                     <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">مجموعات البيع والشراء والاهتمامات</h3>
-                        <div class="group-item"><span class="group-name">🛒 سوق التجارة العامة</span><button class="action-btn" onclick="showToast('تم الانضمام!')">انضمام</button></div>
+                        <h3 style="color:var(--primary); margin-top:0;">📄 إنشاء صفحة عامة / تجارية</h3>
+                        <input type="text" id="pageName" placeholder="اسم الصفحة...">
+                        <textarea placeholder="وصف الصفحة والنشاط..."></textarea>
+                        <button class="action-btn btn-primary" style="width:100%; justify-content:center;" onclick="showToast('تم إنشاء الصفحة بنجاح!'); switchTab('feed');">إنشاء الصفحة</button>
                     </div>
                 `;
-            } else if (currentTab === 'channels') {
-                document.getElementById('appTitle').innerText = 'MYGRAM CHANNELS';
+            } else if (currentTab === 'create_group') {
+                document.getElementById('appTitle').innerText = 'إنشاء مجموعة جديدة';
                 content.innerHTML = `
                     <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">القنوات التفاعلية والمتابعة</h3>
-                        <div class="group-item"><span class="group-name">📢 قناة الأخبار العاجلة (1.2M)</span><button class="action-btn" onclick="showToast('تمت المتابعة!')">متابعة</button></div>
+                        <h3 style="color:var(--primary); margin-top:0;">👥 إنشاء مجموعة مجتمعية</h3>
+                        <input type="text" id="groupName" placeholder="اسم المجموعة...">
+                        <select><option>عامة (يمكن للجميع الانضمام)</option><option>خاصة</option></select>
+                        <button class="action-btn btn-primary" style="width:100%; justify-content:center;" onclick="showToast('تم إنشاء المجموعة بنجاح!'); switchTab('feed');">إنشاء المجموعة</button>
                     </div>
                 `;
             } else if (currentTab === 'twits') {
@@ -342,69 +377,69 @@
                 content.innerHTML = `
                     <div class="post-box">
                         <textarea id="twitText" placeholder="خواطر قصيرة..." maxlength="280"></textarea>
-                        <button class="action-btn" onclick="addTwit()" style="margin-top:5px; float:left;">نشر خاطرة ⚡</button>
+                        <button class="action-btn btn-primary" onclick="addTwit()" style="margin-top:5px; float:left;">نشر خاطرة ⚡</button>
                         <div style="clear:both;"></div>
                     </div>
                     <div id="twitsContainer"></div>
                 `;
                 loadTwits();
-            } else if (currentTab === 'profile') {
-                document.getElementById('appTitle').innerText = 'الملف الشخصي والبيانات';
-                let gender = localStorage.getItem('mygram_gender') || 'غير محدد';
-                let relation = localStorage.getItem('mygram_relation') || 'غير محدد';
-                let hobbies = localStorage.getItem('mygram_hobbies') || 'الرياضة، البرمجة، السفر';
-                let family = localStorage.getItem('mygram_family') || 'لا يوجد أقارب مضافين';
-
+            } else if (currentTab === 'ai') {
+                document.getElementById('appTitle').innerText = 'المساعد الذكي AI';
                 content.innerHTML = `
-                    <div class="card-box" style="text-align:center;">
-                        <img src="${userAvatar}" class="profile-img" style="width:90px; height:90px; border-radius:50%; border:3px solid var(--primary);">
-                        <h3 style="margin:8px 0 3px;">${currentUser}</h3>
-                        <p style="font-size:11px; color:var(--text-sub);">العمر: ${userAge} سنة</p>
-                        
-                        <hr style="border:0; border-top:1px solid var(--border); margin:12px 0;">
-
-                        <div style="text-align:right; font-size:12px; line-height:1.8;">
-                            <div><b>🚻 الجندر (الهوية):</b> ${gender === 'male' ? 'ذكر' : (gender === 'female' ? 'أنثى' : 'تخصيص/أخرى')}</div>
-                            <div><b>❤️ الحالة الاجتماعية:</b> ${relation === 'single' ? 'أعزب / عزباء' : (relation === 'married' ? 'متزوج/ة' : 'مرتبط/ة')}</div>
-                            <div><b>👨‍👩‍👧‍👦 أفراد العائلة:</b> ${family}</div>
-                            <div><b>🎨 الهوايات والاهتمامات:</b></div>
-                            <div style="margin-top:4px;">
-                                ${hobbies.split('،').map(h => `<span class="tag-pill">#${h.trim()}</span>`).join('')}
-                            </div>
+                    <div class="card-box chat-container">
+                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">مساعد MYGRAM الذكي الشامل</h3>
+                        <div class="chat-messages" id="aiMessages">
+                            <div class="chat-msg peer">أهلاً بك يا ${currentUser}! أنا عقلك الذكي المساعد. كيف أمكنني خدمتك اليوم؟</div>
                         </div>
-
-                        <hr style="border:0; border-top:1px solid var(--border); margin:12px 0;">
-                        
-                        <input type="text" id="editHobbies" placeholder="هواياتك (مفصولة بفواصل)..." value="${hobbies}">
-                        <input type="text" id="editFamily" placeholder="أفراد العائلة..." value="${family}">
-                        <button class="action-btn" onclick="saveProfileDetails()" style="width:100%; margin-top:5px;">حفظ التعديلات</button>
+                        <div class="chat-input-box">
+                            <input type="text" id="aiInput" placeholder="اكتب سؤالك للذكاء الاصطناعي...">
+                            <button class="action-btn btn-primary" onclick="sendAiMessage()">إرسال</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'ads_manager') {
+                document.getElementById('appTitle').innerText = 'مدير الإعلانات الممولة';
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--ad-gold); margin-top:0;">📣 إطلاق إعلان ممول جديد (MYGRAM Ads)</h3>
+                        <input type="text" id="adTitle" placeholder="عنوان الحملة أو النشاط التجاري...">
+                        <textarea id="adText" placeholder="نص الإعلان الممول..."></textarea>
+                        <button class="action-btn btn-primary" style="width:100%; justify-content:center; background:var(--ad-gold); color:#0b1120;" onclick="createSponsoredAd()">🚀 إطلاق الإعلان الممول</button>
+                    </div>
+                `;
+            } else if (currentTab === 'news') {
+                document.getElementById('appTitle').innerText = 'MYGRAM NEWS';
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">🌐 الأخبار العالمية والسياسية والاقتصادية المباشرة</h3>
+                        <div class="group-item"><span class="group-name">📈 الأسواق العالمية تسجل مؤشرات إيجابية.</span></div>
+                        <div class="group-item"><span class="group-name">💻 تقنيات الذكاء الاصطناعي تشهد قفزات نوعية.</span></div>
                     </div>
                 `;
             }
         }
 
-        let adMedia = '';
-        function handleAdMediaUpload(e) {
+        function createSponsoredAd() {
+            const title = document.getElementById('adTitle').value.trim();
+            const text = document.getElementById('adText').value.trim();
+            if(!title || !text) { showToast('أدخل عنوان الإعلان والنص!'); return; }
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            posts.unshift({ id: Date.now(), author: title, isSponsored: true, content: text, likes: 0, views: 1 });
+            localStorage.setItem('mygram_posts', JSON.stringify(posts));
+            showToast('تم إطلاق الإعلان الممول بنجاح!');
+            switchTab('feed');
+        }
+
+        function uploadAvatar(e) {
             const file = e.target.files[0];
             if(!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
-                adMedia = evt.target.result;
-                document.getElementById('adMediaPreview').innerHTML = `<img src="${adMedia}" class="post-image">`;
+                localStorage.setItem('mygram_avatar', evt.target.result);
+                showToast('تم تحديث الصورة الشخصية!');
+                renderContent();
             };
             reader.readAsDataURL(file);
-        }
-
-        function createSponsoredAd() {
-            const title = document.getElementById('adTitle').value.trim();
-            const text = document.getElementById('adText').value.trim();
-            if(!title || !text) { alert('أدخل العنوان والنص للإعلان!'); return; }
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts.unshift({ id: Date.now(), author: title, isSponsored: true, content: text, image: adMedia, likes: 0, views: 1, comments: [] });
-            localStorage.setItem('mygram_posts', JSON.stringify(posts));
-            adMedia = '';
-            showToast('تم إطلاق الحملة الإعلانية بنجاح!');
-            switchTab('feed');
         }
 
         function saveProfileDetails() {
@@ -412,33 +447,8 @@
             let family = document.getElementById('editFamily').value.trim();
             if(hobbies) localStorage.setItem('mygram_hobbies', hobbies);
             if(family) localStorage.setItem('mygram_family', family);
-            showToast('تم حفظ البيانات الشخصية بنجاح!');
+            showToast('تم حفظ التعديلات!');
             renderContent();
-        }
-
-        function enhanceTextWithAI() {
-            const input = document.getElementById('postText');
-            if(!input.value.trim()) { showToast('اكتب نصاً أولاً!'); return; }
-            input.value = "✨ " + input.value + " 🚀 #MYGRAM";
-            showToast('تم صياغة النص بلمسة AI!');
-        }
-
-        async function captureLiveCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const video = document.getElementById('webcamVideo');
-                video.srcObject = stream;
-                showToast('تم تشغيل الكاميرا!');
-                setTimeout(() => {
-                    let canvas = document.createElement('canvas');
-                    canvas.width = 300; canvas.height = 300;
-                    let ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0, 300, 300);
-                    attachedMedia = canvas.toDataURL('image/png');
-                    stream.getTracks().forEach(track => track.stop());
-                    document.getElementById('mediaPreview').innerHTML = `<img src="${attachedMedia}" class="post-image">`;
-                }, 1500);
-            } catch(err) { alert('تعذر الوصول للكاميرا!'); }
         }
 
         function handleMediaUpload(e) {
@@ -452,18 +462,25 @@
             reader.readAsDataURL(file);
         }
 
+        function enhanceTextWithAI() {
+            const input = document.getElementById('postText');
+            if(!input.value.trim()) { showToast('اكتب نصاً أولاً!'); return; }
+            input.value = "✨ " + input.value + " 🚀 #MYGRAM";
+            showToast('تم تحسين النص بالـ AI!');
+        }
+
         function addPost() {
             const text = document.getElementById('postText').value;
             const isSens = document.getElementById('sensitiveCheck') ? document.getElementById('sensitiveCheck').checked : false;
             if(!text.trim() && !attachedMedia) return;
 
             let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts.unshift({ id: Date.now(), author: currentUser, content: text, image: attachedMedia, sensitive: isSens, likes: 0, views: Math.floor(Math.random()*50)+1, comments: [] });
+            posts.unshift({ id: Date.now(), author: currentUser, content: text, image: attachedMedia, sensitive: isSens, likes: 0, views: 1 });
             localStorage.setItem('mygram_posts', JSON.stringify(posts));
 
             attachedMedia = '';
             document.getElementById('postText').value = '';
-            showToast('تم نشر المنشور بنجاح!');
+            showToast('تم النشر بنجاح!');
             loadPosts();
         }
 
@@ -472,17 +489,11 @@
             const container = document.getElementById('postsContainer');
             if(!container) return;
             let html = '';
+            let genderIcon = userGender === 'female' ? '👩' : '👨';
+            let userAvatarImg = localStorage.getItem('mygram_avatar');
 
             posts.forEach((p, idx) => {
-                let textContent = p.content;
-                let showMore = '';
-                if (p.content.length > 150) {
-                    textContent = p.content.substring(0, 150) + '...';
-                    showMore = `<span class="read-more-btn" onclick="alert('${p.content.replace(/'/g, "\\'")}')">عرض المزيد</span>`;
-                }
-
                 let sponsoredTag = p.isSponsored ? `<span class="sponsored-tag">ممول / Sponsored 📣</span>` : '';
-
                 let mediaHtml = '';
                 if (p.image) {
                     if (p.sensitive) {
@@ -491,7 +502,7 @@
                                 <img src="${p.image}" class="post-image media-blur" id="img_${idx}">
                                 <div class="sensitive-overlay" id="overlay_${idx}">
                                     <div style="font-size:12px; margin-bottom:5px;">⚠️ محتوى حساس (+18)</div>
-                                    <button class="action-btn" onclick="revealMedia(${idx})">عرض المحتوى</button>
+                                    <button class="action-btn btn-primary" onclick="revealMedia(${idx})">عرض المحتوى</button>
                                 </div>
                             </div>
                         `;
@@ -504,25 +515,16 @@
                     <div class="post-card">
                         <div class="post-author-row">
                             <div class="avatar-container">
-                                <img src="https://via.placeholder.com/50" class="mini-avatar">
+                                <div class="mini-avatar">${userAvatarImg ? `<img src="${userAvatarImg}" style="width:100%;height:100%;border-radius:50%;">` : genderIcon}</div>
                                 <div class="online-dot"></div>
                             </div>
                             <div class="post-author-info">${p.author} ${sponsoredTag}</div>
                         </div>
-                        <div class="post-text">${textContent} ${showMore}</div>
+                        <div class="post-text">${p.content}</div>
                         ${mediaHtml}
                         <div class="post-actions">
                             <span class="action-item" onclick="likePost(${idx})">❤️ إعجاب (${p.likes || 0})</span>
-                            <span class="action-item" onclick="toggleComments(${idx})">💬 تعليق (${p.comments ? p.comments.length : 0})</span>
-                            <span class="action-item">👁️ ${p.views || 1}</span>
-                            <span class="action-item" onclick="showToast('تم نسخ الرابط!')">🚀 مشاركة</span>
-                        </div>
-                        <div id="comments_box_${idx}" class="comments-section" style="display:none;">
-                            <div id="comment_list_${idx}"></div>
-                            <div class="comment-input-box">
-                                <input type="text" id="comm_in_${idx}" placeholder="اكتب تعليقاً...">
-                                <button class="action-btn" onclick="addComment(${idx})">إرسال</button>
-                            </div>
+                            <span class="action-item" onclick="showToast('تم نسخ رابط المنشور!')">🚀 مشاركة</span>
                         </div>
                     </div>
                 `;
@@ -532,39 +534,11 @@
 
         function revealMedia(idx) {
             if (userAge < 18) {
-                alert('عذراً، محتوى +18 محظور لمن هم أقل من 18 سنة!');
+                showToast('محتوى +18 محظور لمن هم أقل من 18 سنة!');
                 return;
             }
             document.getElementById(`img_${idx}`).classList.remove('media-blur');
             document.getElementById(`overlay_${idx}`).style.display = 'none';
-        }
-
-        function toggleComments(idx) {
-            const box = document.getElementById(`comments_box_${idx}`);
-            box.style.display = box.style.display === 'none' ? 'block' : 'none';
-            loadComments(idx);
-        }
-
-        function addComment(idx) {
-            const input = document.getElementById(`comm_in_${idx}`);
-            if(!input.value.trim()) return;
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            if(!posts[idx].comments) posts[idx].comments = [];
-            posts[idx].comments.push({ author: currentUser, text: input.value });
-            localStorage.setItem('mygram_posts', JSON.stringify(posts));
-            input.value = '';
-            showToast('تم إضافة التعليق!');
-            loadComments(idx);
-        }
-
-        function loadComments(idx) {
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            const list = document.getElementById(`comment_list_${idx}`);
-            let html = '';
-            (posts[idx].comments || []).forEach(c => {
-                html += `<div class="comment-item"><b>${c.author}:</b> ${c.text}</div>`;
-            });
-            list.innerHTML = html;
         }
 
         function likePost(idx) {
@@ -609,23 +583,16 @@
             }, 500);
         }
 
-        function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            if(!input.value.trim()) return;
-            const box = document.getElementById('chatMessages');
-            box.innerHTML += `<div class="chat-msg user">${input.value}</div>`;
-            input.value = '';
-            box.scrollTop = box.scrollHeight;
-        }
-
         function startPhoneChat() {
             const phone = document.getElementById('phoneChatInput').value.trim();
-            if(!phone) { alert('أدخل رقم الهاتف مع الرمز أولاً!'); return; }
-            alert('تم فتح قناة اتصال آمنة مع الرقم: ' + phone);
+            if(!phone) { showToast('أدخل رقم الهاتف مع الرمز أولاً!'); return; }
+            showToast('تم فتح محادثة آمنة مع: ' + phone);
             document.getElementById('phoneChatInput').value = '';
         }
 
-        window.onload = function() { renderContent(); };
+        window.onload = function() {
+            populateLangSelect();
+        };
 
         function logout() {
             localStorage.removeItem('mygram_username');
