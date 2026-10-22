@@ -1,0 +1,37 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Java
+      uses: android-actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+
+    - name: Build Webview Cordova APK
+      run: |
+        npm install -g cordova
+        cordova create myApp com.mygram.app MYGRAM
+        cd myApp
+        cordova platform add android
+        rm -rf www/*
+        cp ../index.html www/
+        cordova build android --debug
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: MYGRAM-APK
+        path: myApp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
