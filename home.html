@@ -3,372 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - النسخة العملاقة المتكاملة</title>
+    <title>MYGRAM - المنصة الذكية</title>
     <style>
-        :root{--bg:#0b1120;--card:#152238;--p:#38bdf8;--ink:#f8fafc;--mute:#94a3b8;--line:#1e293b;--red:#ef4444;--ok:#22c55e}
-        .light{--bg:#f1f5f9;--card:#fff;--ink:#0f172a;--mute:#64748b;--line:#cbd5e1}
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-top:60px;padding-bottom:70px;transition:0.3s}
+        :root {
+            --bg-color: #030712;
+            --card-bg: #111827;
+            --border-color: #1f2937;
+            --accent: #38bdf8;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* الهيدر العلوي */
-        .header{position:fixed;top:0;left:0;width:100%;height:60px;background:var(--card);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 15px;z-index:1000}
-        .logo{color:var(--p);font-size:18px;font-weight:900}
+        /* شريط التنقل العلوي الاحترافي */
+        header { background: rgba(17, 24, 39, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); position: fixed; top: 0; width: 100%; height: 65px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 1000; }
+        .logo { font-size: 20px; font-weight: 900; color: var(--accent); letter-spacing: 0.5px; }
         
-        /* القائمة الجانبية (Drawer) */
-        .sidebar{position:fixed;top:0;right:-280px;width:280px;height:100%;background:var(--card);border-left:1px solid var(--line);z-index:2000;transition:0.3s;padding-top:60px;box-shadow:-5px 0 25px rgba(0,0,0,0.5)}
-        .sidebar.open{right:0}
-        .sidebar a{padding:14px 20px;display:block;color:var(--ink);text-decoration:none;font-size:13px;border-bottom:1px solid var(--line);transition:0.2s}
-        .sidebar a:hover{background:var(--p);color:#06101d;font-weight:bold}
-        .close-sidebar{position:absolute;top:15px;left:15px;font-size:22px;cursor:pointer;color:var(--p);background:none;border:0}
+        /* حاوية المحتوى الأساسية */
+        main { max-width: 650px; margin: 85px auto 80px; padding: 0 15px; width: 100%; flex: 1; }
+        
+        /* بطاقات التصميم النظيفة */
+        .app-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+        .app-card h2 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--accent); }
+        
+        textarea { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 12px; padding: 14px; font-size: 14px; resize: none; min-height: 90px; outline: none; transition: 0.2s; }
+        textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
+        
+        .btn-primary { background-color: var(--accent); color: #030712; border: none; font-weight: 800; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        /* المحتوى العام */
-        .container{max-width:600px;margin:0 auto;padding:12px}
-        .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 4px 15px rgba(0,0,0,0.2)}
-        
-        input,textarea,select{width:100%;padding:10px 12px;margin-bottom:8px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:8px;font:inherit;font-size:13px}
-        textarea{resize:vertical;min-height:70px}
-        
-        button,.b{font:inherit;font-size:12px;cursor:pointer;border:1px solid var(--line);background:var(--line);color:var(--ink);border-radius:8px;padding:8px 14px;display:inline-flex;gap:6px;align-items:center;font-weight:600}
-        button:hover,.b:hover{border-color:var(--p);color:var(--p)}
-        .pr{background:var(--p);color:#06101d;border:0;font-weight:800}
-        .wide{width:100%;justify-content:center}
-
-        /* شريط التنقل السفلي */
-        .nav-bar{position:fixed;bottom:0;left:0;width:100%;height:60px;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;z-index:1000}
-        .nav-item{color:var(--mute);font-size:11px;text-align:center;cursor:pointer;flex:1;font-weight:600}
-        .nav-item.active{color:var(--p);font-weight:800}
-
-        .av{width:40px;height:40px;border-radius:50%;border:2px solid var(--p);display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg);overflow:hidden;flex-shrink:0}
-        .av img{width:100%;height:100%;object-fit:cover}
-        .mute{color:var(--mute);font-size:12px}
-        .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--p);color:#06101d;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:800;z-index:3000;opacity:0;transition:opacity 0.3s;pointer-events:none}
-        .toast.on{opacity:1}
-        .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
+        /* شريط التنقل السفلي الحديث */
+        nav { background: rgba(17, 24, 39, 0.9); backdrop-filter: blur(10px); border-top: 1px solid var(--border-color); position: fixed; bottom: 0; width: 100%; height: 70px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .nav-item { color: var(--text-muted); font-size: 12px; text-align: center; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .nav-item.active { color: var(--accent); font-weight: 800; }
     </style>
 </head>
 <body>
 
-    <div class="toast" id="toastMsg"></div>
+    <header>
+        <div class="logo">MYGRAM</div>
+        <div style="font-size: 12px; color: var(--text-muted);">النسخة الأساسية المتينة</div>
+    </header>
 
-    <!-- القائمة الجانبية -->
-    <div class="sidebar" id="appSidebar">
-        <button class="close-sidebar" onclick="toggleSidebar(false)">&times;</button>
-        <a href="#" onclick="switchTab('feed'); toggleSidebar(false);">🏠 الرئيسية (ما يدور الآن)</a>
-        <a href="#" onclick="switchTab('profile'); toggleSidebar(false);">👤 الملف الشخصي والبيانات</a>
-        <a href="#" onclick="switchTab('chats'); toggleSidebar(false);">💬 مراسلات (Messenger & WhatsApp)</a>
-        <a href="#" onclick="switchTab('reels'); toggleSidebar(false);">🎬 ريلز وشورتس</a>
-        <a href="#" onclick="switchTab('ai'); toggleSidebar(false);">🤖 المساعد الذكي AI</a>
-        <a href="#" onclick="logoutApp();">🚪 تسجيل الخروج</a>
-    </div>
+    <main>
+        <div class="app-card">
+            <h2>إدارة المحتوى الأساسي</h2>
+            <textarea placeholder="اكتب فكرتك أو مشروعك هنا بهدوء..."></textarea>
+            <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+                <button class="btn-primary" onclick="alert('تمت العملية بنجاح')">اعتماد النشر</button>
+            </div>
+        </div>
 
-    <!-- الهيدر -->
-    <div class="header">
-        <button class="b" onclick="toggleSidebar(true)">☰ القائمة</button>
-        <div class="logo" id="headerTitle">MYGRAM</div>
-        <button class="b" onclick="toggleTheme()">🌓</button>
-    </div>
+        <div class="app-card">
+            <h2>سجل العمليات والأساسيات</h2>
+            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                هذا التصميم يعتمد على قواعد نظيفة جداً (Clean Code)، بدون تضخم، وبدون أي عناصر عشوائية تسبب الإحراج أمام أي مستخدم أو مستثمر.
+            </p>
+        </div>
+    </main>
 
-    <!-- منطقة المحتوى الديناميكي -->
-    <div class="container" id="mainArea"></div>
-
-    <!-- النافيغاتور السفلي -->
-    <div class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('feed', this)">الرئيسية</div>
-        <div class="nav-item" onclick="switchTab('reels', this)">ريلز</div>
-        <div class="nav-item" onclick="switchTab('ai', this)">الذكاء الاصطناعي</div>
-        <div class="nav-item" onclick="switchTab('chats', this)">المراسلات</div>
-        <div class="nav-item" onclick="switchTab('profile', this)">حسابي</div>
-    </div>
+    <nav>
+        <div class="nav-item active">الرئيسية</div>
+        <div class="nav-item">الإحصائيات</div>
+        <div class="nav-item">الرسائل</div>
+        <div class="nav-item">الملف الشخصي</div>
+    </nav>
 
     <script>
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-        }
-
-        let currentAccount = {
-            name: "Louay Chaghal",
-            account: "louay@mygram.com",
-            gender: "male",
-            birthDate: "1995-01-01",
-            age: 31,
-            relation: "متزوج",
-            hobbies: "البرمجة وتقنية المصاعد",
-            family: "العائلة الكريمة",
-            avatar: ""
-        };
-
-        try {
-            const saved = localStorage.getItem('mygram_current_account');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (parsed && parsed.account) currentAccount = parsed;
-            }
-        } catch(e) {}
-
-        let currentTab = 'feed';
-        let activeChatPeer = null;
-        let attachedMedia = '';
-
-        function showToast(msg) {
-            const t = document.getElementById('toastMsg');
-            if(!t) return;
-            t.innerText = escapeHtml(msg);
-            t.classList.add('on');
-            setTimeout(() => t.classList.remove('on'), 2000);
-        }
-
-        function toggleSidebar(open) {
-            const sb = document.getElementById('appSidebar');
-            if(open) sb.classList.add('open');
-            else sb.classList.remove('open');
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('light');
-            showToast('تم تبديل المظهر بنجاح');
-        }
-
-        function switchTab(tab, el) {
-            if(el) {
+        // تفاعل بسيط ونظيف لتأكيد استجابة الأزرار
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                el.classList.add('active');
-            }
-            currentTab = tab;
-            activeChatPeer = null;
-            renderContent();
-        }
-
-        function renderContent() {
-            const area = document.getElementById('mainArea');
-            if(!area) return;
-            let avatarImg = currentAccount.avatar ? `<img src="${currentAccount.avatar}">` : (currentAccount.gender === 'female' ? '👩' : '👨');
-
-            if (currentTab === 'feed') {
-                document.getElementById('headerTitle').innerText = 'MYGRAM - الرئيسية';
-                area.innerHTML = `
-                    <div class="card">
-                        <textarea id="postText" placeholder="بماذا تفكر يا ${escapeHtml(currentAccount.name)}؟ شارك أفكارك..."></textarea>
-                        <div id="mediaPreview"></div>
-                        <div style="display:flex; gap:8px; margin-top:8px; align-items:center;">
-                            <label class="b" style="cursor:pointer;">📷 صورة<input type="file" accept="image/*" style="display:none" onchange="handleMedia(event)"></label>
-                            <label style="font-size:11px; margin-right:auto; cursor:pointer;"><input type="checkbox" id="sensCheck"> +18</label>
-                            <button class="b pr" onclick="createPost()">نشر الآن</button>
-                        </div>
-                    </div>
-                    <div id="postsFeed"></div>
-                `;
-                loadPosts();
-            } else if (currentTab === 'profile') {
-                document.getElementById('headerTitle').innerText = 'الملف الشخصي';
-                area.innerHTML = `
-                    <div class="card" style="text-align:center;">
-                        <div class="av" style="width:85px; height:85px; margin:0 auto 10px; font-size:40px;">${avatarImg}</div>
-                        <h3 style="color:var(--p);">${escapeHtml(currentAccount.name)}</h3>
-                        <p class="mute">${escapeHtml(currentAccount.account)}</p>
-                    </div>
-                    <div class="card">
-                        <div class="info-row"><span>العمر:</span> <b>${currentAccount.age || 31} سنة</b></div>
-                        <div class="info-row"><span>الجندر:</span> <b>${currentAccount.gender === 'female' ? 'أنثى 👩' : 'ذكر 👨'}</b></div>
-                        <div class="info-row"><span>الحالة الاجتماعية:</span> <b>${escapeHtml(currentAccount.relation || 'متزوج')}</b></div>
-                        <div class="info-row"><span>العائلة:</span> <b>${escapeHtml(currentAccount.family || 'العائلة الكريمة')}</b></div>
-                        <div class="info-row"><span>الهوايات:</span> <b>${escapeHtml(currentAccount.hobbies || 'البرمجة')}</b></div>
-
-                        <h4 style="color:var(--p); margin:15px 0 8px; font-size:13px;">تعديل البيانات:</h4>
-                        <label class="mute">الحالة الاجتماعية:</label>
-                        <input type="text" id="upRelation" value="${escapeHtml(currentAccount.relation || '')}">
-                        <label class="mute">الهوايات:</label>
-                        <input type="text" id="upHobbies" value="${escapeHtml(currentAccount.hobbies || '')}">
-                        <label class="b wide" style="cursor:pointer; justify-content:center; margin-top:6px;">
-                            🖼️ تغيير صورة البروفايل الشخصي
-                            <input type="file" accept="image/*" style="display:none" onchange="updateAvatar(event)">
-                        </label>
-                        <button class="b pr wide" style="margin-top:8px;" onclick="saveProfile()">حفظ التعديلات</button>
-                    </div>
-                `;
-            } else if (currentTab === 'chats') {
-                document.getElementById('headerTitle').innerText = 'المراسلات الذكية';
-                if (!activeChatPeer) {
-                    area.innerHTML = `
-                        <div class="card">
-                            <div class="mute" style="font-weight:bold; margin-bottom:10px;">المحادثات النشطة:</div>
-                            <div class="card" style="cursor:pointer; margin-bottom:8px; display:flex; align-items:center; gap:10px;" onclick="openChat('عالم التقنية والمصاعد', '🤖')">
-                                <div class="av" style="width:36px;height:36px;">🤖</div>
-                                <div>
-                                    <div style="font-weight:bold; font-size:13px;">عالم التقنية والمصاعد</div>
-                                    <div class="mute" style="font-size:11px;">مرحباً بك في نظام محادثات MYGRAM</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    area.innerHTML = `
-                        <div class="card" style="display:flex; flex-direction:column; height:65vh;">
-                            <div style="display:flex; align-items:center; gap:10px; padding-bottom:10px; border-bottom:1px solid var(--line); margin-bottom:10px;">
-                                <button class="b" onclick="activeChatPeer=null; renderContent();">⬅ رجوع</button>
-                                <div style="font-weight:bold; color:var(--p);">${activeChatPeer.name}</div>
-                            </div>
-                            <div id="chatMsgs" style="flex:1; overflow-y:auto; background:var(--bg); padding:10px; border-radius:8px; border:1px solid var(--line); margin-bottom:8px;">
-                                <div style="background:var(--card); padding:8px; border-radius:8px; margin-bottom:6px; max-width:80%; font-size:12px;">أهلاً بك! كيف يمكنني مساعدتك اليوم؟</div>
-                            </div>
-                            <div style="display:flex; gap:6px;">
-                                <input type="text" id="chatInput" placeholder="اكتب رسالة..." style="margin:0; flex:1;">
-                                <button class="b pr" onclick="sendMsg()">إرسال</button>
-                            </div>
-                        </div>
-                    `;
-                }
-            } else if (currentTab === 'reels') {
-                document.getElementById('headerTitle').innerText = 'ريلز وشورتس';
-                area.innerHTML = `
-                    <div class="card" style="text-align:center; padding:30px 10px;">
-                        <h3 style="color:var(--p); margin-bottom:10px;">🎬 فيديو تفاعلي قصير</h3>
-                        <div style="background:var(--bg); height:220px; border-radius:10px; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); font-size:35px; margin-bottom:12px;">▶️ مشغل الفيديو</div>
-                        <button class="b" onclick="showToast('❤️ تم الإعجاب بالفيديو')">❤️ إعجاب</button>
-                    </div>
-                `;
-            } else if (currentTab === 'ai') {
-                document.getElementById('headerTitle').innerText = 'المساعد الذكي';
-                area.innerHTML = `
-                    <div class="card">
-                        <h3 style="color:var(--p); margin-bottom:8px; font-size:14px;">مساعد MYGRAM الذكي</h3>
-                        <p class="mute">أنا هنا لمساعدتك في أي استفسار أو كود برمجي.</p>
-                    </div>
-                `;
-            }
-        }
-
-        function openChat(name, icon) { activeChatPeer = { name, icon }; renderContent(); }
-        function sendMsg() {
-            const inp = document.getElementById('chatInput');
-            if(!inp || !inp.value.trim()) return;
-            const box = document.getElementById('chatMsgs');
-            box.innerHTML += `<div style="background:var(--p); color:#06101d; padding:8px; border-radius:8px; margin-bottom:6px; margin-left:auto; max-width:80%; font-size:12px; font-weight:bold;">${escapeHtml(inp.value)}</div>`;
-            inp.value = '';
-            box.scrollTop = box.scrollHeight;
-        }
-
-        function handleMedia(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                attachedMedia = evt.target.result;
-                document.getElementById('mediaPreview').innerHTML = `<img src="${escapeHtml(attachedMedia)}" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px; margin-top:6px;">`;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function createPost() {
-            const text = document.getElementById('postText').value.trim();
-            const sens = document.getElementById('sensCheck') ? document.getElementById('sensCheck').checked : false;
-            if(!text && !attachedMedia) { showToast('اكتب شيئاً للنشر!'); return; }
-
-            let posts = [];
-            try { posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]'); } catch(e){}
-
-            posts.unshift({
-                author: currentAccount.name,
-                avatar: currentAccount.avatar || '',
-                content: escapeHtml(text),
-                image: attachedMedia,
-                sensitive: sens,
-                likes: 0
+                this.classList.add('active');
             });
-
-            try {
-                localStorage.setItem('mygram_posts', JSON.stringify(posts));
-            } catch(e) {
-                showToast('خطأ: الذاكرة ممتلئة!');
-                return;
-            }
-
-            attachedMedia = '';
-            document.getElementById('postText').value = '';
-            showToast('تم النشر بنجاح!');
-            loadPosts();
-        }
-
-        function loadPosts() {
-            let posts = [];
-            try { posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]'); } catch(e){}
-            const feed = document.getElementById('postsFeed');
-            if(!feed) return;
-            let html = '';
-            posts.forEach((p, idx) => {
-                let imgHtml = p.image ? (p.sensitive ? `
-                    <div style="position:relative; margin-top:8px; border-radius:8px; overflow:hidden;">
-                        <img src="${escapeHtml(p.image)}" id="pimg_${idx}" style="width:100%; max-height:220px; object-fit:cover; filter:blur(18px);">
-                        <div id="pov_${idx}" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;">
-                            <div style="font-size:11px; margin-bottom:5px;">⚠️ محتوى حساس +18</div>
-                            <button class="b pr" onclick="revealMedia(${idx})">عرض المحتوى</button>
-                        </div>
-                    </div>
-                ` : `<img src="${escapeHtml(p.image)}" style="width:100%; max-height:220px; object-fit:cover; border-radius:8px; margin-top:8px;">`) : '';
-
-                let av = p.avatar ? `<img src="${p.avatar}">` : '👨';
-                html += `
-                    <div class="card">
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                            <div class="av" style="width:34px;height:34px;font-size:16px;">${av}</div>
-                            <div style="font-weight:bold; color:var(--p); font-size:13px;">${escapeHtml(p.author)}</div>
-                        </div>
-                        <div style="font-size:13px; line-height:1.4; white-space:pre-line;">${p.content}</div>
-                        ${imgHtml}
-                        <div style="display:flex; justify-content:space-between; border-top:1px solid var(--line); padding-top:8px; margin-top:8px; font-size:11px; color:var(--mute);">
-                            <span style="cursor:pointer;" onclick="likePost(${idx})">❤️ إعجاب (${p.likes || 0})</span>
-                            <span style="cursor:pointer;" onclick="showToast('تم النسخ')">🚀 مشاركة</span>
-                        </div>
-                    </div>
-                `;
-            });
-            feed.innerHTML = html || '<p class="empty" style="text-align:center; color:var(--mute); padding:20px;">لا توجد منشورات حالياً.</p>';
-        }
-
-        function revealMedia(idx) {
-            const img = document.getElementById(`pimg_${idx}`);
-            const ov = document.getElementById(`pov_${idx}`);
-            if(img) img.style.filter = 'none';
-            if(ov) ov.style.display = 'none';
-        }
-
-        function likePost(idx) {
-            let posts = [];
-            try { posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]'); } catch(e){}
-            if(posts[idx]) {
-                posts[idx].likes = (posts[idx].likes || 0) + 1;
-                localStorage.setItem('mygram_posts', JSON.stringify(posts));
-                loadPosts();
-            }
-        }
-
-        function updateAvatar(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                currentAccount.avatar = evt.target.result;
-                localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
-                showToast('تم تحديث صورة البروفايل!');
-                renderContent();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function saveProfile() {
-            currentAccount.relation = document.getElementById('upRelation').value.trim();
-            currentAccount.hobbies = document.getElementById('upHobbies').value.trim();
-            localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
-            showToast('تم حفظ التعديلات بنجاح تام!');
-            renderContent();
-        }
-
-        function logoutApp() {
-            localStorage.removeItem('mygram_current_account');
-            window.location.href = 'index.html';
-        }
-
-        window.onload = function() { renderContent(); };
+        });
     </script>
 </body>
 </html>
