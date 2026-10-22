@@ -49,6 +49,7 @@
         .tab-sub-btn { flex: 1; padding: 9px; text-align: center; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; font-size: 11px; cursor: pointer; color: var(--ink); font-weight: 600; }
         .tab-sub-btn.active { background: var(--p); color: #06101d; font-weight: 800; border-color: var(--p); }
         .phone-num { direction: ltr; unicode-bidi: embed; text-align: right; font-family: monospace; font-weight: bold; }
+        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
     </style>
 </head>
 <body id="pageBody">
@@ -56,8 +57,10 @@
     <div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="close-btn" onclick="closeSidebar()">&times;</a>
         <a href="#" onclick="switchTab('feed'); closeSidebar();">🏠 ماذا يدور الآن؟</a>
-        <a href="#" onclick="switchTab('profile'); closeSidebar();">👤 الملف الشخصي</a>
+        <a href="#" onclick="switchTab('profile'); closeSidebar();">👤 الملف الشخصي والبيانات</a>
         <a href="#" onclick="switchTab('chats'); closeSidebar();">💬 CHAT (Messenger & WhatsApp)</a>
+        <a href="#" onclick="switchTab('reels'); closeSidebar();">🎬 ريلز وشورتس</a>
+        <a href="#" onclick="switchTab('ai'); closeSidebar();">🤖 المساعد الذكي AI</a>
         <a href="#" onclick="logoutApp();">🚪 تسجيل الخروج</a>
     </div>
     <div class="header" id="mainHeader">
@@ -82,7 +85,6 @@
             return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
 
-        // ضمان وجود حساب افتراضي دائماً لعدم حدوث شاشة سوداء
         let currentAccount = {
             name: "Louay Chaghal",
             account: "louay@mygram.com",
@@ -91,6 +93,7 @@
             age: 31,
             relation: "متزوج",
             hobbies: "البرمجة وتقنية المصاعد",
+            family: "العائلة الكريمة",
             avatar: ""
         };
 
@@ -209,24 +212,78 @@
                     `;
                 }
             } else if (currentTab === 'profile') {
-                document.getElementById('appTitle').innerText = 'الملف الشخصي';
+                document.getElementById('appTitle').innerText = 'الملف الشخصي والبيانات';
+                let relation = escapeHtml(currentAccount.relation || 'متزوج');
+                let hobbies = escapeHtml(currentAccount.hobbies || 'البرمجة وتقنية المصاعد');
+                let family = escapeHtml(currentAccount.family || 'العائلة الكريمة');
+                let birthDateVal = escapeHtml(currentAccount.birthDate || '1995-01-01');
+
                 area.innerHTML = `
-                    <div class="card" style="text-align:center;">
-                        <div class="av" style="width:80px; height:80px; margin:0 auto 10px; font-size:40px;">${userAvatarImg ? `<img src="${userAvatarImg}">` : genderIcon}</div>
-                        <h3>${currentUser}</h3>
-                        <p class="mute">${currentAccount.account}</p>
+                    <div class="card">
+                        <div style="text-align:center; margin-bottom:15px;">
+                            <div class="av" style="width:90px; height:90px; margin:0 auto 10px; font-size:45px;">
+                                ${userAvatarImg ? `<img src="${userAvatarImg}">` : genderIcon}
+                            </div>
+                            <h3 style="color:var(--p);">${currentUser}</h3>
+                            <p class="mute">${currentAccount.account}</p>
+                        </div>
+                        <div class="info-row"><span>العمر:</span> <b>${currentAccount.age || 31} سنة</b></div>
+                        <div class="info-row"><span>الجندر:</span> <b>${userGender === 'female' ? 'أنثى 👩' : 'ذكر 👨'}</b></div>
+                        <div class="info-row"><span>الحالة الاجتماعية:</span> <b>${relation}</b></div>
+                        <div class="info-row"><span>أفراد العائلة:</span> <b>${family}</b></div>
+                        <div class="info-row"><span>الهوايات:</span> <b>${hobbies}</b></div>
+
+                        <div style="margin-top:15px;">
+                            <h4 style="color:var(--p); font-size:12px; margin-bottom:8px;">تعديل البيانات الشخصية:</h4>
+                            <label class="mute">تاريخ الميلاد:</label>
+                            <input type="date" id="editBirthDate" value="${birthDateVal}">
+                            <label class="mute">الحالة الاجتماعية:</label>
+                            <input type="text" id="editRelation" value="${relation}">
+                            <label class="mute">الهوايات:</label>
+                            <input type="text" id="editHobbies" value="${hobbies}">
+                            <label class="mute">أفراد العائلة:</label>
+                            <input type="text" id="editFamily" value="${family}">
+                            <label class="b wide" style="cursor:pointer; justify-content:center; margin-top:8px;">
+                                🖼️ تغيير صورة البروفايل
+                                <input type="file" accept="image/*" style="display:none" onchange="uploadAppAvatar(event)">
+                            </label>
+                            <button class="b pr wide" style="margin-top:8px;" onclick="saveAppProfileDetails()">حفظ كافة التعديلات</button>
+                        </div>
                     </div>
                 `;
             } else if (currentTab === 'ai') {
                 document.getElementById('appTitle').innerText = 'المساعد الذكي AI';
-                area.innerHTML = `<div class="card"><p>المساعد الذكي يعمل بكفاءة تامة.</p></div>`;
+                area.innerHTML = `
+                    <div class="card chat-container">
+                        <h3 style="color:var(--p); margin-bottom:10px; font-size:14px;">مساعد MYGRAM الذكي الشامل</h3>
+                        <div class="chat-messages" id="aiMessagesBox">
+                            <div class="chat-msg-box peer">أهلاً بك يا ${currentUser}! أنا مساعدك الذكي الجاهز لتنفيذ أي مهمة برمجية أو هندسية. كيف أساعدك اليوم؟</div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="aiInput" placeholder="اكتب سؤالك للذكاء الاصطناعي..." style="margin:0; flex:1;">
+                            <button class="b pr" onclick="sendAiMessageQuery()">إرسال</button>
+                        </div>
+                    </div>
+                `;
             } else if (currentTab === 'reels') {
                 document.getElementById('appTitle').innerText = 'ريلز MYGRAM';
-                area.innerHTML = `<div class="card" style="text-align:center; padding:30px;">🎬 استعراض الريلز والفيديوهات القصيرة</div>`;
+                area.innerHTML = `
+                    <div class="card" style="text-align:center; padding:35px 15px;">
+                        <h3 style="color:var(--p); margin-bottom:10px;">🎬 ريلز وشورتس العالمية</h3>
+                        <p class="mute" style="margin-bottom:15px;">استعرض أحدث مقاطع الفيديو التفاعلية.</p>
+                        <div style="background:var(--bg); height:250px; border-radius:12px; display:flex; justify-content:center; align-items:center; border:1px solid var(--line); font-size:40px; margin-bottom:15px;">▶️ [فيديو تجريبي]</div>
+                        <div style="display:flex; justify-content:space-around;">
+                            <button class="b" onclick="showToast('❤️ تم الإعجاب!')">❤️ إعجاب</button>
+                            <button class="b" onclick="showToast('💬 فتح التعليقات')">💬 تعليق</button>
+                            <button class="b" onclick="showToast('🚀 تم المشاركة!')">🚀 مشاركة</button>
+                        </div>
+                    </div>
+                `;
             }
         }
 
         function openChat(name, id, icon) { activeChatPeer = { name, id, icon }; renderAppContent(); }
+        
         function addPhoneContact() {
             const val = document.getElementById('phoneContactInput').value.trim();
             if(!val) { showToast('أدخل رقم الهاتف!'); return; }
@@ -253,7 +310,62 @@
                 box.innerHTML += `<div class="chat-msg-box user">${safe}</div>`;
                 input.value = '';
                 box.scrollTop = box.scrollHeight;
+                setTimeout(() => {
+                    box.innerHTML += `<div class="chat-msg-box peer">تم استلام رسالتك وسيتم الرد قريباً.</div>`;
+                    box.scrollTop = box.scrollHeight;
+                }, 500);
             }
+        }
+
+        function sendAiMessageQuery() {
+            const input = document.getElementById('aiInput');
+            if(!input || !input.value.trim()) return;
+            const safe = escapeHtml(input.value.trim());
+            const box = document.getElementById('aiMessagesBox');
+            if(box) {
+                box.innerHTML += `<div class="chat-msg-box user">${safe}</div>`;
+                input.value = '';
+                box.scrollTop = box.scrollHeight;
+                setTimeout(() => {
+                    box.innerHTML += `<div class="chat-msg-box peer">المساعد الذكي: تم معالجة طلبك برمجياً وهندسياً بكفاءة تامة.</div>`;
+                    box.scrollTop = box.scrollHeight;
+                }, 500);
+            }
+        }
+
+        function uploadAppAvatar(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                currentAccount.avatar = evt.target.result;
+                localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
+                showToast('تم تحديث الصورة الشخصية بنجاح!');
+                renderAppContent();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveAppProfileDetails() {
+            let newBirthDate = document.getElementById('editBirthDate').value;
+            let newRelation = document.getElementById('editRelation').value;
+            let newHobbies = document.getElementById('editHobbies').value.trim();
+            let newFamily = document.getElementById('editFamily').value.trim();
+
+            if(newBirthDate) {
+                const bd = new Date(newBirthDate);
+                const today = new Date();
+                let age = today.getFullYear() - bd.getFullYear();
+                currentAccount.birthDate = newBirthDate;
+                currentAccount.age = age;
+            }
+            if(newRelation) currentAccount.relation = newRelation;
+            if(newHobbies) currentAccount.hobbies = newHobbies;
+            if(newFamily) currentAccount.family = newFamily;
+
+            localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
+            showToast('تم حفظ كافة التعديلات بنجاح تام!');
+            renderAppContent();
         }
 
         function handleAppMediaUpload(e) {
@@ -273,7 +385,7 @@
             if(!text.trim() && !attachedMedia) return;
             let posts = [];
             try { posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]'); } catch(e){}
-            posts.unshift({ author: currentUser, content: escapeHtml(text), image: attachedMedia, sensitive: isSens, likes: 0 });
+            posts.unshift({ author: currentUser, avatar: currentAccount.avatar || '', content: escapeHtml(text), image: attachedMedia, sensitive: isSens, likes: 0 });
             try { localStorage.setItem('mygram_posts', JSON.stringify(posts)); } catch(e){}
             attachedMedia = '';
             document.getElementById('postText').value = '';
@@ -289,15 +401,19 @@
             let html = '';
             posts.forEach((p, idx) => {
                 let media = p.image ? `<img src="${escapeHtml(p.image)}" style="width:100%; max-height:250px; object-fit:cover; border-radius:8px; margin-top:8px;">` : '';
+                let avatarHtml = p.avatar ? `<div class="av" style="width:35px;height:35px;"><img src="${p.avatar}"></div>` : `<div class="av" style="width:35px;height:35px;">👨</div>`;
                 html += `
                     <div class="card">
-                        <div style="font-weight:bold; color:var(--p); margin-bottom:6px;">${escapeHtml(p.author)}</div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            ${avatarHtml}
+                            <div style="font-weight:bold; color:var(--p); font-size:13px;">${escapeHtml(p.author)}</div>
+                        </div>
                         <div style="font-size:13px; line-height:1.4;">${p.content}</div>
                         ${media}
                     </div>
                 `;
             });
-            container.innerHTML = html || '<p class="empty">لا توجد منشورات حالياً.</p>';
+            container.innerHTML = html || '<p class="empty">لا توجد منشورات حالياً. كن أول من ينشر!</p>';
         }
 
         function logoutApp() {
