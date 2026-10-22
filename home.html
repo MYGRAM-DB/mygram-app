@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - Global Application</title>
+    <title>MYGRAM - Global Super Ecosystem (Home)</title>
     <style>
         :root {
-            --bg-main: #0b1120;
-            --card-bg: #152238;
+            --bg-main: #050b14;
+            --card-bg: #0f172a;
             --primary: #38bdf8;
             --primary-hover: #0284c7;
             --text-main: #f8fafc;
@@ -16,6 +16,8 @@
             --btn-bg: #1e293b;
             --online-green: #22c55e;
             --ad-gold: #f59e0b;
+            --live-red: #ef4444;
+            --error-red: #ef4444;
         }
         .light-mode {
             --bg-main: #f1f5f9;
@@ -26,86 +28,95 @@
             --btn-bg: #e2e8f0;
         }
 
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding-top: 65px; padding-bottom: 75px; transition: 0.3s; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding-top: 65px; padding-bottom: 80px; transition: 0.3s; box-sizing: border-box; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; background: rgba(21, 34, 56, 0.95); backdrop-filter: blur(10px); padding: 10px 18px; border-bottom: 1px solid var(--border); position: fixed; top: 0; width: 100%; z-index: 1000; box-sizing: border-box; transition: transform 0.3s ease; }
+        /* الهيدر العلوي الذكي */
+        .header { display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); padding: 12px 20px; border-bottom: 1px solid var(--border); position: fixed; top: 0; width: 100%; z-index: 1000; box-sizing: border-box; transition: transform 0.3s ease; }
         .header.hide { transform: translateY(-100%); }
         .header-title-box { text-align: center; }
-        h2 { color: var(--primary); margin: 0; font-size: 16px; font-weight: 900; letter-spacing: 0.5px; }
+        h2 { color: var(--primary); margin: 0; font-size: 16px; font-weight: 900; }
         .sub-slogan-header { font-size: 8px; color: var(--text-sub); }
         .btn-icon { background: none; border: none; color: var(--text-main); font-size: 18px; cursor: pointer; padding: 4px; }
 
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(21, 34, 56, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); z-index: 1000; transition: transform 0.3s ease; }
+        /* شريط التنقل السفلي */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); z-index: 1000; transition: transform 0.3s ease; }
         .nav-bar.hide { transform: translateY(100%); }
         .nav-item { color: var(--text-sub); font-size: 10px; text-align: center; cursor: pointer; flex: 1; font-weight: 600; }
         .nav-item.active { color: var(--primary); font-weight: 800; }
 
+        /* القائمة الجانبية */
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background: var(--card-bg); overflow-x: hidden; transition: 0.3s; padding-top: 60px; border-left: 1px solid var(--border); }
         html[dir="ltr"] .sidebar { left: 0; right: auto; border-right: 1px solid var(--border); border-left: none; }
-        .sidebar a { padding: 13px 20px; text-decoration: none; font-size: 13px; color: var(--text-main); display: block; border-bottom: 1px solid var(--border); transition: 0.2s; }
-        .sidebar a:hover { background: var(--primary); color: #0b1120; font-weight: bold; }
-        .sidebar .close-btn { position: absolute; top: 10px; font-size: 22px; cursor: pointer; color: var(--primary); }
-        html[dir="rtl"] .sidebar .close-btn { left: 15px; }
-        html[dir="ltr"] .sidebar .close-btn { right: 15px; }
+        .sidebar a { padding: 14px 22px; text-decoration: none; font-size: 13px; color: var(--text-main); display: block; border-bottom: 1px solid var(--border); transition: 0.2s; }
+        .sidebar a:hover { background: var(--primary); color: #050b14; font-weight: bold; }
+        .sidebar .close-btn { position: absolute; top: 12px; font-size: 24px; cursor: pointer; color: var(--primary); }
+        html[dir="rtl"] .sidebar .close-btn { left: 18px; }
+        html[dir="ltr"] .sidebar .close-btn { right: 18px; }
 
-        .container { max-width: 580px; margin: 10px auto; padding: 0 12px; }
+        .container { max-width: 600px; margin: 10px auto; padding: 0 12px; }
         
-        .stories-bar { display: flex; gap: 10px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 5px; }
-        .story-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 60px; }
-        .story-avatar-wrap { position: relative; width: 52px; height: 52px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, #0284c7, #38bdf8); }
-        .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--card-bg); display: flex; justify-content: center; align-items: center; font-size: 24px; background: var(--bg-main); }
-        .story-name { font-size: 10px; color: var(--text-sub); margin-top: 4px; text-align: center; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        /* شريط القصص */
+        .stories-bar { display: flex; gap: 12px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 6px; }
+        .story-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 64px; }
+        .story-avatar-wrap { position: relative; width: 58px; height: 58px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, #0284c7, #38bdf8); }
+        .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--card-bg); display: flex; justify-content: center; align-items: center; font-size: 26px; background: var(--bg-main); }
+        .story-name { font-size: 10px; color: var(--text-sub); margin-top: 5px; text-align: center; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .quick-bar { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
-        .quick-pill { background: var(--btn-bg); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; color: var(--primary); transition: 0.2s; }
-        .quick-pill:hover { background: var(--primary); color: #0b1120; }
+        /* الأقسام السريعة */
+        .quick-bar { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+        .quick-pill { background: var(--btn-bg); border: 1px solid var(--border); padding: 7px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; color: var(--primary); transition: 0.2s; }
+        .quick-pill:hover { background: var(--primary); color: #050b14; }
 
-        .post-box, .post-card, .card-box { background: var(--card-bg); padding: 16px; border-radius: 16px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .post-box textarea, input, select { width: 100%; background: var(--bg-main); border: 1px solid var(--border); color: var(--text-main); border-radius: 10px; padding: 10px; resize: none; box-sizing: border-box; font-family: inherit; font-size: 13px; margin-bottom: 8px; outline: none; }
-        .post-box textarea:focus, input:focus, select:focus { border-color: var(--primary); }
+        .post-box, .post-card, .card-box { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        input, select, textarea { width: 100%; background: var(--bg-main); border: 1px solid var(--border); color: var(--text-main); border-radius: 12px; padding: 12px 14px; resize: none; box-sizing: border-box; font-family: inherit; font-size: 13px; margin-bottom: 10px; outline: none; transition: 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
 
-        .post-tools { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
-        .action-btn { background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 11px; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .post-tools { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+        .action-btn { background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--border); padding: 8px 14px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 11px; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
         .action-btn:hover { border-color: var(--primary); color: var(--primary); }
-        .action-btn.btn-primary { background: var(--primary); color: #0b1120; border: none; font-weight: 800; }
-        .action-btn.btn-primary:hover { background: var(--primary-hover); color: #fff; }
+        .action-btn.btn-primary { background: var(--primary); color: #050b14; border: none; font-weight: 800; }
 
-        .post-author-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .avatar-container { position: relative; width: 40px; height: 40px; }
-        .mini-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); background: var(--bg-main); display: flex; justify-content: center; align-items: center; font-size: 20px; }
-        .online-dot { position: absolute; bottom: 0; right: 0; width: 9px; height: 9px; background: var(--online-green); border-radius: 50%; border: 1.5px solid var(--card-bg); }
+        .post-author-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .avatar-container { position: relative; width: 44px; height: 44px; }
+        .mini-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); background: var(--bg-main); display: flex; justify-content: center; align-items: center; font-size: 22px; }
+        .online-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: var(--online-green); border-radius: 50%; border: 2px solid var(--card-bg); }
         .post-author-info { flex: 1; font-weight: bold; color: var(--primary); font-size: 13px; }
-        .sponsored-tag { background: rgba(245, 158, 11, 0.15); color: var(--ad-gold); border: 1px solid var(--ad-gold); padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; margin-left: 5px; }
+        .sponsored-tag { background: rgba(245, 158, 11, 0.15); color: var(--ad-gold); border: 1px solid var(--ad-gold); padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: bold; margin-left: 6px; }
 
-        .profile-avatar-big { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); margin: 0 auto 10px; display: flex; justify-content: center; align-items: center; font-size: 50px; background: var(--bg-main); position: relative; overflow: hidden; }
+        .profile-avatar-big { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--primary); margin: 0 auto 12px; display: flex; justify-content: center; align-items: center; font-size: 55px; background: var(--bg-main); position: relative; overflow: hidden; }
         .profile-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
 
-        .post-text { font-size: 13px; line-height: 1.5; margin-bottom: 8px; white-space: pre-line; }
-        .post-image-container { position: relative; overflow: hidden; border-radius: 10px; margin-top: 8px; }
-        .post-image { width: 100%; max-height: 350px; object-fit: cover; display: block; border-radius: 10px; margin-top: 8px; }
-        .media-blur { filter: blur(25px); }
-        .sensitive-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; text-align: center; padding: 15px; box-sizing: border-box; }
+        .post-text { font-size: 13px; line-height: 1.6; margin-bottom: 10px; white-space: pre-line; }
+        .post-image-container { position: relative; overflow: hidden; border-radius: 12px; margin-top: 10px; }
+        .post-image { width: 100%; max-height: 380px; object-fit: cover; display: block; border-radius: 12px; }
+        .media-blur { filter: blur(28px); }
+        .sensitive-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; text-align: center; padding: 20px; box-sizing: border-box; }
 
-        .post-actions { display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; font-size: 11px; color: var(--text-sub); }
-        .action-item { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .post-actions { display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; font-size: 11px; color: var(--text-sub); }
+        .action-item { cursor: pointer; display: flex; align-items: center; gap: 5px; }
         .action-item:hover { color: var(--primary); }
 
-        .chat-container { display: flex; flex-direction: column; height: 55vh; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; background: var(--bg-main); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .chat-msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 12px; line-height: 1.4; }
-        .chat-msg.user { background: var(--primary); color: #0b1120; font-weight: 600; margin-left: auto; }
+        .chat-container { display: flex; flex-direction: column; height: 58vh; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 12px; background: var(--bg-main); border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .chat-msg { margin-bottom: 10px; padding: 10px 14px; border-radius: 10px; max-width: 80%; font-size: 12px; line-height: 1.5; }
+        .chat-msg.user { background: var(--primary); color: #050b14; font-weight: 600; margin-left: auto; }
         .chat-msg.peer { background: var(--card-bg); border: 1px solid var(--border); margin-right: auto; }
 
-        .tab-sub-bar { display: flex; gap: 6px; margin-bottom: 12px; }
-        .tab-sub-btn { flex: 1; padding: 8px; text-align: center; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; cursor: pointer; color: var(--text-main); font-weight: 600; }
-        .tab-sub-btn.active { background: var(--primary); color: #0b1120; font-weight: 800; border-color: var(--primary); }
+        .tab-sub-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+        .tab-sub-btn { flex: 1; padding: 9px; text-align: center; background: var(--bg-main); border: 1px solid var(--border); border-radius: 10px; font-size: 11px; cursor: pointer; color: var(--text-main); font-weight: 600; }
+        .tab-sub-btn.active { background: var(--primary); color: #050b14; font-weight: 800; border-color: var(--primary); }
 
-        .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #0b1120; padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 3000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .toast { position: fixed; top: 75px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #050b14; padding: 9px 20px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
         .toast.show { opacity: 1; }
 
-        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
-        .group-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+        .info-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
+        .group-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 12px 14px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
         .group-name { color: var(--text-main); font-weight: bold; font-size: 12px; }
+        label.edit-label { display: block; text-align: right; font-size: 11px; color: var(--primary); margin-top: 8px; margin-bottom: 3px; }
+        html[dir="ltr"] label.edit-label { text-align: left; }
+
+        .live-badge { background: var(--live-red); color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: bold; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
     </style>
 </head>
 <body id="pageBody">
@@ -116,13 +127,15 @@
     <div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="close-btn" onclick="closeSidebar()">&times;</a>
         <a href="#" onclick="switchTab('feed'); closeSidebar();">🏠 ماذا يدور الآن؟</a>
+        <a href="#" onclick="switchTab('reels'); closeSidebar();">🎬 ريلز وشورتس العالمية</a>
+        <a href="#" onclick="switchTab('live'); closeSidebar();">🔴 البث المباشر (LIVE)</a>
         <a href="#" onclick="switchTab('create_page'); closeSidebar();">📄 إنشاء صفحة جديدة</a>
         <a href="#" onclick="switchTab('create_group'); closeSidebar();">👥 إنشاء مجموعة جديدة</a>
         <a href="#" onclick="switchTab('ads_manager'); closeSidebar();">📣 مدير الإعلانات (MYGRAM Ads)</a>
         <a href="#" onclick="switchTab('profile'); closeSidebar();">👤 الملف الشخصي والبيانات</a>
         <a href="#" onclick="switchTab('accounts'); closeSidebar();">🔄 إدارة الحسابات والتبديل</a>
         <a href="#" onclick="switchTab('news'); closeSidebar();">🌐 MYGRAM NEWS</a>
-        <a href="#" onclick="logout();">🚪 تسجيل الخروج</a>
+        <a href="#" onclick="logoutApp();">🚪 تسجيل الخروج</a>
     </div>
 
     <!-- الهيدر العلوي -->
@@ -132,90 +145,71 @@
             <h2 id="appTitle">MYGRAM</h2>
             <div class="sub-slogan-header">Everything you need is here</div>
         </div>
-        <div style="display:flex; gap:5px; align-items:center;">
-            <select id="globalLangSelect" onchange="changeLanguage(this.value)" style="background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); border-radius:6px; font-size:10px; padding:3px 5px; margin:0; outline:none;">
-            </select>
-            <button class="btn-icon" onclick="toggleTheme()">🌓</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+            <select id="appLangSelect" onchange="changeLanguage(this.value)" style="background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); border-radius:6px; font-size:10px; padding:3px 6px; margin:0; outline:none;"></select>
+            <button class="btn-icon" onclick="toggleThemeMode()">🌓</button>
         </div>
     </div>
 
-    <div class="container" id="mainContent"></div>
+    <!-- المحتوى الرئيسي -->
+    <div class="container" id="mainContentArea"></div>
 
     <!-- شريط التنقل السفلي -->
     <div class="nav-bar" id="mainNavBar">
         <div class="nav-item active" onclick="switchTab('feed', this)">ما يدور</div>
+        <div class="nav-item" onclick="switchTab('reels', this)">ريلز</div>
         <div class="nav-item" onclick="switchTab('ai', this)">المساعد AI</div>
         <div class="nav-item" onclick="switchTab('chats', this)">CHAT</div>
-        <div class="nav-item" onclick="switchTab('twits', this)">TWITS</div>
         <div class="nav-item" onclick="switchTab('profile', this)">حسابي</div>
     </div>
 
     <script>
         const globalLanguages = [
             {code:"ar", name:"العربية", rtl:true}, {code:"en", name:"English", rtl:false},
-            {code:"fr", name:"Français", rtl:false}, {code:"de", name:"Deutsch", rtl:false},
-            {code:"es", name:"Español", rtl:false}, {code:"tr", name:"Türkçe", rtl:false},
-            {code:"ru", name:"Русский", rtl:false}, {code:"zh", name:"中文", rtl:false},
-            {code:"ja", name:"日本語", rtl:false}, {code:"ko", name:"한국어", rtl:false},
-            {code:"it", name:"Italiano", rtl:false}, {code:"pt", name:"Português", rtl:false},
-            {code:"hi", name:"हिन्दी", rtl:false}, {code:"fa", name:"فارسی", rtl:true},
-            {code:"ur", name:"اردو", rtl:true}, {code:"nl", name:"Nederlands", rtl:false},
-            {code:"sv", name:"Svenska", rtl:false}, {code:"pl", name:"Polski", rtl:false},
-            {code:"uk", name:"Українська", rtl:false}, {code:"ro", name:"Română", rtl:false},
-            {code:"el", name:"Ελληνικά", rtl:false}, {code:"cs", name:"Čeština", rtl:false},
-            {code:"hu", name:"Magyar", rtl:false}, {code:"id", name:"Bahasa Indonesia", rtl:false},
-            {code:"th", name:"ไทย", rtl:false}, {code:"vi", name:"Tiếng Việt", rtl:false},
-            {code:"he", name:"עברית", rtl:true}, {code:"da", name:"Dansk", rtl:false},
-            {code:"fi", name:"Suomi", rtl:false}, {code:"no", name:"Norsk", rtl:false},
-            {code:"sk", name:"Slovenčina", rtl:false}, {code:"bg", name:"Български", rtl:false},
-            {code:"hr", name:"Hrvatski", rtl:false}, {code:"lt", name:"Lietuvių", rtl:false},
-            {code:"sl", name:"Slovenščina", rtl:false}, {code:"et", name:"Eesti", rtl:false},
-            {code:"lv", name:"Latviešu", rtl:false}, {code:"ms", name:"Bahasa Melayu", rtl:false},
-            {code:"fil", name:"Filipino", rtl:false}, {code:"sw", name:"Kiswahili", rtl:false},
-            {code:"sq", name:"Shqip", rtl:false}, {code:"az", name:"Azərbaycan", rtl:false},
-            {code:"bs", name:"Bosanski", rtl:false}, {code:"ka", name:"ქართული", rtl:false},
-            {code:"hy", name:"Հայերեն", rtl:false}, {code:"kk", name:"Қазақша", rtl:false},
-            {code:"uz", name:"Oʻzbekcha", rtl:false}, {code:"mn", name:"Монгол", rtl:false},
-            {code:"bn", name:"বাংলা", rtl:false}, {code:"ta", name:"தமிழ்", rtl:false},
-            {code:"te", name:"తెలుగు", rtl:false}, {code:"mr", name:"मराठी", rtl:false},
-            {code:"gu", name:"ગુજરાતી", rtl:false}, {code:"kn", name:"ಕನ್ನಡ", rtl:false},
-            {code:"ml", name:"മലയാളം", rtl:false}, {code:"pa", name:"ਪੰਜਾਬੀ", rtl:false},
-            {code:"si", name:"සිංහල", rtl:false}, {code:"am", name:"አማርኛ", rtl:false},
-            {code:"km", name:"ភាសាខ្មែរ", rtl:false}, {code:"lo", name:"ພາສາລາວ", rtl:false},
-            {code:"my", name:"မြန်မာဘာသာ", rtl:false}, {code:"ne", name:"नेपाली", rtl:false},
-            {code:"af", name:"Afrikaans", rtl:false}, {code:"eu", name:"Euskara", rtl:false},
-            {code:"gl", name:"Galego", rtl:false}, {code:"ca", name:"Català", rtl:false},
-            {code:"is", name:"Íslenska", rtl:false}, {code:"mt", name:"Malti", rtl:false},
-            {code:"ga", name:"Gaeilge", rtl:false}, {code:"cy", name:"Cymraeg", rtl:false}
+            {code:"fr", name:"Français", rtl:false}, {code:"tr", name:"Türkçe", rtl:false},
+            {code:"ru", name:"Русский", rtl:false}, {code:"zh", name:"中文", rtl:false}
         ];
 
         let currentAccount = JSON.parse(localStorage.getItem('mygram_current_account') || '{}');
         let currentUser = currentAccount.name || 'Louay Chaghal';
         let userGender = currentAccount.gender || 'male';
-        let userAge = currentAccount.age || 18;
+        
+        function calculateExactAge(birthdateStr) {
+            if(!birthdateStr) return currentAccount.age || 18;
+            const birthDate = new Date(birthdateStr);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        let userAge = calculateExactAge(currentAccount.birthDate);
         let currentTab = 'feed';
         let chatSubTab = 'contacts';
         let attachedMedia = '';
 
-        function populateLangSelect() {
-            const select = document.getElementById('globalLangSelect');
-            if(!select) return;
-            select.innerHTML = globalLanguages.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
-            let current = localStorage.getItem('mygram_lang') || 'ar';
-            select.value = current;
-            changeLanguage(current, false);
+        function initApp() {
+            const select = document.getElementById('appLangSelect');
+            if(select) {
+                select.innerHTML = globalLanguages.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
+                select.value = localStorage.getItem('mygram_lang') || 'ar';
+            }
+            renderAppContent();
         }
 
-        function changeLanguage(lang, save = true) {
-            if(save) localStorage.setItem('mygram_lang', lang);
-            const langObj = globalLanguages.find(l => l.code === lang) || globalLanguages[0];
+        function changeLanguage(code) {
+            localStorage.setItem('mygram_lang', code);
+            const langObj = globalLanguages.find(l => l.code === code) || globalLanguages[0];
             const htmlTag = document.getElementById('htmlRoot');
             if(htmlTag) {
-                htmlTag.setAttribute('lang', lang);
+                htmlTag.setAttribute('lang', code);
                 htmlTag.setAttribute('dir', langObj.rtl ? 'rtl' : 'ltr');
             }
-            showToast('تم تحديث اللغة!');
-            renderContent();
+            showToast('تم تحديث لغة التطبيق بنجاح!');
+            renderAppContent();
         }
 
         function showToast(msg) {
@@ -241,421 +235,14 @@
             lastScrollTop = scrollTop;
         });
 
-        function openSidebar() { document.getElementById("mySidebar").style.width = "250px"; }
+        function openSidebar() { document.getElementById("mySidebar").style.width = "270px"; }
         function closeSidebar() { document.getElementById("mySidebar").style.width = "0"; }
 
-        function toggleTheme() {
-            const body = document.getElementById('pageBody');
-            body.classList.toggle('light-mode');
-            showToast('تم تغيير المظهر!');
+        function toggleThemeMode() {
+            document.getElementById('pageBody').classList.toggle('light-mode');
+            showToast('تم تغيير مظهر التطبيق بنجاح!');
         }
 
         function switchTab(tab, el) {
             if(el) {
-                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                el.classList.add('active');
-            }
-            currentTab = tab;
-            renderContent();
-        }
-
-        function renderContent() {
-            const content = document.getElementById('mainContent');
-            if(!content) return;
-
-            let userAvatarImg = currentAccount.avatar || '';
-            let genderIcon = userGender === 'female' ? '👩' : '👨';
-
-            if (currentTab === 'feed') {
-                document.getElementById('appTitle').innerText = 'ماذا يدور الآن؟';
-                content.innerHTML = `
-                    <div class="stories-bar">
-                        <div class="story-item" onclick="showToast('رفع قصة جديدة...')">
-                            <div class="story-avatar-wrap">
-                                <div class="story-avatar">${userAvatarImg ? `<img src="${userAvatarImg}" style="width:100%;height:100%;border-radius:50%;">` : genderIcon}</div>
-                            </div>
-                            <div class="story-name">قصتك +</div>
-                        </div>
-                    </div>
-
-                    <div class="quick-bar">
-                        <div class="quick-pill" onclick="showToast('🎬 ريلز')">🎬 ريلز</div>
-                        <div class="quick-pill" onclick="showToast('📱 شورت')">📱 شورت</div>
-                        <div class="quick-pill" onclick="showToast('🔴 بث مباشر')">🔴 بث مباشر</div>
-                        <div class="quick-pill" onclick="switchTab('ads_manager')">📣 إعلان ممول</div>
-                    </div>
-
-                    <div class="post-box">
-                        <textarea id="postText" placeholder="بماذا تفكر؟ شارك أفكارك مع العالم..."></textarea>
-                        <div id="mediaPreview"></div>
-                        <div class="post-tools">
-                            <label class="action-btn" style="cursor:pointer;">📷 الجاليري<input type="file" accept="image/*,video/*" style="display:none" onchange="handleMediaUpload(event)"></label>
-                            <button class="action-btn" onclick="showToast('🎥 كاميرا مباشرة')">🎥 كاميرا مباشرة</button>
-                            <button class="action-btn" onclick="enhanceTextWithAI()">✨ تحسين AI</button>
-                            <label style="font-size:10px; margin-right:auto; cursor:pointer;"><input type="checkbox" id="sensitiveCheck"> +18</label>
-                            <button class="action-btn btn-primary" onclick="addPost()">نشر</button>
-                        </div>
-                    </div>
-                    <div id="postsContainer"></div>
-                `;
-                loadPosts();
-            } else if (currentTab === 'profile') {
-                document.getElementById('appTitle').innerText = 'الملف الشخصي والبيانات';
-                let relation = currentAccount.relation || 'مرتبطة / مرتبط';
-                let hobbies = currentAccount.hobbies || 'الرياضة، البرمجة، السفر';
-                let family = currentAccount.family || 'لا يوجد أقارب مضافين';
-
-                content.innerHTML = `
-                    <div class="card-box" style="text-align:center;">
-                        <div class="profile-avatar-big">
-                            ${userAvatarImg ? `<img src="${userAvatarImg}">` : genderIcon}
-                        </div>
-                        <h3 style="margin:5px 0;">${currentUser}</h3>
-                        <p style="font-size:11px; color:var(--text-sub); margin-bottom:15px;">الحساب: ${currentAccount.account || ''} | العمر: ${userAge} سنة</p>
-
-                        <div class="info-row"><span>الجندر (الهوية):</span> <b>${userGender === 'female' ? 'أنثى 👩' : 'ذكر 👨'}</b></div>
-                        <div class="info-row"><span>الحالة الاجتماعية:</span> <b>${relation}</b></div>
-                        <div class="info-row"><span>أفراد العائلة:</span> <b>${family}</b></div>
-                        <div class="info-row"><span>الهوايات:</span> <b>${hobbies}</b></div>
-
-                        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
-                        
-                        <h4 style="margin:0 0 10px; color:var(--primary); font-size:12px; text-align:right;">تعديل البيانات السريعة:</h4>
-                        <input type="text" id="editHobbies" placeholder="تعديل الهوايات والاهتمامات..." value="${hobbies}">
-                        <input type="text" id="editFamily" placeholder="تعديل أفراد العائلة..." value="${family}">
-                        <label class="action-btn" style="width:100%; justify-content:center; margin-bottom:8px; cursor:pointer;">
-                            🖼️ تحميل / تغيير صورة البروفايل
-                            <input type="file" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
-                        </label>
-                        <button class="action-btn btn-primary" onclick="saveProfileDetails()" style="width:100%; justify-content:center;">حفظ التعديلات</button>
-                    </div>
-                `;
-            } else if (currentTab === 'accounts') {
-                document.getElementById('appTitle').innerText = 'إدارة الحسابات';
-                let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
-                let accHtml = '';
-                accounts.forEach(acc => {
-                    let activeIndicator = (acc.account === currentAccount.account) ? ' (الحساب الحالي النشط)' : '';
-                    accHtml += `
-                        <div class="group-item" style="cursor:pointer;" onclick="switchAccount('${acc.account}')">
-                            <span class="group-name">👤 ${acc.name} (${acc.account})${activeIndicator}</span>
-                            <button class="action-btn btn-primary">تبديل</button>
-                        </div>
-                    `;
-                });
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0;">🔄 الحسابات المسجلة على الجهاز</h3>
-                        <p style="font-size:11px; color:var(--text-sub);">يمكنك التبديل الفوري بين حساباتك المحفوظة دون الحاجة لإعادة إدخال كلمات السر:</p>
-                        ${accHtml || '<p style="font-size:12px;">لا توجد حسابات أخرى محفوظة.</p>'}
-                        <button class="action-btn" style="width:100%; justify-content:center; margin-top:10px;" onclick="window.location.href='index.html'">+ إضافة حساب جديد / تسجيل دخول</button>
-                    </div>
-                `;
-            } else if (currentTab === 'chats') {
-                document.getElementById('appTitle').innerText = 'MYGRAM CHAT';
-                content.innerHTML = `
-                    <div class="card-box chat-container">
-                        <div class="tab-sub-bar">
-                            <div class="tab-sub-btn ${chatSubTab === 'contacts' ? 'active' : ''}" onclick="chatSubTab='contacts'; renderContent();">📱 جهات الاتصال (أرقام الهواتف)</div>
-                            <div class="tab-sub-btn ${chatSubTab === 'friends' ? 'active' : ''}" onclick="chatSubTab='friends'; renderContent();">👥 أصدقاء المنصة</div>
-                        </div>
-                        ${chatSubTab === 'contacts' ? `
-                            <div style="margin-bottom:10px; display:flex; gap:6px;">
-                                <input type="text" id="phoneChatInput" placeholder="أدخل رقم الهاتف مع رمز الدولة..." style="flex:1; margin-bottom:0;">
-                                <button class="action-btn btn-primary" onclick="startPhoneChat()">بدء محادثة</button>
-                            </div>
-                            <div class="chat-messages">
-                                <div class="chat-msg peer">جهات الاتصال المحفوظة تفاعلية ومستقلة تماماً. أدخل رقم أي هاتف لبدء محادثة فورية!</div>
-                            </div>
-                        ` : `
-                            <div class="chat-messages">
-                                <div class="chat-msg peer">محادثات الأصدقاء المضافين داخل المنصة.</div>
-                            </div>
-                        `}
-                        <div class="chat-input-box">
-                            <input type="text" id="chatInput" placeholder="اكتب رسالتك...">
-                            <button class="action-btn btn-primary" onclick="showToast('تم إرسال الرسالة!')">إرسال</button>
-                        </div>
-                    </div>
-                `;
-            } else if (currentTab === 'create_page') {
-                document.getElementById('appTitle').innerText = 'إنشاء صفحة جديدة';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0;">📄 إنشاء صفحة عامة / تجارية</h3>
-                        <input type="text" id="pageName" placeholder="اسم الصفحة...">
-                        <textarea placeholder="وصف الصفحة والنشاط..."></textarea>
-                        <button class="action-btn btn-primary" style="width:100%; justify-content:center;" onclick="showToast('تم إنشاء الصفحة بنجاح!'); switchTab('feed');">إنشاء الصفحة</button>
-                    </div>
-                `;
-            } else if (currentTab === 'create_group') {
-                document.getElementById('appTitle').innerText = 'إنشاء مجموعة جديدة';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0;">👥 إنشاء مجموعة مجتمعية</h3>
-                        <input type="text" id="groupName" placeholder="اسم المجموعة...">
-                        <select><option>عامة (يمكن للجميع الانضمام)</option><option>خاصة</option></select>
-                        <button class="action-btn btn-primary" style="width:100%; justify-content:center;" onclick="showToast('تم إنشاء المجموعة بنجاح!'); switchTab('feed');">إنشاء المجموعة</button>
-                    </div>
-                `;
-            } else if (currentTab === 'twits') {
-                document.getElementById('appTitle').innerText = 'MYGRAM TWITS';
-                content.innerHTML = `
-                    <div class="post-box">
-                        <textarea id="twitText" placeholder="خواطر قصيرة..." maxlength="280"></textarea>
-                        <button class="action-btn btn-primary" onclick="addTwit()" style="margin-top:5px; float:left;">نشر خاطرة ⚡</button>
-                        <div style="clear:both;"></div>
-                    </div>
-                    <div id="twitsContainer"></div>
-                `;
-                loadTwits();
-            } else if (currentTab === 'ai') {
-                document.getElementById('appTitle').innerText = 'المساعد الذكي AI';
-                content.innerHTML = `
-                    <div class="card-box chat-container">
-                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">مساعد MYGRAM الذكي الشامل</h3>
-                        <div class="chat-messages" id="aiMessages">
-                            <div class="chat-msg peer">أهلاً بك يا ${currentUser}! أنا عقلك الذكي المساعد. كيف أمكنني خدمتك اليوم؟</div>
-                        </div>
-                        <div class="chat-input-box">
-                            <input type="text" id="aiInput" placeholder="اكتب سؤالك للذكاء الاصطناعي...">
-                            <button class="action-btn btn-primary" onclick="sendAiMessage()">إرسال</button>
-                        </div>
-                    </div>
-                `;
-            } else if (currentTab === 'ads_manager') {
-                document.getElementById('appTitle').innerText = 'مدير الإعلانات الممولة';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--ad-gold); margin-top:0;">📣 إطلاق إعلان ممول جديد (MYGRAM Ads)</h3>
-                        <input type="text" id="adTitle" placeholder="عنوان الحملة أو النشاط التجاري...">
-                        <textarea id="adText" placeholder="نص الإعلان الممول..."></textarea>
-                        <button class="action-btn btn-primary" style="width:100%; justify-content:center; background:var(--ad-gold); color:#0b1120;" onclick="createSponsoredAd()">🚀 إطلاق الإعلان الممول</button>
-                    </div>
-                `;
-            } else if (currentTab === 'news') {
-                document.getElementById('appTitle').innerText = 'MYGRAM NEWS';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">🌐 الأخبار العالمية والسياسية والاقتصادية المباشرة</h3>
-                        <div class="group-item"><span class="group-name">📈 الأسواق العالمية تسجل مؤشرات إيجابية.</span></div>
-                        <div class="group-item"><span class="group-name">💻 تقنيات الذكاء الاصطناعي تشهد قفزات نوعية.</span></div>
-                    </div>
-                `;
-            }
-        }
-
-        function switchAccount(accEmail) {
-            let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
-            let target = accounts.find(a => a.account === accEmail);
-            if(target) {
-                localStorage.setItem('mygram_current_account', JSON.stringify(target));
-                currentAccount = target;
-                currentUser = target.name;
-                userGender = target.gender;
-                userAge = target.age;
-                showToast('تم التبديل إلى الحساب بنجاح!');
-                renderContent();
-            }
-        }
-
-        function createSponsoredAd() {
-            const title = document.getElementById('adTitle').value.trim();
-            const text = document.getElementById('adText').value.trim();
-            if(!title || !text) { showToast('أدخل عنوان الإعلان والنص!'); return; }
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts.unshift({ id: Date.now(), author: title, isSponsored: true, content: text, likes: 0, views: 1 });
-            localStorage.setItem('mygram_posts', JSON.stringify(posts));
-            showToast('تم إطلاق الإعلان الممول بنجاح!');
-            switchTab('feed');
-        }
-
-        function uploadAvatar(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                currentAccount.avatar = evt.target.result;
-                localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
-                
-                let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
-                accounts = accounts.map(a => a.account === currentAccount.account ? currentAccount : a);
-                localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
-
-                showToast('تم تحديث الصورة الشخصية!');
-                renderContent();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function saveProfileDetails() {
-            let hobbies = document.getElementById('editHobbies').value.trim();
-            let family = document.getElementById('editFamily').value.trim();
-            if(hobbies) currentAccount.hobbies = hobbies;
-            if(family) currentAccount.family = family;
-            
-            localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
-            let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
-            accounts = accounts.map(a => a.account === currentAccount.account ? currentAccount : a);
-            localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
-
-            showToast('تم حفظ التعديلات!');
-            renderContent();
-        }
-
-        function handleMediaUpload(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                attachedMedia = evt.target.result;
-                document.getElementById('mediaPreview').innerHTML = `<img src="${attachedMedia}" class="post-image">`;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function enhanceTextWithAI() {
-            const input = document.getElementById('postText');
-            if(!input.value.trim()) { showToast('اكتب نصاً أولاً!'); return; }
-            input.value = "✨ " + input.value + " 🚀 #MYGRAM";
-            showToast('تم تحسين النص بالـ AI!');
-        }
-
-        function addPost() {
-            const text = document.getElementById('postText').value;
-            const isSens = document.getElementById('sensitiveCheck') ? document.getElementById('sensitiveCheck').checked : false;
-            if(!text.trim() && !attachedMedia) return;
-
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts.unshift({ id: Date.now(), author: currentUser, content: text, image: attachedMedia, sensitive: isSens, likes: 0, views: 1 });
-            localStorage.setItem('mygram_posts', JSON.stringify(posts));
-
-            attachedMedia = '';
-            document.getElementById('postText').value = '';
-            showToast('تم النشر بنجاح!');
-            loadPosts();
-        }
-
-        function loadPosts() {
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            const container = document.getElementById('postsContainer');
-            if(!container) return;
-            let html = '';
-            let genderIcon = userGender === 'female' ? '👩' : '👨';
-            let userAvatarImg = currentAccount.avatar || '';
-
-            posts.forEach((p, idx) => {
-                let sponsoredTag = p.isSponsored ? `<span class="sponsored-tag">ممول / Sponsored 📣</span>` : '';
-                let mediaHtml = '';
-                if (p.image) {
-                    if (p.sensitive) {
-                        mediaHtml = `
-                            <div class="post-image-container">
-                                <img src="${p.image}" class="post-image media-blur" id="img_${idx}">
-                                <div class="sensitive-overlay" id="overlay_${idx}">
-                                    <div style="font-size:12px; margin-bottom:5px;">⚠️ محتوى حساس (+18)</div>
-                                    <button class="action-btn btn-primary" onclick="revealMedia(${idx})">عرض المحتوى</button>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        mediaHtml = `<img src="${p.image}" class="post-image">`;
-                    }
-                }
-
-                html += `
-                    <div class="post-card">
-                        <div class="post-author-row">
-                            <div class="avatar-container">
-                                <div class="mini-avatar">${userAvatarImg ? `<img src="${userAvatarImg}" style="width:100%;height:100%;border-radius:50%;">` : genderIcon}</div>
-                                <div class="online-dot"></div>
-                            </div>
-                            <div class="post-author-info">${p.author} ${sponsoredTag}</div>
-                        </div>
-                        <div class="post-text">${p.content}</div>
-                        ${mediaHtml}
-                        <div class="post-actions">
-                            <span class="action-item" onclick="likePost(${idx})">❤️ إعجاب (${p.likes || 0})</span>
-                            <span class="action-item" onclick="showToast('تم نسخ رابط المنشور!')">🚀 مشاركة</span>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function revealMedia(idx) {
-            if (userAge < 18) {
-                showToast('محتوى +18 محظور لمن هم أقل من 18 سنة!');
-                return;
-            }
-            document.getElementById(`img_${idx}`).classList.remove('media-blur');
-            document.getElementById(`overlay_${idx}`).style.display = 'none';
-        }
-
-        function likePost(idx) {
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts[idx].likes = (posts[idx].likes || 0) + 1;
-            localStorage.setItem('mygram_posts', JSON.stringify(posts));
-            loadPosts();
-        }
-
-        function addTwit() {
-            const text = document.getElementById('twitText').value;
-            if(!text.trim()) return;
-            let twits = JSON.parse(localStorage.getItem('mygram_tweets') || '[]');
-            twits.unshift({ id: Date.now(), author: currentUser, content: text });
-            localStorage.setItem('mygram_tweets', JSON.stringify(twits));
-            document.getElementById('twitText').value = '';
-            showToast('تم نشر الخاطرة!');
-            loadTwits();
-        }
-
-        function loadTwits() {
-            let twits = JSON.parse(localStorage.getItem('mygram_tweets') || '[]');
-            const container = document.getElementById('twitsContainer');
-            if(!container) return;
-            let html = '';
-            twits.forEach(t => {
-                html += `<div class="post-card"><div style="font-weight:bold; color:var(--primary);">@${t.author}</div><div class="post-text">${t.content}</div></div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function sendAiMessage() {
-            const input = document.getElementById('aiInput');
-            if(!input.value.trim()) return;
-            const box = document.getElementById('aiMessages');
-            box.innerHTML += `<div class="chat-msg user">${input.value}</div>`;
-            input.value = '';
-            box.scrollTop = box.scrollHeight;
-            setTimeout(() => {
-                box.innerHTML += `<div class="chat-msg peer">المساعد AI: تم استلام استفسارك ومعالجته بنجاح تام!</div>`;
-                box.scrollTop = box.scrollHeight;
-            }, 500);
-        }
-
-        function startPhoneChat() {
-            const phone = document.getElementById('phoneChatInput').value.trim();
-            if(!phone) { showToast('أدخل رقم الهاتف مع الرمز أولاً!'); return; }
-            showToast('تم فتح محادثة آمنة مع: ' + phone);
-            document.getElementById('phoneChatInput').value = '';
-        }
-
-        window.onload = function() {
-            if (!currentAccount.account) {
-                window.location.href = 'index.html';
-                return;
-            }
-            populateLangSelect();
-            renderContent();
-        };
-
-        function logout() {
-            localStorage.removeItem('mygram_is_logged');
-            localStorage.removeItem('mygram_current_account');
-            window.location.href = 'index.html';
-        }
-    </script>
-</body>
-</html>
+                document.querySelectorAll('.nav-
