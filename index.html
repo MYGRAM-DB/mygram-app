@@ -14,9 +14,10 @@
             --text-sub: #94a3b8;
             --border: #1e293b;
             --error-red: #ef4444;
+            --success-green: #22c55e;
         }
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box; }
-        .auth-card { background: var(--card-bg); padding: 30px; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid #1e293b; text-align: center; position: relative; }
+        .auth-card { background: var(--card-bg); padding: 30px; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid var(--border); text-align: center; position: relative; }
         .lang-picker-top { position: absolute; top: 15px; right: 15px; }
         html[dir="ltr"] .lang-picker-top { right: auto; left: 15px; }
         select.lang-select { background: #0b1120; color: var(--primary); border: 1px solid var(--border); border-radius: 6px; font-size: 11px; padding: 4px 8px; outline: none; }
@@ -25,11 +26,13 @@
         input, select { width: 100%; padding: 12px 14px; margin-bottom: 12px; background: #0b1120; border: 1px solid var(--border); color: #fff; border-radius: 10px; box-sizing: border-box; font-size: 13px; outline: none; }
         input:focus, select:focus { border-color: var(--primary); }
         button { width: 100%; padding: 13px; background: var(--primary-gradient); color: #0b1120; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 5px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
-        .toggle-link { margin-top: 15px; font-size: 12px; color: var(--text-sub); cursor: pointer; }
-        .toggle-link span { color: var(--primary); font-weight: bold; }
+        .toggle-link, .forgot-link { margin-top: 12px; font-size: 12px; color: var(--text-sub); cursor: pointer; }
+        .toggle-link span, .forgot-link span { color: var(--primary); font-weight: bold; }
         .age-warning { font-size: 10px; color: var(--error-red); margin-top: -8px; margin-bottom: 10px; text-align: right; }
         html[dir="ltr"] .age-warning { text-align: left; }
-        .inline-error-msg { display: none; color: var(--error-red); background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px; border-radius: 8px; font-size: 12px; margin-top: 10px; }
+        .msg-box { display: none; padding: 10px; border-radius: 8px; font-size: 12px; margin-top: 10px; text-align: center; }
+        .msg-error { color: var(--error-red); background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .msg-success { color: var(--success-green); background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); }
     </style>
 </head>
 <body>
@@ -37,41 +40,40 @@
     <div class="auth-card">
         <div class="lang-picker-top">
             <select class="lang-select" id="langSelect" onchange="setGlobalLanguage(this.value)">
-                <!-- قائمة اللغات الـ 70 الأساسية -->
+                <option value="ar">العربية</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="tr">Türkçe</option>
             </select>
         </div>
 
         <h1>MYGRAM</h1>
-        <div class="sub-slogan" id="txtSlogan">Everything you need is here</div>
+        <div class="sub-slogan">Everything you need is here</div>
         
+        <!-- حقول التسجيل الإضافية عند الحاجة -->
         <div id="signupFields" style="display:none;">
             <input type="text" id="fullName" placeholder="الاسم الكامل">
             <input type="date" id="birthDate">
-            <div class="age-warning" id="txtAgeWarn">* يجب أن يكون عمرك 16 عاماً أو أكثر للتسجيل.</div>
+            <div class="age-warning">* يجب أن يكون عمرك 16 عاماً أو أكثر للتسجيل.</div>
             
             <select id="genderSelect">
-                <option value="" disabled selected id="optGender">تحديد الجندر (الهوية)</option>
-                <option value="male" id="optMale">ذكر (Male)</option>
-                <option value="female" id="optFemale">أنثى (Female)</option>
-                <option value="custom" id="optCustom">أخرى / تخصيص</option>
-            </select>
-
-            <select id="relationSelect">
-                <option value="" disabled selected id="optRel">الحالة الاجتماعية (الارتباط)</option>
-                <option value="single" id="optSingle">أعزب / عزباء</option>
-                <option value="in_relation" id="optInRel">مرتبط / مرتبطة</option>
-                <option value="married" id="optMarried">متزوج / متزوجة</option>
-                <option value="engaged" id="optEngaged">مخطوب / مخطوبة</option>
+                <option value="" disabled selected>تحديد الجندر (الهوية)</option>
+                <option value="male">ذكر (Male)</option>
+                <option value="female">أنثى (Female)</option>
             </select>
         </div>
 
-        <input type="email" id="emailInput" placeholder="البريد الإلكتروني">
-        <input type="tel" id="phoneInput" placeholder="رقم الهاتف الدولي">
-        <input type="password" id="password" placeholder="كلمة السر">
+        <!-- خانتان أساسيتان فقط: الحساب (إيميل أو هاتف) + كلمة السر -->
+        <input type="text" id="accountInput" placeholder="البريد الإلكتروني أو رقم الهاتف">
+        <input type="password" id="passwordInput" placeholder="كلمة السر">
         
         <button id="actionBtn" onclick="handleAuth()">تسجيل الدخول</button>
         
-        <div class="inline-error-msg" id="errorMsg"></div>
+        <div class="msg-box" id="msgBox"></div>
+
+        <div class="forgot-link" id="forgotDiv" onclick="openRecovery()">
+            <span>هل نسيت كلمة السر؟ استرداد الحساب</span>
+        </div>
 
         <div class="toggle-link" onclick="toggleMode()">
             <span id="toggleText">ليس لديك حساب؟ انضم إلينا الآن</span>
@@ -79,131 +81,103 @@
     </div>
 
     <script>
-        const globalLanguages = [
-            {code:"ar", name:"العربية", rtl:true}, {code:"en", name:"English", rtl:false},
-            {code:"fr", name:"Français", rtl:false}, {code:"de", name:"Deutsch", rtl:false},
-            {code:"es", name:"Español", rtl:false}, {code:"tr", name:"Türkçe", rtl:false},
-            {code:"ru", name:"Русский", rtl:false}, {code:"zh", name:"中文", rtl:false},
-            {code:"ja", name:"日本語", rtl:false}, {code:"ko", name:"한국어", rtl:false},
-            {code:"it", name:"Italiano", rtl:false}, {code:"pt", name:"Português", rtl:false},
-            {code:"hi", name:"हिन्दी", rtl:false}, {code:"fa", name:"فارسی", rtl:true},
-            {code:"ur", name:"اردو", rtl:true}, {code:"nl", name:"Nederlands", rtl:false},
-            {code:"sv", name:"Svenska", rtl:false}, {code:"pl", name:"Polski", rtl:false},
-            {code:"uk", name:"Українська", rtl:false}, {code:"ro", name:"Română", rtl:false},
-            {code:"el", name:"Ελληνικά", rtl:false}, {code:"cs", name:"Čeština", rtl:false},
-            {code:"hu", name:"Magyar", rtl:false}, {code:"id", name:"Bahasa Indonesia", rtl:false},
-            {code:"th", name:"ไทย", rtl:false}, {code:"vi", name:"Tiếng Việt", rtl:false},
-            {code:"he", name:"עברית", rtl:true}, {code:"da", name:"Dansk", rtl:false},
-            {code:"fi", name:"Suomi", rtl:false}, {code:"no", name:"Norsk", rtl:false},
-            {code:"sk", name:"Slovenčina", rtl:false}, {code:"bg", name:"Български", rtl:false},
-            {code:"hr", name:"Hrvatski", rtl:false}, {code:"lt", name:"Lietuvių", rtl:false},
-            {code:"sl", name:"Slovenščina", rtl:false}, {code:"et", name:"Eesti", rtl:false},
-            {code:"lv", name:"Latviešu", rtl:false}, {code:"ms", name:"Bahasa Melayu", rtl:false},
-            {code:"fil", name:"Filipino", rtl:false}, {code:"sw", name:"Kiswahili", rtl:false},
-            {code:"sq", name:"Shqip", rtl:false}, {code:"az", name:"Azərbaycan", rtl:false},
-            {code:"bs", name:"Bosanski", rtl:false}, {code:"ka", name:"ქართული", rtl:false},
-            {code:"hy", name:"Հայերեն", rtl:false}, {code:"kk", name:"Қазақша", rtl:false},
-            {code:"uz", name:"Oʻzbekcha", rtl:false}, {code:"mn", name:"Монгол", rtl:false},
-            {code:"bn", name:"বাংলা", rtl:false}, {code:"ta", name:"தமிழ்", rtl:false},
-            {code:"te", name:"తెలుగు", rtl:false}, {code:"mr", name:"मराठी", rtl:false},
-            {code:"gu", name:"ગુજરાતી", rtl:false}, {code:"kn", name:"கன்னட", rtl:false},
-            {code:"ml", name:"മലയാളം", rtl:false}, {code:"pa", name:"ਪੰਜਾਬੀ", rtl:false},
-            {code:"si", name:"සිංහල", rtl:false}, {code:"am", name:"አማርኛ", rtl:false},
-            {code:"km", name:"ភាសាខ្មែរ", rtl:false}, {code:"lo", name:"ພາສາລາວ", rtl:false},
-            {code:"my", name:"မြန်မာဘာသာ", rtl:false}, {code:"ne", name:"नेपाली", rtl:false},
-            {code:"af", name:"Afrikaans", rtl:false}, {code:"eu", name:"Euskara", rtl:false},
-            {code:"gl", name:"Galego", rtl:false}, {code:"ca", name:"Català", rtl:false},
-            {code:"is", name:"Íslenska", rtl:false}, {code:"mt", name:"Malti", rtl:false},
-            {code:"ga", name:"Gaeilge", rtl:false}, {code:"cy", name:"Cymraeg", rtl:false}
-        ];
-
         let isSignup = false;
+        let isRecovery = false;
 
-        function populateLangSelect() {
-            const select = document.getElementById('langSelect');
-            select.innerHTML = globalLanguages.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
-            let current = localStorage.getItem('mygram_lang') || 'ar';
-            select.value = current;
-            setGlobalLanguage(current, false);
+        function showMsg(text, isErr = true) {
+            const box = document.getElementById('msgBox');
+            box.innerText = text;
+            box.className = 'msg-box ' + (isErr ? 'msg-error' : 'msg-success');
+            box.style.display = 'block';
         }
 
-        function setGlobalLanguage(code, save = true) {
-            if(save) localStorage.setItem('mygram_lang', code);
-            const langObj = globalLanguages.find(l => l.code === code) || globalLanguages[0];
-            const html = document.getElementById('htmlRoot');
-            html.setAttribute('lang', code);
-            html.setAttribute('dir', langObj.rtl ? 'rtl' : 'ltr');
+        function setGlobalLanguage(code) {
+            localStorage.setItem('mygram_lang', code);
+            document.getElementById('htmlRoot').setAttribute('lang', code);
+            document.getElementById('htmlRoot').setAttribute('dir', (code === 'ar' || code === 'fa' || code === 'ur') ? 'rtl' : 'ltr');
         }
-
-        function showError(msg) {
-            const errDiv = document.getElementById('errorMsg');
-            errDiv.innerText = msg;
-            errDiv.style.display = 'block';
-        }
-
-        function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
 
         function toggleMode() {
-            hideError();
+            document.getElementById('msgBox').style.display = 'none';
             isSignup = !isSignup;
+            isRecovery = false;
             document.getElementById('signupFields').style.display = isSignup ? 'block' : 'none';
+            document.getElementById('forgotDiv').style.display = isSignup ? 'none' : 'block';
             document.getElementById('actionBtn').innerText = isSignup ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
             document.getElementById('toggleText').innerText = isSignup ? 'لديك حساب بالفعل؟ سجل دخولك' : 'ليس لديك حساب؟ انضم إلينا الآن';
         }
 
-        function calculateAge(birthdate) {
-            const birth = new Date(birthdate);
-            const today = new Date();
-            let age = today.getFullYear() - birth.getFullYear();
-            const m = today.getMonth() - birth.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-            return age;
+        function openRecovery() {
+            isRecovery = true;
+            document.getElementById('signupFields').style.display = 'none';
+            document.getElementById('passwordInput').style.display = 'none';
+            document.getElementById('actionBtn').innerText = 'إرسال رمز الاسترداد (SMS / Email)';
+            document.getElementById('forgotDiv').style.display = 'none';
+            document.getElementById('toggleText').innerHTML = '<span>العودة لتسجيل الدخول</span>';
         }
 
         function handleAuth() {
-            hideError();
-            const email = document.getElementById('emailInput').value.trim();
-            const phone = document.getElementById('phoneInput').value.trim();
-            const password = document.getElementById('password').value.trim();
-            
-            if ((!email && !phone) || !password) {
-                showError('الرجاء إدخال البريد الإلكتروني أو رقم الهاتف وكلمة السر!');
+            const acc = document.getElementById('accountInput').value.trim();
+            const pass = document.getElementById('passwordInput').value.trim();
+
+            if (!acc) {
+                showMsg('الرجاء إدخال البريد الإلكتروني أو رقم الهاتف!');
                 return;
             }
 
-            let userName = email ? email.split('@')[0] : phone;
-            let userAge = 18;
-            let gender = "male";
-            let relation = "single";
-
-            if (isSignup) {
-                const fullName = document.getElementById('fullName').value.trim();
-                const birthDate = document.getElementById('birthDate').value;
-                gender = document.getElementById('genderSelect').value || "male";
-                relation = document.getElementById('relationSelect').value || "single";
-
-                if (!birthDate) {
-                    showError('الرجاء إدخال تاريخ الميلاد للتحقق من السن القانوني!');
-                    return;
-                }
-                userAge = calculateAge(birthDate);
-                if (userAge < 16) {
-                    showError('عذراً، يجب أن يكون عمرك 16 سنة أو أكثر لإنشاء حساب على MYGRAM!');
-                    return;
-                }
-                if (fullName) userName = fullName;
+            if (isRecovery) {
+                showMsg('تم إرسال رمز التحقق واسترداد كلمة السر بنجاح إلى: ' + acc, false);
+                setTimeout(() => { location.reload(); }, 3000);
+                return;
             }
 
-            localStorage.setItem('mygram_username', userName);
-            localStorage.setItem('mygram_email', email);
-            localStorage.setItem('mygram_phone', phone);
-            localStorage.setItem('mygram_age', userAge);
-            localStorage.setItem('mygram_gender', gender);
-            localStorage.setItem('mygram_relation', relation);
+            if (!pass) {
+                showMsg('الرجاء إدخال كلمة السر!');
+                return;
+            }
+
+            let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
+            let userObj = accounts.find(a => a.account === acc);
+
+            if (isSignup) {
+                const birthDate = document.getElementById('birthDate').value;
+                if (!birthDate) { showMsg('الرجاء إدخال تاريخ الميلاد!'); return; }
+                
+                // حساب العمر
+                const age = new Date().getFullYear() - new Date(birthDate).getFullYear();
+                if (age < 16) { showMsg('يجب أن يكون عمرك 16 سنة أو أكثر!'); return; }
+
+                const gender = document.getElementById('genderSelect').value || 'male';
+                const fullName = document.getElementById('fullName').value.trim() || acc.split('@')[0];
+
+                userObj = { account: acc, pass: pass, name: fullName, age: age, gender: gender, avatar: '' };
+                accounts.push(userObj);
+                localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
+            } else {
+                if (!userObj) {
+                    // تسجيل دخول لأول مرة بحساب جديد افتراضي أو تخزين مباشر
+                    userObj = { account: acc, pass: pass, name: acc.split('@')[0], age: 20, gender: 'male', avatar: '' };
+                    accounts.push(userObj);
+                    localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
+                }
+            }
+
+            // حفظ الحساب الحالي وحالة تسجيل الدخول الدائمة (Session)
+            localStorage.setItem('mygram_current_account', JSON.stringify(userObj));
+            localStorage.setItem('mygram_is_logged', 'true');
             window.location.href = 'home.html';
         }
 
-        window.onload = populateLangSelect;
+        // التحقق مما إذا كان المستخدم مسجل دخول مسبقاً ليتم تحويله مباشرة دون إعادة إدخال البيانات
+        window.onload = function() {
+            let savedLang = localStorage.getItem('mygram_lang') || 'ar';
+            document.getElementById('langSelect').value = savedLang;
+            setGlobalLanguage(savedLang);
+
+            if (localStorage.getItem('mygram_is_logged') === 'true') {
+                window.location.href = 'home.html';
+            }
+        };
     </script>
 </body>
 </html>
