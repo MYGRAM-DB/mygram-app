@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - المنصة الشاملة</title>
+    <title>MYGRAM</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -24,13 +24,27 @@
 
         body { font-family: sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding-bottom: 75px; transition: 0.3s; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 12px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
-        h2 { color: var(--primary-color); margin: 0; font-size: 18px; }
-        .header-btns { display: flex; gap: 8px; }
-        .btn-theme, .btn-logout { border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-theme { background: #475569; color: #fff; }
-        .btn-logout { background: #f87171; color: #fff; }
+        .header-title-box { text-align: center; }
+        h2 { color: var(--primary-color); margin: 0; font-size: 16px; }
+        .sub-slogan-header { font-size: 9px; color: var(--secondary-text); letter-spacing: 0.5px; }
         
+        .header-btns { display: flex; gap: 6px; align-items: center; }
+        .btn-icon { background: none; border: none; color: var(--text-color); font-size: 18px; cursor: pointer; }
+        
+        /* القائمة الجانبية (3 شخطات) */
+        .sidebar { height: 100%; width: 0; position: fixed; z-index: 1000; top: 0; background-color: var(--card-bg); overflow-x: hidden; transition: 0.3s; padding-top: 60px; }
+        html[dir="rtl"] .sidebar { right: 0; border-left: 1px solid var(--border-color); }
+        html[dir="ltr"] .sidebar { left: 0; border-right: 1px solid var(--border-color); }
+        .sidebar a { padding: 12px 20px; text-decoration: none; font-size: 14px; color: var(--text-color); display: block; transition: 0.2s; border-bottom: 1px solid var(--border-color); }
+        .sidebar a:hover { background: var(--primary-color); color: #0f172a; }
+        .sidebar .close-btn { position: absolute; top: 10px; font-size: 22px; cursor: pointer; color: var(--primary-color); }
+        html[dir="rtl"] .sidebar .close-btn { left: 15px; }
+        html[dir="ltr"] .sidebar .close-btn { right: 15px; }
+
         .container { max-width: 600px; margin: 15px auto; padding: 0 15px; }
+        
+        .quick-bar { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .quick-pill { background: var(--card-bg); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; white-space: nowrap; color: var(--primary-color); }
         
         .post-box, .card-box, .post-card { background: var(--card-bg); padding: 15px; border-radius: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .post-box textarea { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 8px; padding: 10px; resize: none; box-sizing: border-box; height: 80px; font-family: sans-serif; }
@@ -46,7 +60,6 @@
         .post-text { color: var(--text-color); font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
         .post-image { width: 100%; border-radius: 10px; margin-top: 8px; max-height: 320px; object-fit: cover; }
         
-        /* الملف الشخصي */
         .profile-pic-container { position: relative; width: 110px; height: 110px; margin: 0 auto 12px; }
         .profile-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); }
         .profile-upload-label { position: absolute; bottom: 0; right: 0; background: var(--primary-color); color: #fff; border-radius: 50%; padding: 6px; cursor: pointer; font-size: 13px; }
@@ -56,7 +69,6 @@
         .action-item:hover { color: var(--primary-color); }
         .delete-btn { color: #f87171; background: none; border: none; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        /* شات المساعد والمسنجر */
         .chat-container { display: flex; flex-direction: column; height: 52vh; }
         .chat-messages { flex: 1; overflow-y: auto; padding: 10px; background: var(--bg-color); border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); }
         .chat-msg { margin-bottom: 8px; padding: 8px 10px; border-radius: 8px; max-width: 80%; font-size: 13px; line-height: 1.4; }
@@ -68,7 +80,6 @@
         .group-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border-color); }
         .group-name { color: var(--text-color); font-weight: bold; font-size: 13px; }
 
-        /* شريط التنقل السفلي الشامل (6 خيارات) */
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid var(--border-color); z-index: 100; }
         .nav-item { color: var(--secondary-text); text-decoration: none; font-size: 10px; text-align: center; cursor: pointer; }
         .nav-item.active { color: var(--primary-color); font-weight: bold; }
@@ -76,24 +87,46 @@
 </head>
 <body id="pageBody">
 
+    <!-- القائمة الجانبية -->
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="closeSidebar()">&times;</a>
+        <a href="#" onclick="switchTab('feed'); closeSidebar();" id="m_home">🏠 الرئيسية</a>
+        <a href="#" onclick="switchTab('news'); closeSidebar();" id="m_news">🌐 MYGRAM NEWS</a>
+        <a href="#" onclick="switchTab('friends'); closeSidebar();" id="m_friends">👥 اقتراحات وصداقات</a>
+        <a href="#" onclick="switchTab('groups'); closeSidebar();" id="m_groups">🛡️ MYGRAM GROUPS</a>
+        <a href="#" onclick="switchTab('channels'); closeSidebar();" id="m_channels">📢 MYGRAM CHANNELS</a>
+        <a href="#" onclick="switchTab('profile'); closeSidebar();" id="m_settings">⚙️ إعدادات الحساب</a>
+        <a href="#" onclick="logout();" id="m_logout">🚪 تسجيل الخروج</a>
+    </div>
+
     <div class="header">
-        <h2 id="appTitle">MYGRAM</h2>
+        <button class="btn-icon" onclick="openSidebar()">☰</button>
+        <div class="header-title-box">
+            <h2 id="appTitle">ماذا يدور الآن؟</h2>
+            <div class="sub-slogan-header">Everything you need is here</div>
+        </div>
         <div class="header-btns">
-            <button class="btn-theme" onclick="toggleTheme()">🌓 المظهر</button>
-            <button class="btn-logout" onclick="logout()">خروج</button>
+            <select id="headerLangSelect" onchange="changeLanguage(this.value)" style="background:var(--bg-color); color:var(--text-color); border:1px solid var(--border-color); border-radius:4px; font-size:11px; padding:3px;">
+                <option value="ar">🇸🇾 AR</option>
+                <option value="en">🇺🇸 EN</option>
+                <option value="fr">🇫🇷 FR</option>
+                <option value="de">🇩🇪 DE</option>
+                <option value="es">🇪🇸 ES</option>
+                <option value="zh">🇨🇳 ZH</option>
+                <option value="ru">🇷🇺 RU</option>
+            </select>
+            <button class="btn-icon" onclick="toggleTheme()" title="Theme">🌓</button>
         </div>
     </div>
 
     <div class="container" id="mainContent"></div>
 
-    <!-- شريط التنقل الشامل (الفيسبوك، انستا، واتساب، تليجرام، إكس، والذكاء الاصطناعي) -->
     <div class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('feed', this)">📰 الخلاصة</div>
-        <div class="nav-item" onclick="switchTab('ai', this)">🤖 الذكاء الاصطناعي</div>
-        <div class="nav-item" onclick="switchTab('chats', this)">💬 مسنجر وواتس</div>
-        <div class="nav-item" onclick="switchTab('groups', this)">📢 قنوات ومجموعات</div>
-        <div class="nav-item" onclick="switchTab('xfeed', this)">⚡ تغريدات (X)</div>
-        <div class="nav-item" onclick="switchTab('profile', this)">⚙️ حسابي</div>
+        <div class="nav-item active" onclick="switchTab('feed', this)" id="nav_feed"> ما يدور</div>
+        <div class="nav-item" onclick="switchTab('ai', this)" id="nav_ai"> AI</div>
+        <div class="nav-item" onclick="switchTab('chats', this)" id="nav_chat"> CHAT</div>
+        <div class="nav-item" onclick="switchTab('twits', this)" id="nav_twits"> TWITS</div>
+        <div class="nav-item" onclick="switchTab('profile', this)" id="nav_profile"> حسابي</div>
     </div>
 
     <script>
@@ -101,9 +134,72 @@
         let currentTab = 'feed';
         let attachedMedia = '';
 
+        const langData = {
+            ar: {
+                titleFeed: "ماذا يدور الآن؟", titleNews: "MYGRAM NEWS", titleFriends: "اقتراحات وصداقات", titleAi: "المساعد الذكي AI", titleChat: "MYGRAM CHAT", titleGroups: "MYGRAM GROUPS", titleChannels: "MYGRAM CHANNELS", titleTwits: "MYGRAM TWITS", titleProfile: "الملف الشخصي والإعدادات",
+                navFeed: "ما يدور", navAi: "AI", navChat: "CHAT", navTwits: "TWITS", navProfile: "حسابي",
+                mHome: "🏠 الرئيسية", mNews: "🌐 MYGRAM NEWS", mFriends: "👥 اقتراحات وصداقات", mGroups: "🛡️ MYGRAM GROUPS", mChannels: "📢 MYGRAM CHANNELS", mSettings: "⚙️ إعدادات الحساب", mLogout: "🚪 تسجيل الخروج",
+                postPlaceholder: "بماذا تفكر؟ شارك أفكارك مع العالم...", uploadImg: "📁 رفع صورة", aiImg: "🎨 صورة AI", publish: "نشر بوست",
+                reels: "🎬 ريلز", shorts: "📱 شورت", live: "🔴 بث مباشر", notifs: "🔔 الإشعارات"
+            },
+            en: {
+                titleFeed: "What's happening?", titleNews: "MYGRAM NEWS", titleFriends: "Friends & Suggestions", titleAi: "AI Assistant", titleChat: "MYGRAM CHAT", titleGroups: "MYGRAM GROUPS", titleChannels: "MYGRAM CHANNELS", titleTwits: "MYGRAM TWITS", titleProfile: "Profile & Settings",
+                navFeed: "Feed", navAi: "AI", navChat: "Chat", navTwits: "Twits", navProfile: "Profile",
+                mHome: "🏠 Home", mNews: "🌐 MYGRAM NEWS", mFriends: "👥 Friends", mGroups: "🛡️ MYGRAM GROUPS", mChannels: "📢 MYGRAM CHANNELS", mSettings: "⚙️ Settings", mLogout: "🚪 Logout",
+                postPlaceholder: "What's on your mind? Share with the world...", uploadImg: "📁 Upload", aiImg: "🎨 AI Image", publish: "Post",
+                reels: "🎬 Reels", shorts: "📱 Shorts", live: "🔴 Live", notifs: "🔔 Notifs"
+            },
+            fr: {
+                titleFeed: "Quoi de neuf ?", titleNews: "MYGRAM NEWS", titleFriends: "Amis & Suggestions", titleAi: "Assistant AI", titleChat: "MYGRAM CHAT", titleGroups: "MYGRAM GROUPS", titleChannels: "MYGRAM CHANNELS", titleTwits: "MYGRAM TWITS", titleProfile: "Profil & Paramètres",
+                navFeed: "Fil", navAi: "AI", navChat: "Chat", navTwits: "Twits", navProfile: "Profil",
+                mHome: "🏠 Accueil", mNews: "🌐 MYGRAM NEWS", mFriends: "👥 Amis", mGroups: "🛡️ MYGRAM GROUPS", mChannels: "📢 MYGRAM CHANNELS", mSettings: "⚙️ Paramètres", mLogout: "🚪 Déconnexion",
+                postPlaceholder: "À quoi pensez-vous ?", uploadImg: "📁 Image", aiImg: "🎨 Image AI", publish: "Publier",
+                reels: "🎬 Reels", shorts: "📱 Shorts", live: "🔴 Live", notifs: "🔔 Notifs"
+            },
+            de: {
+                titleFeed: "Was passiert?", titleNews: "MYGRAM NEWS", titleFriends: "Freunde", titleAi: "KI-Assistent", titleChat: "MYGRAM CHAT", titleGroups: "MYGRAM GROUPS", titleChannels: "MYGRAM CHANNELS", titleTwits: "MYGRAM TWITS", titleProfile: "Profil & Einstellungen",
+                navFeed: "Feed", navAi: "KI", navChat: "Chat", navTwits: "Twits", navProfile: "Profil",
+                mHome: "🏠 Startseite", mNews: "🌐 MYGRAM NEWS", mFriends: "👥 Freunde", mGroups: "🛡️ MYGRAM GROUPS", mChannels: "📢 MYGRAM CHANNELS", mSettings: "⚙️ Einstellungen", mLogout: "🚪 Abmelden",
+                postPlaceholder: "Was denken Sie?", uploadImg: "📁 Bild", aiImg: "🎨 KI Bild", publish: "Posten",
+                reels: "🎬 Reels", shorts: "📱 Shorts", live: "🔴 Live", notifs: "🔔 Benachrichtigungen"
+            },
+            es: {
+                titleFeed: "¿Qué está pasando?", titleNews: "MYGRAM NEWS", titleFriends: "Amigos", titleAi: "Asistente AI", titleChat: "MYGRAM CHAT", titleGroups: "MYGRAM GROUPS", titleChannels: "MYGRAM CHANNELS", titleTwits: "MYGRAM TWITS", titleProfile: "Perfil y Ajustes",
+                navFeed: "Inicio", navAi: "AI", navChat: "Chat", navTwits: "Twits", navProfile: "Perfil",
+                mHome: "🏠 Inicio", mNews: "🌐 MYGRAM NEWS", mFriends: "👥 Amigos", mGroups: "🛡️ MYGRAM GROUPS", mChannels: "📢 MYGRAM CHANNELS", mSettings: "⚙️ Ajustes", mLogout: "🚪 Salir",
+                postPlaceholder: "¿Qué estás pensando?", uploadImg: "📁 Subir", aiImg: "🎨 Imagen AI", publish: "Publicar",
+                reels: "🎬 Reels", shorts: "📱 Shorts", live: "🔴 En vivo", notifs: "🔔 Avisos"
+            },
+            zh: {
+                titleFeed: "动态", titleNews: "MYGRAM NEWS", titleFriends: "好友与推荐", titleAi: "AI 助手", titleChat: "MYGRAM CHAT", titleGroups: "MYGRAM GROUPS", titleChannels: "MYGRAM CHANNELS", titleTwits: "MYGRAM TWITS", titleProfile: "个人资料与设置",
+                navFeed: "动态", navAi: "AI", navChat: "聊天", navTwits: "动态", navProfile: "我的",
+                mHome: "🏠 首页", mNews: "🌐 MYGRAM NEWS", mFriends: "👥 好友", mGroups: "🛡️ MYGRAM GROUPS", mChannels: "📢 MYGRAM CHANNELS", mSettings: "⚙️ 设置", mLogout: "🚪 登出",
+                postPlaceholder: "你在想什么？", uploadImg: "📁 上传图片", aiImg: "🎨 AI生成", publish: "发布",
+                reels: "🎬 短片", shorts: "📱 视频", live: "🔴 直播", notifs: "🔔 通知"
+            },
+            ru: {
+                titleFeed: "Что происходит?", titleNews: "MYGRAM NEWS", titleFriends: "Друзья", titleAi: "ИИ Ассистент", titleChat: "MYGRAM CHAT", titleGroups: "MYGRAM GROUPS", titleChannels: "MYGRAM CHANNELS", titleTwits: "MYGRAM TWITS", titleProfile: "Профиль и Настройки",
+                navFeed: "Лента", navAi: "ИИ", navChat: "Чат", navTwits: "Твиты", navProfile: "Профиль",
+                mHome: "🏠 Главная", mNews: "🌐 MYGRAM NEWS", mFriends: "👥 Друзья", mGroups: "🛡️ MYGRAM GROUPS", mChannels: "📢 MYGRAM CHANNELS", mSettings: "⚙️ Настройки", mLogout: "🚪 Выйти",
+                postPlaceholder: "Что у вас на уме?", uploadImg: "📁 Загрузить", aiImg: "🎨 ИИ Фото", publish: "Опубликовать",
+                reels: "🎬 Рилс", shorts: "📱 Шортс", live: "🔴 Эфир", notifs: "🔔 Уведомления"
+            }
+        };
+
         if (localStorage.getItem('mygram_theme') === 'light') {
             document.getElementById('pageBody').classList.add('light-mode');
         }
+
+        function changeLanguage(lang) {
+            localStorage.setItem('mygram_lang', lang);
+            const htmlTag = document.getElementById('htmlRoot');
+            htmlTag.setAttribute('lang', lang);
+            htmlTag.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            renderContent();
+        }
+
+        function openSidebar() { document.getElementById("mySidebar").style.width = "250px"; }
+        function closeSidebar() { document.getElementById("mySidebar").style.width = "0"; }
 
         function toggleTheme() {
             const body = document.getElementById('pageBody');
@@ -112,92 +208,150 @@
         }
 
         function renderContent() {
+            let lang = localStorage.getItem('mygram_lang') || 'ar';
+            let t = langData[lang] || langData.ar;
+
+            document.getElementById('m_home').innerText = t.mHome;
+            document.getElementById('m_news').innerText = t.mNews;
+            document.getElementById('m_friends').innerText = t.mFriends;
+            document.getElementById('m_groups').innerText = t.mGroups;
+            document.getElementById('m_channels').innerText = t.mChannels;
+            document.getElementById('m_settings').innerText = t.mSettings;
+            document.getElementById('m_logout').innerText = t.mLogout;
+
+            document.getElementById('nav_feed').innerText = t.navFeed;
+            document.getElementById('nav_ai').innerText = t.navAi;
+            document.getElementById('nav_chat').innerText = t.navChat;
+            document.getElementById('nav_twits').innerText = t.navTwits;
+            document.getElementById('nav_profile').innerText = t.navProfile;
+
             const content = document.getElementById('mainContent');
             let userAvatar = localStorage.getItem('mygram_avatar') || 'https://via.placeholder.com/100';
             
             if (currentTab === 'feed') {
-                document.getElementById('appTitle').innerText = 'MYGRAM - فيسبوك & إنستغرام';
+                document.getElementById('appTitle').innerText = t.titleFeed;
                 content.innerHTML = `
+                    <div class="quick-bar">
+                        <div class="quick-pill" onclick="alert('Open Reels')">${t.reels}</div>
+                        <div class="quick-pill" onclick="alert('Open Shorts')">${t.shorts}</div>
+                        <div class="quick-pill" onclick="alert('Start Live')">${t.live}</div>
+                        <div class="quick-pill" onclick="alert('No notifications')">${t.notifs}</div>
+                    </div>
                     <div class="post-box">
-                        <textarea id="postText" placeholder="بماذا تفكر؟ شارك صورك أو أفكارك مع العالم..."></textarea>
+                        <textarea id="postText" placeholder="${t.postPlaceholder}"></textarea>
                         <div id="mediaPreview" style="margin-bottom: 8px;"></div>
                         <div class="post-tools">
-                            <label class="action-btn" style="cursor:pointer; margin-top:0;">📁 رفع صورة<input type="file" accept="image/*" style="display:none" onchange="handleMediaUpload(event)"></label>
-                            <button class="ai-gen-btn" onclick="generateAIImage()">🎨 توليد صورة AI</button>
-                            <button class="action-btn" onclick="addPost()" style="margin-top:0; margin-right:auto;">نشر بوست</button>
+                            <label class="action-btn" style="cursor:pointer; margin-top:0;">${t.uploadImg}<input type="file" accept="image/*" style="display:none" onchange="handleMediaUpload(event)"></label>
+                            <button class="ai-gen-btn" onclick="generateAIImage()">${t.aiImg}</button>
+                            <button class="action-btn" onclick="addPost()" style="margin-top:0; margin-right:auto;">${t.publish}</button>
                         </div>
                     </div>
                     <div id="postsContainer"></div>
                 `;
                 loadPosts();
+            } else if (currentTab === 'news') {
+                document.getElementById('appTitle').innerText = t.titleNews;
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color: var(--primary-color); margin-top:0; font-size:15px;">🌐 MYGRAM NEWS</h3>
+                        <div class="group-item" style="margin-top:10px;"><span class="group-name">📈 Economy: Markets are recovering strongly.</span></div>
+                        <div class="group-item"><span class="group-name">⚽ Sports: Champions League top matches tonight.</span></div>
+                        <div class="group-item"><span class="group-name">💻 Tech: Advanced AI models released globally.</span></div>
+                    </div>
+                `;
+            } else if (currentTab === 'friends') {
+                document.getElementById('appTitle').innerText = t.titleFriends;
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color: var(--primary-color); margin-top:0; font-size:15px;">👥 People You May Know</h3>
+                        <div class="group-item">
+                            <span class="group-name">👤 Ahmed Al-Samer</span>
+                            <button class="add-btn" onclick="alert('Request sent!')">Add Friend</button>
+                        </div>
+                    </div>
+                `;
             } else if (currentTab === 'ai') {
-                document.getElementById('appTitle').innerText = 'المساعد الذكي (AI)';
+                document.getElementById('appTitle').innerText = t.titleAi;
                 content.innerHTML = `
                     <div class="card-box chat-container">
-                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">مساعد MYGRAM الذكي (مدعوم بالذكاء الاصطناعي)</h3>
+                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">MYGRAM AI Assistant</h3>
                         <div class="chat-messages" id="aiMessages">
-                            <div class="chat-msg ai">أهلاً بك يا ${currentUser}! أنا عقلك الذكي المساعد، اسألني عن أي شيء أو اطلب مني أفكاراً لمشروعك.</div>
+                            <div class="chat-msg ai">Hello ${currentUser}! How can I help you today?</div>
                         </div>
                         <div class="chat-input-box">
-                            <input type="text" id="aiInput" placeholder="اكتب سؤالك للمساعد...">
-                            <button class="action-btn" onclick="sendAiMessage()" style="margin-top:0;">إرسال</button>
+                            <input type="text" id="aiInput" placeholder="Ask AI...">
+                            <button class="action-btn" onclick="sendAiMessage()" style="margin-top:0;">Send</button>
                         </div>
                     </div>
                 `;
             } else if (currentTab === 'chats') {
-                document.getElementById('appTitle').innerText = 'المراسلة (مسنجر & واتساب)';
+                document.getElementById('appTitle').innerText = t.titleChat;
                 content.innerHTML = `
                     <div class="card-box chat-container">
-                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">دردشة فورية مشفرة</h3>
+                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">MYGRAM Direct Chat & Phone Numbers</h3>
+                        <div style="margin-bottom:8px; display:flex; gap:6px;">
+                            <input type="text" id="phoneChatInput" placeholder="Phone with country code (e.g. +963...)" style="flex:1; background:var(--bg-color); border:1px solid var(--border-color); color:var(--text-color); padding:6px; border-radius:6px; font-size:12px;">
+                            <button class="action-btn" onclick="startPhoneChat()" style="margin-top:0; font-size:11px;">Chat</button>
+                        </div>
                         <div class="chat-messages" id="chatMessages">
-                            <div class="chat-msg peer">سيف الدين: أهلاً بك في نظام المحادثات الفورية الشامل!</div>
+                            <div class="chat-msg peer">System: Enter any international phone number above to chat instantly.</div>
                         </div>
                         <div class="chat-input-box">
-                            <input type="text" id="chatInput" placeholder="اكتب رسالة...">
-                            <button class="action-btn" onclick="sendChatMessage()" style="margin-top:0;">إرسال</button>
+                            <input type="text" id="chatInput" placeholder="Type message...">
+                            <button class="action-btn" onclick="sendChatMessage()" style="margin-top:0;">Send</button>
                         </div>
                     </div>
                 `;
             } else if (currentTab === 'groups') {
-                document.getElementById('appTitle').innerText = 'المجموعات والقنوات (تيليجرام)';
+                document.getElementById('appTitle').innerText = t.titleGroups;
                 content.innerHTML = `
                     <div class="card-box">
-                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">المجتمعات الكبرى</h3>
+                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">MYGRAM Communities & Markets</h3>
                         <div class="group-item">
-                            <span class="group-name">🛡️ قناة المطورين والتقنية العالمية</span>
-                            <button class="add-btn" onclick="alert('تم الانضمام للقناة بنجاح!')">انضمام</button>
-                        </div>
-                        <div class="group-item">
-                            <span class="group-name">💡 مجموعة رواد الأعمال والمشاريع الناشئة</span>
-                            <button class="add-btn" onclick="alert('تم الانضمام للمجموعة بنجاح!')">انضمام</button>
+                            <span class="group-name">🛒 Global Trading & Shopping Market</span>
+                            <button class="add-btn" onclick="alert('Joined group!')">Join</button>
                         </div>
                     </div>
                 `;
-            } else if (currentTab === 'xfeed') {
-                document.getElementById('appTitle').innerText = 'التغريدات السريعة (تويتر / X)';
+            } else if (currentTab === 'channels') {
+                document.getElementById('appTitle').innerText = t.titleChannels;
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">MYGRAM Channels</h3>
+                        <div class="group-item">
+                            <span class="group-name">📰 World News Channel (1.2M Followers)</span>
+                            <button class="add-btn" onclick="alert('Followed!')">Follow</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'twits') {
+                document.getElementById('appTitle').innerText = t.titleTwits;
                 content.innerHTML = `
                     <div class="post-box">
-                        <textarea id="xText" placeholder="ما الذي يحدث؟ (تغريدة قصيرة)..." maxlength="280"></textarea>
-                        <button class="action-btn" onclick="addTweet()" style="margin-top:5px; float:left;">تغريد ⚡</button>
+                        <textarea id="xText" placeholder="What's on your mind? (Short thoughts)..." maxlength="280"></textarea>
+                        <button class="action-btn" onclick="addTweet()" style="margin-top:5px; float:left;">Publish Twit ⚡</button>
                         <div style="clear:both;"></div>
                     </div>
                     <div id="tweetsContainer"></div>
                 `;
                 loadTweets();
             } else if (currentTab === 'profile') {
-                document.getElementById('appTitle').innerText = 'الملف الشخصي والحساب';
-                let bio = localStorage.getItem('mygram_bio') || 'لم تضف نبذة تعريفية بعد...';
+                document.getElementById('appTitle').innerText = t.titleProfile;
+                let bio = localStorage.getItem('mygram_bio') || 'No bio added yet...';
+                let phoneAuth = localStorage.getItem('mygram_phone_auth') || 'Not registered';
                 content.innerHTML = `
                     <div class="card-box" style="text-align: center;">
                         <div class="profile-pic-container">
                             <img src="${userAvatar}" class="profile-img" alt="Profile">
-                            <label class="profile-upload-label" title="تغيير الصورة">📷
+                            <label class="profile-upload-label" title="Change">📷
                                 <input type="file" accept="image/*" style="display:none" onchange="updateProfilePic(event)">
                             </label>
                         </div>
                         <div style="font-weight: bold; color: var(--primary-color); font-size: 16px; margin-bottom: 5px;">${currentUser}</div>
+                        <p style="color: var(--secondary-text); font-size: 12px; margin-bottom: 5px;">📞 ${phoneAuth}</p>
                         <p style="color: var(--secondary-text); font-size: 13px; margin-bottom: 12px;">${bio}</p>
-                        <button class="action-btn" onclick="editBio()" style="margin-bottom:8px;">تعديل النبذة</button>
+                        <button class="action-btn" onclick="editBio()" style="margin-bottom:8px;">Edit Bio</button>
+                        <button class="action-btn" onclick="changePassword()" style="margin-bottom:8px; background:#f43f5e;">Change Password</button>
                     </div>
                 `;
             }
@@ -210,7 +364,7 @@
             reader.onload = function(e) {
                 attachedMedia = e.target.result;
                 document.getElementById('mediaPreview').innerHTML = `
-                    <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">تم إرفاق الملف بنجاح:</div>
+                    <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">Attached successfully:</div>
                     <img src="${attachedMedia}" class="post-image" alt="Media">
                 `;
             };
@@ -218,11 +372,11 @@
         }
 
         function generateAIImage() {
-            let promptText = prompt('أدخل وصفاً للصورة المطلوبة بالذكاء الاصطناعي:', 'futuristic cyberpunk city');
+            let promptText = prompt('Enter prompt for AI Image:', 'futuristic cyberpunk city');
             if(!promptText) return;
             attachedMedia = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}`;
             document.getElementById('mediaPreview').innerHTML = `
-                <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">صورة الذكاء الاصطناعي جاهزة:</div>
+                <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">AI Image Ready:</div>
                 <img src="${attachedMedia}" class="post-image" alt="AI Generated">
             `;
         }
@@ -250,14 +404,14 @@
                 <div class="post-card" style="border: 1px dashed var(--primary-color);">
                     <div class="post-author-row">
                         <img src="https://via.placeholder.com/50" class="mini-avatar">
-                        <div class="post-author-info">النظام العالمي الرسمي</div>
+                        <div class="post-author-info">MYGRAM Official</div>
                     </div>
-                    <div class="post-text">أهلاً بك في منصة MYGRAM الشاملة والمزودة بكل خدمات التواصل والذكاء الاصطناعي!</div>
+                    <div class="post-text">Welcome to MYGRAM. Everything you need is here!</div>
                 </div>
             `;
 
             posts.forEach((p, index) => {
-                let deleteOption = p.author === currentUser ? `<button class="delete-btn" onclick="deletePost(${p.id || index})" style="float:left;">حذف</button>` : '';
+                let deleteOption = p.author === currentUser ? `<button class="delete-btn" onclick="deletePost(${p.id || index})" style="float:left;">Delete</button>` : '';
                 let imageTag = p.image ? `<img src="${p.image}" class="post-image" alt="Post">` : '';
                 let avatar = p.avatar || 'https://via.placeholder.com/50';
                 
@@ -271,8 +425,8 @@
                         <div class="post-text">${p.content}</div>
                         ${imageTag}
                         <div class="post-actions" style="margin-top: 8px;">
-                            <span class="action-item" onclick="likePost(${p.id || index})">❤️ إعجاب (${p.likes || 0})</span>
-                            <span class="action-item" onclick="alert('التعليقات مفعلة بنجاح!')">💬 تعليق</span>
+                            <span class="action-item" onclick="likePost(${p.id || index})">❤️ Like (${p.likes || 0})</span>
+                            <span class="action-item" onclick="alert('Comments enabled!')">💬 Comment</span>
                         </div>
                     </div>
                 `;
@@ -284,7 +438,7 @@
             const text = document.getElementById('xText').value;
             if(!text.trim()) return;
             let tweets = JSON.parse(localStorage.getItem('mygram_tweets') || '[]');
-            tweets.unshift({ id: Date.now(), author: currentUser, content: text, likes: 0 });
+            tweets.unshift({ id: Date.now(), author: currentUser, content: text });
             localStorage.setItem('mygram_tweets', JSON.stringify(tweets));
             document.getElementById('xText').value = '';
             loadTweets();
@@ -295,12 +449,11 @@
             const container = document.getElementById('tweetsContainer');
             if(!container) return;
             let html = '';
-            tweets.forEach((t, index) => {
+            tweets.forEach((t) => {
                 html += `
                     <div class="post-card">
                         <div style="font-weight:bold; color:var(--primary-color); margin-bottom:5px;">@${t.author}</div>
                         <div class="post-text">${t.content}</div>
-                        <div class="post-actions"><span class="action-item" onclick="alert('تم إعادة التغريد!')">🔁 إعادة تغريد</span></div>
                     </div>
                 `;
             });
@@ -317,7 +470,7 @@
             box.scrollTop = box.scrollHeight;
 
             setTimeout(() => {
-                box.innerHTML += `<div class="chat-msg ai">أهلاً بك، لقد قمت بتحليل استفسارك عبر الذكاء الاصطناعي بنجاح. منصتنا مصممة لتلبي تطلعات الجميع!</div>`;
+                box.innerHTML += `<div class="chat-msg ai">AI Assistant: Request processed successfully.</div>`;
                 box.scrollTop = box.scrollHeight;
             }, 600);
         }
@@ -332,9 +485,19 @@
             box.scrollTop = box.scrollHeight;
 
             setTimeout(() => {
-                box.innerHTML += `<div class="chat-msg peer">سيف الدين: تم استلام رسالتك الفورية بنجاح عبر الشات المدمج!</div>`;
+                box.innerHTML += `<div class="chat-msg peer">Peer: Message delivered via MYGRAM CHAT!</div>`;
                 box.scrollTop = box.scrollHeight;
             }, 600);
+        }
+
+        function startPhoneChat() {
+            const phone = document.getElementById('phoneChatInput').value.trim();
+            if(!phone) {
+                alert('Please enter phone number with country code!');
+                return;
+            }
+            alert('Chat initiated with: ' + phone);
+            document.getElementById('phoneChatInput').value = '';
         }
 
         function updateProfilePic(event) {
@@ -366,21 +529,33 @@
         }
 
         function editBio() {
-            let newBio = prompt('أدخل نبذة تعريفية جديدة:');
+            let newBio = prompt('Enter new bio:');
             if(newBio !== null && newBio.trim() !== '') {
                 localStorage.setItem('mygram_bio', newBio);
                 renderContent();
             }
         }
 
+        function changePassword() {
+            let pass = prompt('Enter new password:');
+            if(pass) alert('Password updated securely!');
+        }
+
         function switchTab(tab, element) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            element.classList.add('active');
+            if(element) {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                element.classList.add('active');
+            }
             currentTab = tab;
             renderContent();
         }
 
         window.onload = function() {
+            let savedLang = localStorage.getItem('mygram_lang') || 'ar';
+            document.getElementById('headerLangSelect').value = savedLang;
+            const htmlTag = document.getElementById('htmlRoot');
+            htmlTag.setAttribute('lang', savedLang);
+            htmlTag.setAttribute('dir', savedLang === 'ar' ? 'rtl' : 'ltr');
             renderContent();
         };
 
