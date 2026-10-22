@@ -28,7 +28,6 @@
 
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding-top: 65px; padding-bottom: 75px; transition: 0.3s; }
         
-        /* الهيدر العلوي الذكي القابل للإخفاء */
         .header { display: flex; justify-content: space-between; align-items: center; background: rgba(21, 34, 56, 0.95); backdrop-filter: blur(10px); padding: 10px 18px; border-bottom: 1px solid var(--border); position: fixed; top: 0; width: 100%; z-index: 1000; box-sizing: border-box; transition: transform 0.3s ease; }
         .header.hide { transform: translateY(-100%); }
         .header-title-box { text-align: center; }
@@ -36,13 +35,11 @@
         .sub-slogan-header { font-size: 8px; color: var(--text-sub); }
         .btn-icon { background: none; border: none; color: var(--text-main); font-size: 18px; cursor: pointer; padding: 4px; }
 
-        /* شريط التنقل السفلي السلس */
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(21, 34, 56, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); z-index: 1000; transition: transform 0.3s ease; }
         .nav-bar.hide { transform: translateY(100%); }
         .nav-item { color: var(--text-sub); font-size: 10px; text-align: center; cursor: pointer; flex: 1; font-weight: 600; }
         .nav-item.active { color: var(--primary); font-weight: 800; }
 
-        /* القائمة الجانبية المنسدلة */
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background: var(--card-bg); overflow-x: hidden; transition: 0.3s; padding-top: 60px; border-left: 1px solid var(--border); }
         html[dir="ltr"] .sidebar { left: 0; right: auto; border-right: 1px solid var(--border); border-left: none; }
         .sidebar a { padding: 13px 20px; text-decoration: none; font-size: 13px; color: var(--text-main); display: block; border-bottom: 1px solid var(--border); transition: 0.2s; }
@@ -53,7 +50,6 @@
 
         .container { max-width: 580px; margin: 10px auto; padding: 0 12px; }
         
-        /* شريط القصص (Stories) */
         .stories-bar { display: flex; gap: 10px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 5px; }
         .story-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 60px; }
         .story-avatar-wrap { position: relative; width: 52px; height: 52px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, #0284c7, #38bdf8); }
@@ -119,13 +115,14 @@
     <!-- القائمة الجانبية -->
     <div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="close-btn" onclick="closeSidebar()">&times;</a>
-        <a href="#" onclick="switchTab('feed'); closeSidebar();" id="menuFeed">🏠 ماذا يدور الآن؟</a>
-        <a href="#" onclick="switchTab('create_page'); closeSidebar();" id="menuPage">📄 إنشاء صفحة جديدة</a>
-        <a href="#" onclick="switchTab('create_group'); closeSidebar();" id="menuGroup">👥 إنشاء مجموعة جديدة</a>
-        <a href="#" onclick="switchTab('ads_manager'); closeSidebar();" id="menuAds">📣 مدير الإعلانات (MYGRAM Ads)</a>
-        <a href="#" onclick="switchTab('profile'); closeSidebar();" id="menuProfile">👤 الملف الشخصي والبيانات</a>
-        <a href="#" onclick="switchTab('news'); closeSidebar();" id="menuNews">🌐 MYGRAM NEWS</a>
-        <a href="#" onclick="logout();" id="menuLogout">🚪 تسجيل الخروج</a>
+        <a href="#" onclick="switchTab('feed'); closeSidebar();">🏠 ماذا يدور الآن؟</a>
+        <a href="#" onclick="switchTab('create_page'); closeSidebar();">📄 إنشاء صفحة جديدة</a>
+        <a href="#" onclick="switchTab('create_group'); closeSidebar();">👥 إنشاء مجموعة جديدة</a>
+        <a href="#" onclick="switchTab('ads_manager'); closeSidebar();">📣 مدير الإعلانات (MYGRAM Ads)</a>
+        <a href="#" onclick="switchTab('profile'); closeSidebar();">👤 الملف الشخصي والبيانات</a>
+        <a href="#" onclick="switchTab('accounts'); closeSidebar();">🔄 إدارة الحسابات والتبديل</a>
+        <a href="#" onclick="switchTab('news'); closeSidebar();">🌐 MYGRAM NEWS</a>
+        <a href="#" onclick="logout();">🚪 تسجيل الخروج</a>
     </div>
 
     <!-- الهيدر العلوي -->
@@ -146,11 +143,11 @@
 
     <!-- شريط التنقل السفلي -->
     <div class="nav-bar" id="mainNavBar">
-        <div class="nav-item active" id="navFeed" onclick="switchTab('feed', this)">ما يدور</div>
-        <div class="nav-item" id="navAi" onclick="switchTab('ai', this)">المساعد AI</div>
-        <div class="nav-item" id="navChat" onclick="switchTab('chats', this)">CHAT</div>
-        <div class="nav-item" id="navTwits" onclick="switchTab('twits', this)">TWITS</div>
-        <div class="nav-item" id="navProfile" onclick="switchTab('profile', this)">حسابي</div>
+        <div class="nav-item active" onclick="switchTab('feed', this)">ما يدور</div>
+        <div class="nav-item" onclick="switchTab('ai', this)">المساعد AI</div>
+        <div class="nav-item" onclick="switchTab('chats', this)">CHAT</div>
+        <div class="nav-item" onclick="switchTab('twits', this)">TWITS</div>
+        <div class="nav-item" onclick="switchTab('profile', this)">حسابي</div>
     </div>
 
     <script>
@@ -181,27 +178,28 @@
             {code:"uz", name:"Oʻzbekcha", rtl:false}, {code:"mn", name:"Монгол", rtl:false},
             {code:"bn", name:"বাংলা", rtl:false}, {code:"ta", name:"தமிழ்", rtl:false},
             {code:"te", name:"తెలుగు", rtl:false}, {code:"mr", name:"मराठी", rtl:false},
-            {code:"gu", name:"ગુજરાતી", rtl:false}, {code:"kn", name:"```html
-            {code:"kn", name:"ಕನ್ನಡ", rtl:false}, {code:"ml", name:"മലയാളം", rtl:false},
-            {code:"pa", name:"ਪੰਜਾਬੀ", rtl:false}, {code:"si", name:"සිංහල", rtl:false},
-            {code:"am", name:"አማርኛ", rtl:false}, {code:"km", name:"ភាសាខ្មែរ", rtl:false},
-            {code:"lo", name:"ພາສາລາວ", rtl:false}, {code:"my", name:"မြန်မာဘာသာ", rtl:false},
-            {code:"ne", name:"नेपाली", rtl:false}, {code:"af", name:"Afrikaans", rtl:false},
-            {code:"eu", name:"Euskara", rtl:false}, {code:"gl", name:"Galego", rtl:false},
-            {code:"ca", name:"Català", rtl:false}, {code:"is", name:"Íslenska", rtl:false},
-            {code:"mt", name:"Malti", rtl:false}, {code:"ga", name:"Gaeilge", rtl:false},
-            {code:"cy", name:"Cymraeg", rtl:false}
+            {code:"gu", name:"ગુજરાતી", rtl:false}, {code:"kn", name:"ಕನ್ನಡ", rtl:false},
+            {code:"ml", name:"മലയാളം", rtl:false}, {code:"pa", name:"ਪੰਜਾਬੀ", rtl:false},
+            {code:"si", name:"සිංහල", rtl:false}, {code:"am", name:"አማርኛ", rtl:false},
+            {code:"km", name:"ភាសាខ្មែរ", rtl:false}, {code:"lo", name:"ພາສາລາວ", rtl:false},
+            {code:"my", name:"မြန်မာဘာသာ", rtl:false}, {code:"ne", name:"नेपाली", rtl:false},
+            {code:"af", name:"Afrikaans", rtl:false}, {code:"eu", name:"Euskara", rtl:false},
+            {code:"gl", name:"Galego", rtl:false}, {code:"ca", name:"Català", rtl:false},
+            {code:"is", name:"Íslenska", rtl:false}, {code:"mt", name:"Malti", rtl:false},
+            {code:"ga", name:"Gaeilge", rtl:false}, {code:"cy", name:"Cymraeg", rtl:false}
         ];
 
-        let currentUser = localStorage.getItem('mygram_username') || 'Louay Chaghal';
-        let userGender = localStorage.getItem('mygram_gender') || 'male';
-        let userAge = parseInt(localStorage.getItem('mygram_age') || '18');
+        let currentAccount = JSON.parse(localStorage.getItem('mygram_current_account') || '{}');
+        let currentUser = currentAccount.name || 'Louay Chaghal';
+        let userGender = currentAccount.gender || 'male';
+        let userAge = currentAccount.age || 18;
         let currentTab = 'feed';
         let chatSubTab = 'contacts';
         let attachedMedia = '';
 
         function populateLangSelect() {
             const select = document.getElementById('globalLangSelect');
+            if(!select) return;
             select.innerHTML = globalLanguages.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
             let current = localStorage.getItem('mygram_lang') || 'ar';
             select.value = current;
@@ -212,14 +210,17 @@
             if(save) localStorage.setItem('mygram_lang', lang);
             const langObj = globalLanguages.find(l => l.code === lang) || globalLanguages[0];
             const htmlTag = document.getElementById('htmlRoot');
-            htmlTag.setAttribute('lang', lang);
-            htmlTag.setAttribute('dir', langObj.rtl ? 'rtl' : 'ltr');
-            showToast('Language Updated / تم تغيير اللغة');
+            if(htmlTag) {
+                htmlTag.setAttribute('lang', lang);
+                htmlTag.setAttribute('dir', langObj.rtl ? 'rtl' : 'ltr');
+            }
+            showToast('تم تحديث اللغة!');
             renderContent();
         }
 
         function showToast(msg) {
             const t = document.getElementById('toastMsg');
+            if(!t) return;
             t.innerText = msg;
             t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 2000);
@@ -231,373 +232,4 @@
             const header = document.getElementById('mainHeader');
             const navBar = document.getElementById('mainNavBar');
             if (scrollTop > lastScrollTop && scrollTop > 50) {
-                header.classList.add('hide'); navBar.classList.add('hide');
-            } else {
-                header.classList.remove('hide'); navBar.classList.remove('hide');
-            }
-            lastScrollTop = scrollTop;
-        });
-
-        function openSidebar() { document.getElementById("mySidebar").style.width = "250px"; }
-        function closeSidebar() { document.getElementById("mySidebar").style.width = "0"; }
-
-        function toggleTheme() {
-            const body = document.getElementById('pageBody');
-            body.classList.toggle('light-mode');
-            showToast('Theme Changed / تم تغيير المظهر');
-        }
-
-        function switchTab(tab, el) {
-            if(el) {
-                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                el.classList.add('active');
-            }
-            currentTab = tab;
-            renderContent();
-        }
-
-        function renderContent() {
-            const content = document.getElementById('mainContent');
-            let userAvatarImg = localStorage.getItem('mygram_avatar');
-            let genderIcon = userGender === 'female' ? '👩' : '👨';
-
-            if (currentTab === 'feed') {
-                document.getElementById('appTitle').innerText = 'ماذا يدور الآن؟';
-                content.innerHTML = `
-                    <div class="stories-bar">
-                        <div class="story-item" onclick="showToast('رفع قصة جديدة...')">
-                            <div class="story-avatar-wrap">
-                                <div class="story-avatar">${userAvatarImg ? `<img src="${userAvatarImg}" style="width:100%;height:100%;border-radius:50%;">` : genderIcon}</div>
-                            </div>
-                            <div class="story-name">قصتك +</div>
-                        </div>
-                    </div>
-
-                    <div class="quick-bar">
-                        <div class="quick-pill" onclick="showToast('🎬 Reels')">🎬 ريلز</div>
-                        <div class="quick-pill" onclick="showToast('📱 Shorts')">📱 شورت</div>
-                        <div class="quick-pill" onclick="showToast('🔴 Live')">🔴 بث مباشر</div>
-                        <div class="quick-pill" onclick="switchTab('ads_manager')">📣 إعلان ممول</div>
-                    </div>
-
-                    <div class="post-box">
-                        <textarea id="postText" placeholder="بماذا تفكر؟ شارك أفكارك مع العالم..."></textarea>
-                        <div id="mediaPreview"></div>
-                        <div class="post-tools">
-                            <label class="action-btn" style="cursor:pointer;">📷 الجاليري<input type="file" accept="image/*,video/*" style="display:none" onchange="handleMediaUpload(event)"></label>
-                            <button class="action-btn" onclick="showToast('🎥 Live Cam')">🎥 كاميرا مباشرة</button>
-                            <button class="action-btn" onclick="enhanceTextWithAI()">✨ تحسين AI</button>
-                            <label style="font-size:10px; margin-right:auto; cursor:pointer;"><input type="checkbox" id="sensitiveCheck"> +18</label>
-                            <button class="action-btn btn-primary" onclick="addPost()">نشر</button>
-                        </div>
-                    </div>
-                    <div id="postsContainer"></div>
-                `;
-                loadPosts();
-            } else if (currentTab === 'profile') {
-                document.getElementById('appTitle').innerText = 'الملف الشخصي والبيانات';
-                let relation = localStorage.getItem('mygram_relation') || 'مرتبطة / مرتبط';
-                let hobbies = localStorage.getItem('mygram_hobbies') || 'الرياضة، البرمجة، السفر';
-                let family = localStorage.getItem('mygram_family') || 'لا يوجد أقارب مضافين';
-
-                content.innerHTML = `
-                    <div class="card-box" style="text-align:center;">
-                        <div class="profile-avatar-big">
-                            ${userAvatarImg ? `<img src="${userAvatarImg}">` : genderIcon}
-                        </div>
-                        <h3 style="margin:5px 0;">${currentUser}</h3>
-                        <p style="font-size:11px; color:var(--text-sub); margin-bottom:15px;">العمر: ${userAge} سنة</p>
-
-                        <div class="info-row"><span>الجندر (الهوية):</span> <b>${userGender === 'female' ? 'أنثى 👩' : 'ذكر 👨'}</b></div>
-                        <div class="info-row"><span>الحالة الاجتماعية:</span> <b>${relation}</b></div>
-                        <div class="info-row"><span>أفراد العائلة:</span> <b>${family}</b></div>
-                        <div class="info-row"><span>الهوايات:</span> <b>${hobbies}</b></div>
-
-                        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
-                        
-                        <h4 style="margin:0 0 10px; color:var(--primary); font-size:12px; text-align:right;">تعديل البيانات السريعة:</h4>
-                        <input type="text" id="editHobbies" placeholder="تعديل الهوايات والاهتمامات..." value="${hobbies}">
-                        <input type="text" id="editFamily" placeholder="تعديل أفراد العائلة..." value="${family}">
-                        <label class="action-btn" style="width:100%; justify-content:center; margin-bottom:8px; cursor:pointer;">
-                            🖼️ تحميل / تغيير صورة البروفايل
-                            <input type="file" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
-                        </label>
-                        <button class="action-btn btn-primary" onclick="saveProfileDetails()" style="width:100%; justify-content:center;">حفظ التعديلات</button>
-                    </div>
-                `;
-            } else if (currentTab === 'chats') {
-                document.getElementById('appTitle').innerText = 'MYGRAM CHAT';
-                content.innerHTML = `
-                    <div class="card-box chat-container">
-                        <div class="tab-sub-bar">
-                            <div class="tab-sub-btn ${chatSubTab === 'contacts' ? 'active' : ''}" onclick="chatSubTab='contacts'; renderContent();">📱 جهات الاتصال (أرقام الهواتف)</div>
-                            <div class="tab-sub-btn ${chatSubTab === 'friends' ? 'active' : ''}" onclick="chatSubTab='friends'; renderContent();">👥 أصدقاء المنصة</div>
-                        </div>
-                        ${chatSubTab === 'contacts' ? `
-                            <div style="margin-bottom:10px; display:flex; gap:6px;">
-                                <input type="text" id="phoneChatInput" placeholder="أدخل رقم الهاتف مع رمز الدولة..." style="flex:1; margin-bottom:0;">
-                                <button class="action-btn btn-primary" onclick="startPhoneChat()">بدء محادثة</button>
-                            </div>
-                            <div class="chat-messages">
-                                <div class="chat-msg peer">جهات الاتصال المحفوظة تفاعلية ومستقلة تماماً. أخل رقم أي هاتف لبدء محادثة فورية!</div>
-                            </div>
-                        ` : `
-                            <div class="chat-messages">
-                                <div class="chat-msg peer">محادثات الأصدقاء المضافين داخل المنصة.</div>
-                            </div>
-                        `}
-                        <div class="chat-input-box">
-                            <input type="text" id="chatInput" placeholder="اكتب رسالتك...">
-                            <button class="action-btn btn-primary" onclick="showToast('تم إرسال الرسالة!')">إرسال</button>
-                        </div>
-                    </div>
-                `;
-            } else if (currentTab === 'create_page') {
-                document.getElementById('appTitle').innerText = 'إنشاء صفحة جديدة';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0;">📄 إنشاء صفحة عامة / تجارية</h3>
-                        <input type="text" id="pageName" placeholder="اسم الصفحة...">
-                        <textarea placeholder="وصف الصفحة والنشاط..."></textarea>
-                        <button class="action-btn btn-primary" style="width:100%; justify-content:center;" onclick="showToast('تم إنشاء الصفحة بنجاح!'); switchTab('feed');">إنشاء الصفحة</button>
-                    </div>
-                `;
-            } else if (currentTab === 'create_group') {
-                document.getElementById('appTitle').innerText = 'إنشاء مجموعة جديدة';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0;">👥 إنشاء مجموعة مجتمعية</h3>
-                        <input type="text" id="groupName" placeholder="اسم المجموعة...">
-                        <select><option>عامة (يمكن للجميع الانضمام)</option><option>خاصة</option></select>
-                        <button class="action-btn btn-primary" style="width:100%; justify-content:center;" onclick="showToast('تم إنشاء المجموعة بنجاح!'); switchTab('feed');">إنشاء المجموعة</button>
-                    </div>
-                `;
-            } else if (currentTab === 'twits') {
-                document.getElementById('appTitle').innerText = 'MYGRAM TWITS';
-                content.innerHTML = `
-                    <div class="post-box">
-                        <textarea id="twitText" placeholder="خواطر قصيرة..." maxlength="280"></textarea>
-                        <button class="action-btn btn-primary" onclick="addTwit()" style="margin-top:5px; float:left;">نشر خاطرة ⚡</button>
-                        <div style="clear:both;"></div>
-                    </div>
-                    <div id="twitsContainer"></div>
-                `;
-                loadTwits();
-            } else if (currentTab === 'ai') {
-                document.getElementById('appTitle').innerText = 'المساعد الذكي AI';
-                content.innerHTML = `
-                    <div class="card-box chat-container">
-                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">مساعد MYGRAM الذكي الشامل</h3>
-                        <div class="chat-messages" id="aiMessages">
-                            <div class="chat-msg peer">أهلاً بك يا ${currentUser}! أنا عقلك الذكي المساعد. كيف أمكنني خدمتك اليوم؟</div>
-                        </div>
-                        <div class="chat-input-box">
-                            <input type="text" id="aiInput" placeholder="اكتب سؤالك للذكاء الاصطناعي...">
-                            <button class="action-btn btn-primary" onclick="sendAiMessage()">إرسال</button>
-                        </div>
-                    </div>
-                `;
-            } else if (currentTab === 'ads_manager') {
-                document.getElementById('appTitle').innerText = 'مدير الإعلانات الممولة';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--ad-gold); margin-top:0;">📣 إطلاق إعلان ممول جديد (MYGRAM Ads)</h3>
-                        <input type="text" id="adTitle" placeholder="عنوان الحملة أو النشاط التجاري...">
-                        <textarea id="adText" placeholder="نص الإعلان الممول..."></textarea>
-                        <button class="action-btn btn-primary" style="width:100%; justify-content:center; background:var(--ad-gold); color:#0b1120;" onclick="createSponsoredAd()">🚀 إطلاق الإعلان الممول</button>
-                    </div>
-                `;
-            } else if (currentTab === 'news') {
-                document.getElementById('appTitle').innerText = 'MYGRAM NEWS';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">🌐 الأخبار العالمية والسياسية والاقتصادية المباشرة</h3>
-                        <div class="group-item"><span class="group-name">📈 الأسواق العالمية تسجل مؤشرات إيجابية.</span></div>
-                        <div class="group-item"><span class="group-name">💻 تقنيات الذكاء الاصطناعي تشهد قفزات نوعية.</span></div>
-                    </div>
-                `;
-            }
-        }
-
-        function createSponsoredAd() {
-            const title = document.getElementById('adTitle').value.trim();
-            const text = document.getElementById('adText').value.trim();
-            if(!title || !text) { showToast('أدخل عنوان الإعلان والنص!'); return; }
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts.unshift({ id: Date.now(), author: title, isSponsored: true, content: text, likes: 0, views: 1 });
-            localStorage.setItem('mygram_posts', JSON.stringify(posts));
-            showToast('تم إطلاق الإعلان الممول بنجاح!');
-            switchTab('feed');
-        }
-
-        function uploadAvatar(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                localStorage.setItem('mygram_avatar', evt.target.result);
-                showToast('تم تحديث الصورة الشخصية!');
-                renderContent();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function saveProfileDetails() {
-            let hobbies = document.getElementById('editHobbies').value.trim();
-            let family = document.getElementById('editFamily').value.trim();
-            if(hobbies) localStorage.setItem('mygram_hobbies', hobbies);
-            if(family) localStorage.setItem('mygram_family', family);
-            showToast('تم حفظ التعديلات!');
-            renderContent();
-        }
-
-        function handleMediaUpload(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                attachedMedia = evt.target.result;
-                document.getElementById('mediaPreview').innerHTML = `<img src="${attachedMedia}" class="post-image">`;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function enhanceTextWithAI() {
-            const input = document.getElementById('postText');
-            if(!input.value.trim()) { showToast('اكتب نصاً أولاً!'); return; }
-            input.value = "✨ " + input.value + " 🚀 #MYGRAM";
-            showToast('تم تحسين النص بالـ AI!');
-        }
-
-        function addPost() {
-            const text = document.getElementById('postText').value;
-            const isSens = document.getElementById('sensitiveCheck') ? document.getElementById('sensitiveCheck').checked : false;
-            if(!text.trim() && !attachedMedia) return;
-
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts.unshift({ id: Date.now(), author: currentUser, content: text, image: attachedMedia, sensitive: isSens, likes: 0, views: 1 });
-            localStorage.setItem('mygram_posts', JSON.stringify(posts));
-
-            attachedMedia = '';
-            document.getElementById('postText').value = '';
-            showToast('تم النشر بنجاح!');
-            loadPosts();
-        }
-
-        function loadPosts() {
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            const container = document.getElementById('postsContainer');
-            if(!container) return;
-            let html = '';
-            let genderIcon = userGender === 'female' ? '👩' : '👨';
-            let userAvatarImg = localStorage.getItem('mygram_avatar');
-
-            posts.forEach((p, idx) => {
-                let sponsoredTag = p.isSponsored ? `<span class="sponsored-tag">ممول / Sponsored 📣</span>` : '';
-                let mediaHtml = '';
-                if (p.image) {
-                    if (p.sensitive) {
-                        mediaHtml = `
-                            <div class="post-image-container">
-                                <img src="${p.image}" class="post-image media-blur" id="img_${idx}">
-                                <div class="sensitive-overlay" id="overlay_${idx}">
-                                    <div style="font-size:12px; margin-bottom:5px;">⚠️ محتوى حساس (+18)</div>
-                                    <button class="action-btn btn-primary" onclick="revealMedia(${idx})">عرض المحتوى</button>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        mediaHtml = `<img src="${p.image}" class="post-image">`;
-                    }
-                }
-
-                html += `
-                    <div class="post-card">
-                        <div class="post-author-row">
-                            <div class="avatar-container">
-                                <div class="mini-avatar">${userAvatarImg ? `<img src="${userAvatarImg}" style="width:100%;height:100%;border-radius:50%;">` : genderIcon}</div>
-                                <div class="online-dot"></div>
-                            </div>
-                            <div class="post-author-info">${p.author} ${sponsoredTag}</div>
-                        </div>
-                        <div class="post-text">${p.content}</div>
-                        ${mediaHtml}
-                        <div class="post-actions">
-                            <span class="action-item" onclick="likePost(${idx})">❤️ إعجاب (${p.likes || 0})</span>
-                            <span class="action-item" onclick="showToast('تم نسخ رابط المنشور!')">🚀 مشاركة</span>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function revealMedia(idx) {
-            if (userAge < 18) {
-                showToast('محتوى +18 محظور لمن هم أقل من 18 سنة!');
-                return;
-            }
-            document.getElementById(`img_${idx}`).classList.remove('media-blur');
-            document.getElementById(`overlay_${idx}`).style.display = 'none';
-        }
-
-        function likePost(idx) {
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts[idx].likes = (posts[idx].likes || 0) + 1;
-            localStorage.setItem('mygram_posts', JSON.stringify(posts));
-            loadPosts();
-        }
-
-        function addTwit() {
-            const text = document.getElementById('twitText').value;
-            if(!text.trim()) return;
-            let twits = JSON.parse(localStorage.getItem('mygram_tweets') || '[]');
-            twits.unshift({ id: Date.now(), author: currentUser, content: text });
-            localStorage.setItem('mygram_tweets', JSON.stringify(twits));
-            document.getElementById('twitText').value = '';
-            showToast('تم نشر الخاطرة!');
-            loadTwits();
-        }
-
-        function loadTwits() {
-            let twits = JSON.parse(localStorage.getItem('mygram_tweets') || '[]');
-            const container = document.getElementById('twitsContainer');
-            if(!container) return;
-            let html = '';
-            twits.forEach(t => {
-                html += `<div class="post-card"><div style="font-weight:bold; color:var(--primary);">@${t.author}</div><div class="post-text">${t.content}</div></div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function sendAiMessage() {
-            const input = document.getElementById('aiInput');
-            if(!input.value.trim()) return;
-            const box = document.getElementById('aiMessages');
-            box.innerHTML += `<div class="chat-msg user">${input.value}</div>`;
-            input.value = '';
-            box.scrollTop = box.scrollHeight;
-            setTimeout(() => {
-                box.innerHTML += `<div class="chat-msg peer">المساعد AI: تم استلام استفسارك ومعالجته بنجاح تام!</div>`;
-                box.scrollTop = box.scrollHeight;
-            }, 500);
-        }
-
-        function startPhoneChat() {
-            const phone = document.getElementById('phoneChatInput').value.trim();
-            if(!phone) { showToast('أدخل رقم الهاتف مع الرمز أولاً!'); return; }
-            showToast('تم فتح محادثة آمنة مع: ' + phone);
-            document.getElementById('phoneChatInput').value = '';
-        }
-
-        window.onload = function() {
-            populateLangSelect();
-        };
-
-        function logout() {
-            localStorage.removeItem('mygram_username');
-            window.location.href = 'index.html';
-        }
-    </script>
-</body>
-</html>
+                if(header
