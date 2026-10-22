@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MYGRAM</title>
+  <style>
+    body { font-family: sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .card { background: #1e293b; padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    h1 { color: #38bdf8; margin-bottom: 1.5rem; }
+    input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; background: #38bdf8; border: none; border-radius: 6px; color: #0f172a; font-weight: bold; font-size: 16px; margin-top: 12px; cursor: pointer; }
+    #msg { margin-top: 15px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>MYGRAM</h1>
+    <input type="text" id="username" placeholder="اسم المستخدم">
+    <input type="email" id="email" placeholder="البريد الإلكتروني">
+    <input type="password" id="password" placeholder="كلمة المرور">
+    <button onclick="register()">إنشاء حساب / دخول</button>
+    <div id="msg"></div>
+  </div>
+
+  <script>
+    const API_URL = 'https://mygram-server.onrender.com';
+
+    async function register() {
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const msgDiv = document.getElementById('msg');
+
+      msgDiv.innerText = 'جاري الاتصال بالسيرفر...';
+
+      try {
+        const res = await fetch(`${API_URL}/api/users/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+        if(data.success) {
+          msgDiv.style.color = '#4ade80';
+          msgDiv.innerText = 'تم التسجيل بنجاح! أهلاً بك في MYGRAM';
+        } else {
+          msgDiv.style.color = '#f87171';
+          msgDiv.innerText = 'خطأ: ' + data.error;
+        }
+      } catch(e) {
+        msgDiv.style.color = '#f87171';
+        msgDiv.innerText = 'تعذر الاتصال بالسيرفر!';
+      }
+    }
+  </script>
+</body>
+</html>
