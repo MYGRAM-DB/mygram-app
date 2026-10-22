@@ -30,7 +30,6 @@
 
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding-top: 65px; padding-bottom: 80px; transition: 0.3s; box-sizing: border-box; }
         
-        /* الهيدر العلوي الذكي */
         .header { display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); padding: 12px 20px; border-bottom: 1px solid var(--border); position: fixed; top: 0; width: 100%; z-index: 1000; box-sizing: border-box; transition: transform 0.3s ease; }
         .header.hide { transform: translateY(-100%); }
         .header-title-box { text-align: center; }
@@ -38,13 +37,11 @@
         .sub-slogan-header { font-size: 8px; color: var(--text-sub); }
         .btn-icon { background: none; border: none; color: var(--text-main); font-size: 18px; cursor: pointer; padding: 4px; }
 
-        /* شريط التنقل السفلي */
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); z-index: 1000; transition: transform 0.3s ease; }
         .nav-bar.hide { transform: translateY(100%); }
         .nav-item { color: var(--text-sub); font-size: 10px; text-align: center; cursor: pointer; flex: 1; font-weight: 600; }
         .nav-item.active { color: var(--primary); font-weight: 800; }
 
-        /* القائمة الجانبية */
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background: var(--card-bg); overflow-x: hidden; transition: 0.3s; padding-top: 60px; border-left: 1px solid var(--border); }
         html[dir="ltr"] .sidebar { left: 0; right: auto; border-right: 1px solid var(--border); border-left: none; }
         .sidebar a { padding: 14px 22px; text-decoration: none; font-size: 13px; color: var(--text-main); display: block; border-bottom: 1px solid var(--border); transition: 0.2s; }
@@ -55,14 +52,12 @@
 
         .container { max-width: 600px; margin: 10px auto; padding: 0 12px; }
         
-        /* شريط القصص */
         .stories-bar { display: flex; gap: 12px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 6px; }
         .story-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 64px; }
         .story-avatar-wrap { position: relative; width: 58px; height: 58px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, #0284c7, #38bdf8); }
         .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--card-bg); display: flex; justify-content: center; align-items: center; font-size: 26px; background: var(--bg-main); }
         .story-name { font-size: 10px; color: var(--text-sub); margin-top: 5px; text-align: center; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* الأقسام السريعة */
         .quick-bar { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
         .quick-pill { background: var(--btn-bg); border: 1px solid var(--border); padding: 7px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; color: var(--primary); transition: 0.2s; }
         .quick-pill:hover { background: var(--primary); color: #050b14; }
@@ -170,12 +165,28 @@
             {code:"ru", name:"Русский", rtl:false}, {code:"zh", name:"中文", rtl:false}
         ];
 
-        let currentAccount = JSON.parse(localStorage.getItem('mygram_current_account') || '{}');
+        // جلب الحساب أو إنشاء حساب افتراضي تلقائياً لمنع الشاشة السوداء
+        let currentAccount = JSON.parse(localStorage.getItem('mygram_current_account') || 'null');
+        if (!currentAccount || !currentAccount.account) {
+            currentAccount = {
+                name: "Louay Chaghal",
+                account: "louay@mygram.com",
+                gender: "male",
+                birthDate: "1995-01-01",
+                age: 31,
+                relation: "متزوج / متزوجة",
+                hobbies: "البرمجة، تقنية المصاعد",
+                family: "العائلة الكريمة",
+                avatar: ""
+            };
+            localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
+        }
+
         let currentUser = currentAccount.name || 'Louay Chaghal';
         let userGender = currentAccount.gender || 'male';
         
         function calculateExactAge(birthdateStr) {
-            if(!birthdateStr) return currentAccount.age || 18;
+            if(!birthdateStr) return currentAccount.age || 25;
             const birthDate = new Date(birthdateStr);
             const today = new Date();
             let age = today.getFullYear() - birthDate.getFullYear();
@@ -245,4 +256,446 @@
 
         function switchTab(tab, el) {
             if(el) {
-                document.querySelectorAll('.nav-
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                el.classList.add('active');
+            }
+            currentTab = tab;
+            renderAppContent();
+        }
+
+        function renderAppContent() {
+            const area = document.getElementById('mainContentArea');
+            if(!area) return;
+
+            let userAvatarImg = currentAccount.avatar || '';
+            let genderIcon = userGender === 'female' ? '👩' : '👨';
+
+            if (currentTab === 'feed') {
+                document.getElementById('appTitle').innerText = 'ماذا يدور الآن؟';
+                area.innerHTML = `
+                    <div class="stories-bar">
+                        <div class="story-item" onclick="showToast('رفع قصة جديدة...')">
+                            <div class="story-avatar-wrap">
+                                <div class="story-avatar">${userAvatarImg ? `<img src="${userAvatarImg}" style="width:100%;height:100%;border-radius:50%;">` : genderIcon}</div>
+                            </div>
+                            <div class="story-name">قصتك +</div>
+                        </div>
+                        <div class="story-item" onclick="showToast('تصفح قصص العالم...')">
+                            <div class="story-avatar-wrap"><div class="story-avatar">🌍</div></div>
+                            <div class="story-name">Global News</div>
+                        </div>
+                    </div>
+
+                    <div class="quick-bar">
+                        <div class="quick-pill" onclick="switchTab('reels')">🎬 ريلز وشورتس</div>
+                        <div class="quick-pill" onclick="switchTab('live')">🔴 بث مباشر <span class="live-badge" style="font-size:7px; padding:1px 3px;">LIVE</span></div>
+                        <div class="quick-pill" onclick="switchTab('ads_manager')">📣 إعلان ممول</div>
+                        <div class="quick-pill" onclick="switchTab('news')">🌐 أخبار العالم</div>
+                    </div>
+
+                    <div class="post-box">
+                        <textarea id="postText" placeholder="بماذا تفكر؟ شارك أفكارك مع العالم..."></textarea>
+                        <div id="mediaPreview"></div>
+                        <div class="post-tools">
+                            <label class="action-btn" style="cursor:pointer;">📷 الجاليري<input type="file" accept="image/*,video/*" style="display:none" onchange="handleAppMediaUpload(event)"></label>
+                            <button class="action-btn" onclick="showToast('🎥 كاميرا مباشرة')">🎥 كاميرا</button>
+                            <button class="action-btn" onclick="enhancePostWithAI()">✨ تحسين AI</button>
+                            <label style="font-size:10px; margin-right:auto; cursor:pointer;"><input type="checkbox" id="sensitiveCheck"> +18</label>
+                            <button class="action-btn btn-primary" onclick="publishAppPost()">نشر</button>
+                        </div>
+                    </div>
+                    <div id="postsContainer"></div>
+                `;
+                loadAppPosts();
+            } else if (currentTab === 'reels') {
+                document.getElementById('appTitle').innerText = 'MYGRAM Reels & Shorts';
+                area.innerHTML = `
+                    <div class="card-box" style="text-align:center; padding:35px 15px;">
+                        <h3 style="color:var(--primary); margin-top:0;">🎬 الفيديوهات القصيرة (Reels & Shorts)</h3>
+                        <p style="font-size:12px; color:var(--text-sub);">استعرض أحدث مقاطع الفيديو القصيرة التفاعلية حول العالم.</p>
+                        <div style="background:var(--bg-main); height:320px; border-radius:14px; display:flex; justify-content:center; align-items:center; border:1px solid var(--border); margin-bottom:14px; font-size:45px;">
+                            ▶️ [فيديو تجريبي ريلز]
+                        </div>
+                        <div style="display:flex; justify-content:space-around;">
+                            <button class="action-btn" onclick="showToast('❤️ إعجاب بالريلز')">❤️ إعجاب</button>
+                            <button class="action-btn" onclick="showToast('💬 فتح التعليقات')">💬 تعليق</button>
+                            <button class="action-btn" onclick="showToast('🚀 تم مشاركة الفيديو!')">🚀 مشاركة</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'live') {
+                document.getElementById('appTitle').innerText = 'البث المباشر LIVE';
+                area.innerHTML = `
+                    <div class="card-box" style="text-align:center;">
+                        <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:12px;">
+                            <span class="live-badge">LIVE</span>
+                            <h3 style="margin:0; font-size:14px; color:var(--primary);">استوديو البث المباشر العالمي</h3>
+                        </div>
+                        <div style="background:var(--bg-main); height:280px; border-radius:14px; display:flex; flex-direction:column; justify-content:center; align-items:center; border:1px solid var(--border); margin-bottom:14px;">
+                            <div style="font-size:45px; margin-bottom:10px;">🎙️</div>
+                            <p style="font-size:12px; color:var(--text-sub);">المذيع الحالي: ${currentUser}</p>
+                        </div>
+                        <button class="action-btn btn-primary" style="width:100%; justify-content:center; background:var(--live-red); color:#fff;" onclick="showToast('تم بدء البث المباشر بنجاح تام!')">🔴 ابدأ بثك المباشر الآن</button>
+                    </div>
+                `;
+            } else if (currentTab === 'profile') {
+                document.getElementById('appTitle').innerText = 'الملف الشخصي والبيانات';
+                let relation = currentAccount.relation || 'أعزب / عزباء';
+                let hobbies = currentAccount.hobbies || 'التقنية، السفر';
+                let family = currentAccount.family || 'لا يوجد أقارب مضافين';
+                let birthDateVal = currentAccount.birthDate || '2004-01-01';
+
+                area.innerHTML = `
+                    <div class="card-box" style="text-align:center;">
+                        <div class="profile-avatar-big">
+                            ${userAvatarImg ? `<img src="${userAvatarImg}">` : genderIcon}
+                        </div>
+                        <h3 style="margin:5px 0;">${currentUser}</h3>
+                        <p style="font-size:11px; color:var(--text-sub); margin-bottom:15px;">الحساب: ${currentAccount.account || ''} | العمر الحقيقي: ${userAge} سنة</p>
+
+                        <div class="info-row"><span>الجندر (الهوية):</span> <b>${userGender === 'female' ? 'أنثى 👩' : 'ذكر 👨'}</b></div>
+                        <div class="info-row"><span>الحالة الاجتماعية:</span> <b>${relation}</b></div>
+                        <div class="info-row"><span>أفراد العائلة:</span> <b>${family}</b></div>
+                        <div class="info-row"><span>الهوايات:</span> <b>${hobbies}</b></div>
+
+                        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+                        
+                        <h4 style="margin:0 0 10px; color:var(--primary); font-size:12px; text-align:right;">تعديل البيانات الشخصية:</h4>
+                        
+                        <label class="edit-label">تاريخ الميلاد:</label>
+                        <input type="date" id="editBirthDate" value="${birthDateVal}">
+
+                        <label class="edit-label">الجندر (الهوية):</label>
+                        <select id="editGender">
+                            <option value="male" ${userGender === 'male' ? 'selected' : ''}>ذكر 👨</option>
+                            <option value="female" ${userGender === 'female' ? 'selected' : ''}>أنثى 👩</option>
+                        </select>
+
+                        <label class="edit-label">الحالة الاجتماعية:</label>
+                        <select id="editRelation">
+                            <option value="أعزب / عزباء" ${relation === 'أعزب / عزباء' ? 'selected' : ''}>أعزب / عزباء</option>
+                            <option value="مرتبط / مرتبطة" ${relation === 'مرتبط / مرتبطة' ? 'selected' : ''}>مرتبط / مرتبطة</option>
+                            <option value="متزوج / متزوجة" ${relation === 'متزوج / متزوجة' ? 'selected' : ''}>متزوج / متزوجة</option>
+                        </select>
+
+                        <label class="edit-label">الهوايات والاهتمامات:</label>
+                        <input type="text" id="editHobbies" value="${hobbies}">
+
+                        <label class="edit-label">أفراد العائلة:</label>
+                        <input type="text" id="editFamily" value="${family}">
+
+                        <label class="action-btn" style="width:100%; justify-content:center; margin-bottom:10px; cursor:pointer; margin-top:10px;">
+                            🖼️ تحميل / تغيير صورة البروفايل
+                            <input type="file" accept="image/*" style="display:none" onchange="uploadAppAvatar(event)">
+                        </label>
+                        <button class="action-btn btn-primary" onclick="saveAppProfileDetails()" style="width:100%; justify-content:center;">حفظ كافة التعديلات</button>
+                    </div>
+                `;
+            } else if (currentTab === 'accounts') {
+                document.getElementById('appTitle').innerText = 'إدارة الحسابات';
+                let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
+                let accHtml = '';
+                accounts.forEach(acc => {
+                    let activeIndicator = (acc.account === currentAccount.account) ? ' (الحساب النشط حالياً)' : '';
+                    accHtml += `
+                        <div class="group-item" style="cursor:pointer;" onclick="switchAppAccount('${acc.account}')">
+                            <span class="group-name">👤 ${acc.name} (${acc.account})${activeIndicator}</span>
+                            <button class="action-btn btn-primary">تبديل</button>
+                        </div>
+                    `;
+                });
+                area.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--primary); margin-top:0;">🔄 الحسابات المسجلة على الجهاز</h3>
+                        <p style="font-size:11px; color:var(--text-sub);">التبديل الفوري بين حساباتك المحفوظة دون الحاجة لإعادة تسجيل الدخول:</p>
+                        ${accHtml || '<p style="font-size:12px;">لا توجد حسابات أخرى محفوظة.</p>'}
+                        <button class="action-btn" style="width:100%; justify-content:center; margin-top:12px;" onclick="logoutApp()">+ تسجيل خروج / العودة للرئيسية</button>
+                    </div>
+                `;
+            } else if (currentTab === 'chats') {
+                document.getElementById('appTitle').innerText = 'MYGRAM CHAT';
+                area.innerHTML = `
+                    <div class="card-box chat-container">
+                        <div class="tab-sub-bar">
+                            <div class="tab-sub-btn ${chatSubTab === 'contacts' ? 'active' : ''}" onclick="chatSubTab='contacts'; renderAppContent();">📱 جهات الاتصال (أرقام الهواتف)</div>
+                            <div class="tab-sub-btn ${chatSubTab === 'friends' ? 'active' : ''}" onclick="chatSubTab='friends'; renderAppContent();">👥 أصدقاء المنصة</div>
+                        </div>
+                        ${chatSubTab === 'contacts' ? `
+                            <div style="margin-bottom:12px; display:flex; gap:8px;">
+                                <input type="text" id="phoneChatInput" placeholder="أدخل رقم الهاتف مع رمز الدولة..." style="flex:1; margin-bottom:0;">
+                                <button class="action-btn btn-primary" onclick="startPhoneChatSession()">بدء محادثة</button>
+                            </div>
+                            <div class="chat-messages">
+                                <div class="chat-msg peer">مرحباً بك في شات MYGRAM الآمن. أدخل أي رقم هاتف لبدء المراسلة الفورية!</div>
+                            </div>
+                        ` : `
+                            <div class="chat-messages">
+                                <div class="chat-msg peer">قائمة الأصدقاء والمجموعات النشطة داخل المنصة.</div>
+                            </div>
+                        `}
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="chatInput" placeholder="اكتب رسالتك..." style="flex:1; margin-bottom:0;">
+                            <button class="action-btn btn-primary" onclick="showToast('تم إرسال الرسالة بنجاح!')">إرسال</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'create_page') {
+                document.getElementById('appTitle').innerText = 'إنشاء صفحة جديدة';
+                area.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--primary); margin-top:0;">📄 إنشاء صفحة عامة / تجارية</h3>
+                        <input type="text" id="pageName" placeholder="اسم الصفحة التجارية أو العامة...">
+                        <textarea placeholder="وصف الصفحة والنشاط..."></textarea>
+                        <button class="action-btn btn-primary" style="width:100%; justify-content:center;" onclick="showToast('تم إنشاء الصفحة بنجاح!'); switchTab('feed');">إنشاء الصفحة</button>
+                    </div>
+                `;
+            } else if (currentTab === 'create_group') {
+                document.getElementById('appTitle').innerText = 'إنشاء مجموعة جديدة';
+                area.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--primary); margin-top:0;">👥 إنشاء مجموعة مجتمعية</h3>
+                        <input type="text" id="groupName" placeholder="اسم المجموعة...">
+                        <select><option>عامة (يمكن للجميع الانضمام)</option><option>خاصة</option></select>
+                        <button class="action-btn btn-primary" style="width:100%; justify-content:center;" onclick="showToast('تم إنشاء المجموعة بنجاح!'); switchTab('feed');">إنشاء المجموعة</button>
+                    </div>
+                `;
+            } else if (currentTab === 'ai') {
+                document.getElementById('appTitle').innerText = 'المساعد الذكي AI';
+                area.innerHTML = `
+                    <div class="card-box chat-container">
+                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">مساعد MYGRAM الذكي الشامل</h3>
+                        <div class="chat-messages" id="aiMessagesBox">
+                            <div class="chat-msg peer">أهلاً بك يا ${currentUser}! أنا عقلك الذكي المساعد. كيف أمكنني خدمتك اليوم؟</div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="aiInput" placeholder="اكتب سؤالك للذكاء الاصطناعي..." style="flex:1; margin-bottom:0;">
+                            <button class="action-btn btn-primary" onclick="sendAiMessageQuery()">إرسال</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'ads_manager') {
+                document.getElementById('appTitle').innerText = 'مدير الإعلانات الممولة';
+                area.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--ad-gold); margin-top:0;">📣 إطلاق إعلان ممول جديد (MYGRAM Ads)</h3>
+                        <input type="text" id="adTitle" placeholder="عنوان الحملة أو النشاط التجاري...">
+                        <textarea id="adText" placeholder="نص الإعلان الممول..."></textarea>
+                        <button class="action-btn btn-primary" style="width:100%; justify-content:center; background:var(--ad-gold); color:#050b14;" onclick="launchSponsoredAdCampaign()">🚀 إطلاق الإعلان الممول</button>
+                    </div>
+                `;
+            } else if (currentTab === 'news') {
+                document.getElementById('appTitle').innerText = 'MYGRAM NEWS';
+                area.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">🌐 الأخبار العالمية والسياسية والاقتصادية المباشرة</h3>
+                        <div class="group-item"><span class="group-name">📈 الأسواق العالمية تسجل مؤشرات إيجابية متقدمة.</span></div>
+                        <div class="group-item"><span class="group-name">💻 تقنيات الذكاء الاصطناعي تشهد قفزات نوعية كبرى.</span></div>
+                        <div class="group-item"><span class="group-name">🚀 إطلاق النسخة الأولى من منصة MYGRAM العالمية بنجاح.</span></div>
+                    </div>
+                `;
+            }
+        }
+
+        function switchAppAccount(accEmail) {
+            let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
+            let target = accounts.find(a => a.account === accEmail);
+            if(target) {
+                localStorage.setItem('mygram_current_account', JSON.stringify(target));
+                currentAccount = target;
+                currentUser = target.name;
+                userGender = target.gender;
+                userAge = calculateExactAge(target.birthDate);
+                showToast('تم التبديل إلى الحساب بنجاح!');
+                renderAppContent();
+            }
+        }
+
+        function launchSponsoredAdCampaign() {
+            const title = document.getElementById('adTitle').value.trim();
+            const text = document.getElementById('adText').value.trim();
+            if(!title || !text) { showToast('أدخل عنوان الإعلان والنص!'); return; }
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            posts.unshift({ id: Date.now(), author: title, isSponsored: true, content: text, likes: 0, views: 1 });
+            localStorage.setItem('mygram_posts', JSON.stringify(posts));
+            showToast('تم إطلاق الإعلان الممول بنجاح!');
+            switchTab('feed');
+        }
+
+        function uploadAppAvatar(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                currentAccount.avatar = evt.target.result;
+                localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
+                
+                let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
+                accounts = accounts.map(a => a.account === currentAccount.account ? currentAccount : a);
+                localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
+
+                showToast('تم تحديث الصورة الشخصية بنجاح!');
+                renderAppContent();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveAppProfileDetails() {
+            let newBirthDate = document.getElementById('editBirthDate').value;
+            let newGender = document.getElementById('editGender').value;
+            let newRelation = document.getElementById('editRelation').value;
+            let hobbies = document.getElementById('editHobbies').value.trim();
+            let family = document.getElementById('editFamily').value.trim();
+            
+            if(newBirthDate) {
+                const exactAge = calculateExactAge(newBirthDate);
+                if(exactAge < 16) { showToast('عذراً، يجب ألا يقل العمر عن 16 عاماً!'); return; }
+                currentAccount.birthDate = newBirthDate;
+                currentAccount.age = exactAge;
+                userAge = exactAge;
+            }
+            if(newGender) {
+                currentAccount.gender = newGender;
+                userGender = newGender;
+            }
+            if(newRelation) currentAccount.relation = newRelation;
+            if(hobbies) currentAccount.hobbies = hobbies;
+            if(family) currentAccount.family = family;
+            
+            localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
+            let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
+            accounts = accounts.map(a => a.account === currentAccount.account ? currentAccount : a);
+            localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
+
+            showToast('تم حفظ كافة التعديلات بنجاح تام!');
+            renderAppContent();
+        }
+
+        function handleAppMediaUpload(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                attachedMedia = evt.target.result;
+                document.getElementById('mediaPreview').innerHTML = `<img src="${attachedMedia}" class="post-image">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function enhancePostWithAI() {
+            const input = document.getElementById('postText');
+            if(!input.value.trim()) { showToast('اكتب نصاً أولاً!'); return; }
+            input.value = "✨ " + input.value + " 🚀 #MYGRAM";
+            showToast('تم تحسين النص بالـ AI!');
+        }
+
+        function publishAppPost() {
+            const text = document.getElementById('postText').value;
+            const isSens = document.getElementById('sensitiveCheck') ? document.getElementById('sensitiveCheck').checked : false;
+            if(!text.trim() && !attachedMedia) return;
+
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            posts.unshift({ id: Date.now(), author: currentUser, content: text, image: attachedMedia, sensitive: isSens, likes: 0, views: 1 });
+            localStorage.setItem('mygram_posts', JSON.stringify(posts));
+
+            attachedMedia = '';
+            document.getElementById('postText').value = '';
+            showToast('تم النشر بنجاح!');
+            loadAppPosts();
+        }
+
+        function loadAppPosts() {
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            const container = document.getElementById('postsContainer');
+            if(!container) return;
+            let html = '';
+            let genderIcon = userGender === 'female' ? '👩' : '👨';
+            let userAvatarImg = currentAccount.avatar || '';
+
+            posts.forEach((p, idx) => {
+                let sponsoredTag = p.isSponsored ? `<span class="sponsored-tag">ممول / Sponsored 📣</span>` : '';
+                let mediaHtml = '';
+                if (p.image) {
+                    if (p.sensitive) {
+                        mediaHtml = `
+                            <div class="post-image-container">
+                                <img src="${p.image}" class="post-image media-blur" id="img_${idx}">
+                                <div class="sensitive-overlay" id="overlay_${idx}">
+                                    <div style="font-size:12px; margin-bottom:6px;">⚠️ محتوى حساس (+18)</div>
+                                    <button class="action-btn btn-primary" onclick="revealPostMedia(${idx})">عرض المحتوى</button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        mediaHtml = `<img src="${p.image}" class="post-image">`;
+                    }
+                }
+
+                html += `
+                    <div class="post-card">
+                        <div class="post-author-row">
+                            <div class="avatar-container">
+                                <div class="mini-avatar">${userAvatarImg ? `<img src="${userAvatarImg}" style="width:100%;height:100%;border-radius:50%;">` : genderIcon}</div>
+                                <div class="online-dot"></div>
+                            </div>
+                            <div class="post-author-info">${p.author} ${sponsoredTag}</div>
+                        </div>
+                        <div class="post-text">${p.content}</div>
+                        ${mediaHtml}
+                        <div class="post-actions">
+                            <span class="action-item" onclick="likeAppPost(${idx})">❤️ إعجاب (${p.likes || 0})</span>
+                            <span class="action-item" onclick="showToast('تم نسخ رابط المنشور بنجاح!')">🚀 مشاركة</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function revealPostMedia(idx) {
+            if (userAge < 18) {
+                showToast('محتوى +18 محظور لمن هم أقل من 18 سنة!');
+                return;
+            }
+            document.getElementById(`img_${idx}`).classList.remove('media-blur');
+            document.getElementById(`overlay_${idx}`).style.display = 'none';
+        }
+
+        function likeAppPost(idx) {
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            posts[idx].likes = (posts[idx].likes || 0) + 1;
+            localStorage.setItem('mygram_posts', JSON.stringify(posts));
+            loadAppPosts();
+        }
+
+        function sendAiMessageQuery() {
+            const input = document.getElementById('aiInput');
+            if(!input.value.trim()) return;
+            const box = document.getElementById('aiMessagesBox');
+            box.innerHTML += `<div class="chat-msg user">${input.value}</div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+            setTimeout(() => {
+                box.innerHTML += `<div class="chat-msg peer">المساعد AI: تم استلام استفسارك ومعالجته بنجاح تام!</div>`;
+                box.scrollTop = box.scrollHeight;
+            }, 500);
+        }
+
+        function startPhoneChatSession() {
+            const phone = document.getElementById('phoneChatInput').value.trim();
+            if(!phone) { showToast('أدخل رقم الهاتف مع الرمز أولاً!'); return; }
+            showToast('تم فتح محادثة آمنة مع: ' + phone);
+            document.getElementById('phoneChatInput').value = '';
+        }
+
+        function logoutApp() {
+            localStorage.removeItem('mygram_is_logged');
+            localStorage.removeItem('mygram_current_account');
+            window.location.href = 'index.html';
+        }
+
+        window.onload = function() {
+            initApp();
+        };
+    </script>
+</body>
+</html>
