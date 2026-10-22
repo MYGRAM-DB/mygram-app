@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - المنصة الاجتماعية</title>
+    <title>MYGRAM - المنصة الشاملة</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -22,7 +22,7 @@
             --secondary-text: #64748b;
         }
 
-        body { font-family: sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding-bottom: 70px; transition: 0.3s; }
+        body { font-family: sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding-bottom: 75px; transition: 0.3s; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 12px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
         h2 { color: var(--primary-color); margin: 0; font-size: 18px; }
         .header-btns { display: flex; gap: 8px; }
@@ -32,30 +32,45 @@
         
         .container { max-width: 600px; margin: 15px auto; padding: 0 15px; }
         
-        .post-box, .card-box, .post-card { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .post-box textarea { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 8px; padding: 10px; resize: none; box-sizing: border-box; height: 75px; font-family: sans-serif; }
+        .post-box, .card-box, .post-card { background: var(--card-bg); padding: 15px; border-radius: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .post-box textarea { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 8px; padding: 10px; resize: none; box-sizing: border-box; height: 80px; font-family: sans-serif; }
         
         .post-tools { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
         .action-btn, .add-btn, .ai-gen-btn { background: var(--primary-color); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
         .ai-gen-btn { background: linear-gradient(135deg, #8b5cf6, #38bdf8); }
         
-        .post-author { font-weight: bold; color: var(--primary-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .post-author-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .mini-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color); }
+        .post-author-info { flex: 1; font-weight: bold; color: var(--primary-color); font-size: 14px; }
+        
         .post-text { color: var(--text-color); font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
-        .post-image { width: 100%; border-radius: 8px; margin-top: 8px; max-height: 300px; object-fit: cover; }
+        .post-image { width: 100%; border-radius: 10px; margin-top: 8px; max-height: 320px; object-fit: cover; }
         
         /* الملف الشخصي */
-        .profile-pic-container { position: relative; width: 100px; height: 100px; margin: 0 auto 10px; }
-        .profile-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); }
-        .profile-upload-label { position: absolute; bottom: 0; right: 0; background: var(--primary-color); color: #fff; border-radius: 50%; padding: 5px; cursor: pointer; font-size: 12px; }
+        .profile-pic-container { position: relative; width: 110px; height: 110px; margin: 0 auto 12px; }
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); }
+        .profile-upload-label { position: absolute; bottom: 0; right: 0; background: var(--primary-color); color: #fff; border-radius: 50%; padding: 6px; cursor: pointer; font-size: 13px; }
 
         .post-actions { display: flex; gap: 15px; border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 12px; color: var(--secondary-text); align-items: center; }
         .action-item { cursor: pointer; transition: 0.2s; }
         .action-item:hover { color: var(--primary-color); }
         .delete-btn { color: #f87171; background: none; border: none; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        /* شريط التنقل السفلي */
+        /* شات المساعد والمسنجر */
+        .chat-container { display: flex; flex-direction: column; height: 52vh; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; background: var(--bg-color); border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); }
+        .chat-msg { margin-bottom: 8px; padding: 8px 10px; border-radius: 8px; max-width: 80%; font-size: 13px; line-height: 1.4; }
+        .chat-msg.user { background: var(--primary-color); color: #fff; margin-left: auto; }
+        .chat-msg.ai, .chat-msg.peer { background: var(--card-bg); border: 1px solid var(--border-color); margin-right: auto; }
+        .chat-input-box { display: flex; gap: 6px; }
+        .chat-input-box input { flex: 1; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px; border-radius: 6px; font-size: 13px; }
+
+        .group-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border-color); }
+        .group-name { color: var(--text-color); font-weight: bold; font-size: 13px; }
+
+        /* شريط التنقل السفلي الشامل (6 خيارات) */
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid var(--border-color); z-index: 100; }
-        .nav-item { color: var(--secondary-text); text-decoration: none; font-size: 11px; text-align: center; cursor: pointer; }
+        .nav-item { color: var(--secondary-text); text-decoration: none; font-size: 10px; text-align: center; cursor: pointer; }
         .nav-item.active { color: var(--primary-color); font-weight: bold; }
     </style>
 </head>
@@ -64,22 +79,27 @@
     <div class="header">
         <h2 id="appTitle">MYGRAM</h2>
         <div class="header-btns">
-            <button class="btn-theme" onclick="toggleTheme()">🌓 الثيم</button>
+            <button class="btn-theme" onclick="toggleTheme()">🌓 المظهر</button>
             <button class="btn-logout" onclick="logout()">خروج</button>
         </div>
     </div>
 
     <div class="container" id="mainContent"></div>
 
+    <!-- شريط التنقل الشامل (الفيسبوك، انستا، واتساب، تليجرام، إكس، والذكاء الاصطناعي) -->
     <div class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('home', this)">📰 الخلاصة</div>
+        <div class="nav-item active" onclick="switchTab('feed', this)">📰 الخلاصة</div>
+        <div class="nav-item" onclick="switchTab('ai', this)">🤖 الذكاء الاصطناعي</div>
+        <div class="nav-item" onclick="switchTab('chats', this)">💬 مسنجر وواتس</div>
+        <div class="nav-item" onclick="switchTab('groups', this)">📢 قنوات ومجموعات</div>
+        <div class="nav-item" onclick="switchTab('xfeed', this)">⚡ تغريدات (X)</div>
         <div class="nav-item" onclick="switchTab('profile', this)">⚙️ حسابي</div>
     </div>
 
     <script>
         let currentUser = localStorage.getItem('mygram_username') || 'مستخدم مجهول';
-        let currentTab = 'home';
-        let uploadedImage = '';
+        let currentTab = 'feed';
+        let attachedMedia = '';
 
         if (localStorage.getItem('mygram_theme') === 'light') {
             document.getElementById('pageBody').classList.add('light-mode');
@@ -93,36 +113,89 @@
 
         function renderContent() {
             const content = document.getElementById('mainContent');
+            let userAvatar = localStorage.getItem('mygram_avatar') || 'https://via.placeholder.com/100';
             
-            if (currentTab === 'home') {
-                document.getElementById('appTitle').innerText = 'MYGRAM - الخلاصة';
+            if (currentTab === 'feed') {
+                document.getElementById('appTitle').innerText = 'MYGRAM - فيسبوك & إنستغرام';
                 content.innerHTML = `
                     <div class="post-box">
-                        <textarea id="postText" placeholder="بماذا تفكر يا غالي؟ شارك أفكارك أو صورك..."></textarea>
-                        <div id="imagePreviewContainer" style="margin-bottom: 8px;"></div>
+                        <textarea id="postText" placeholder="بماذا تفكر؟ شارك صورك أو أفكارك مع العالم..."></textarea>
+                        <div id="mediaPreview" style="margin-bottom: 8px;"></div>
                         <div class="post-tools">
-                            <label class="action-btn" style="cursor:pointer; margin-top:0;">📁 رفع صورة<input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)"></label>
-                            <button class="ai-gen-btn" onclick="generateAIImage()">🎨 صورة AI</button>
-                            <button class="action-btn" onclick="addPost()" style="margin-top:0; margin-right:auto;">نشر</button>
+                            <label class="action-btn" style="cursor:pointer; margin-top:0;">📁 رفع صورة<input type="file" accept="image/*" style="display:none" onchange="handleMediaUpload(event)"></label>
+                            <button class="ai-gen-btn" onclick="generateAIImage()">🎨 توليد صورة AI</button>
+                            <button class="action-btn" onclick="addPost()" style="margin-top:0; margin-right:auto;">نشر بوست</button>
                         </div>
                     </div>
                     <div id="postsContainer"></div>
                 `;
                 loadPosts();
+            } else if (currentTab === 'ai') {
+                document.getElementById('appTitle').innerText = 'المساعد الذكي (AI)';
+                content.innerHTML = `
+                    <div class="card-box chat-container">
+                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">مساعد MYGRAM الذكي (مدعوم بالذكاء الاصطناعي)</h3>
+                        <div class="chat-messages" id="aiMessages">
+                            <div class="chat-msg ai">أهلاً بك يا ${currentUser}! أنا عقلك الذكي المساعد، اسألني عن أي شيء أو اطلب مني أفكاراً لمشروعك.</div>
+                        </div>
+                        <div class="chat-input-box">
+                            <input type="text" id="aiInput" placeholder="اكتب سؤالك للمساعد...">
+                            <button class="action-btn" onclick="sendAiMessage()" style="margin-top:0;">إرسال</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'chats') {
+                document.getElementById('appTitle').innerText = 'المراسلة (مسنجر & واتساب)';
+                content.innerHTML = `
+                    <div class="card-box chat-container">
+                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">دردشة فورية مشفرة</h3>
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="chat-msg peer">سيف الدين: أهلاً بك في نظام المحادثات الفورية الشامل!</div>
+                        </div>
+                        <div class="chat-input-box">
+                            <input type="text" id="chatInput" placeholder="اكتب رسالة...">
+                            <button class="action-btn" onclick="sendChatMessage()" style="margin-top:0;">إرسال</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'groups') {
+                document.getElementById('appTitle').innerText = 'المجموعات والقنوات (تيليجرام)';
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 14px;">المجتمعات الكبرى</h3>
+                        <div class="group-item">
+                            <span class="group-name">🛡️ قناة المطورين والتقنية العالمية</span>
+                            <button class="add-btn" onclick="alert('تم الانضمام للقناة بنجاح!')">انضمام</button>
+                        </div>
+                        <div class="group-item">
+                            <span class="group-name">💡 مجموعة رواد الأعمال والمشاريع الناشئة</span>
+                            <button class="add-btn" onclick="alert('تم الانضمام للمجموعة بنجاح!')">انضمام</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'xfeed') {
+                document.getElementById('appTitle').innerText = 'التغريدات السريعة (تويتر / X)';
+                content.innerHTML = `
+                    <div class="post-box">
+                        <textarea id="xText" placeholder="ما الذي يحدث؟ (تغريدة قصيرة)..." maxlength="280"></textarea>
+                        <button class="action-btn" onclick="addTweet()" style="margin-top:5px; float:left;">تغريد ⚡</button>
+                        <div style="clear:both;"></div>
+                    </div>
+                    <div id="tweetsContainer"></div>
+                `;
+                loadTweets();
             } else if (currentTab === 'profile') {
-                document.getElementById('appTitle').innerText = 'الملف الشخصي';
-                let userAvatar = localStorage.getItem('mygram_avatar') || 'https://via.placeholder.com/100';
+                document.getElementById('appTitle').innerText = 'الملف الشخصي والحساب';
                 let bio = localStorage.getItem('mygram_bio') || 'لم تضف نبذة تعريفية بعد...';
-                
                 content.innerHTML = `
                     <div class="card-box" style="text-align: center;">
                         <div class="profile-pic-container">
-                            <img src="${userAvatar}" class="profile-img" id="profileImageDisplay" alt="Profile">
+                            <img src="${userAvatar}" class="profile-img" alt="Profile">
                             <label class="profile-upload-label" title="تغيير الصورة">📷
                                 <input type="file" accept="image/*" style="display:none" onchange="updateProfilePic(event)">
                             </label>
                         </div>
-                        <div class="post-author" style="font-size: 16px; margin-bottom: 5px; justify-content: center;">${currentUser}</div>
+                        <div style="font-weight: bold; color: var(--primary-color); font-size: 16px; margin-bottom: 5px;">${currentUser}</div>
                         <p style="color: var(--secondary-text); font-size: 13px; margin-bottom: 12px;">${bio}</p>
                         <button class="action-btn" onclick="editBio()" style="margin-bottom:8px;">تعديل النبذة</button>
                     </div>
@@ -130,18 +203,138 @@
             }
         }
 
-        function handleImageUpload(event) {
+        function handleMediaUpload(event) {
             const file = event.target.files[0];
             if(!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
-                uploadedImage = e.target.result;
-                document.getElementById('imagePreviewContainer').innerHTML = `
-                    <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">تم اختيار الصورة بنجاح:</div>
-                    <img src="${uploadedImage}" class="post-image" alt="Uploaded">
+                attachedMedia = e.target.result;
+                document.getElementById('mediaPreview').innerHTML = `
+                    <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">تم إرفاق الملف بنجاح:</div>
+                    <img src="${attachedMedia}" class="post-image" alt="Media">
                 `;
             };
             reader.readAsDataURL(file);
+        }
+
+        function generateAIImage() {
+            let promptText = prompt('أدخل وصفاً للصورة المطلوبة بالذكاء الاصطناعي:', 'futuristic cyberpunk city');
+            if(!promptText) return;
+            attachedMedia = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}`;
+            document.getElementById('mediaPreview').innerHTML = `
+                <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">صورة الذكاء الاصطناعي جاهزة:</div>
+                <img src="${attachedMedia}" class="post-image" alt="AI Generated">
+            `;
+        }
+
+        function addPost() {
+            const text = document.getElementById('postText').value;
+            if(!text.trim() && !attachedMedia) return;
+
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            let userAvatar = localStorage.getItem('mygram_avatar') || 'https://via.placeholder.com/50';
+            posts.unshift({ id: Date.now(), author: currentUser, avatar: userAvatar, content: text, image: attachedMedia, likes: 0 });
+            localStorage.setItem('mygram_posts', JSON.stringify(posts));
+
+            attachedMedia = '';
+            document.getElementById('postText').value = '';
+            loadPosts();
+        }
+
+        function loadPosts() {
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            const container = document.getElementById('postsContainer');
+            if(!container) return;
+            
+            let html = `
+                <div class="post-card" style="border: 1px dashed var(--primary-color);">
+                    <div class="post-author-row">
+                        <img src="https://via.placeholder.com/50" class="mini-avatar">
+                        <div class="post-author-info">النظام العالمي الرسمي</div>
+                    </div>
+                    <div class="post-text">أهلاً بك في منصة MYGRAM الشاملة والمزودة بكل خدمات التواصل والذكاء الاصطناعي!</div>
+                </div>
+            `;
+
+            posts.forEach((p, index) => {
+                let deleteOption = p.author === currentUser ? `<button class="delete-btn" onclick="deletePost(${p.id || index})" style="float:left;">حذف</button>` : '';
+                let imageTag = p.image ? `<img src="${p.image}" class="post-image" alt="Post">` : '';
+                let avatar = p.avatar || 'https://via.placeholder.com/50';
+                
+                html += `
+                    <div class="post-card">
+                        <div class="post-author-row">
+                            <img src="${avatar}" class="mini-avatar">
+                            <div class="post-author-info">${p.author}</div>
+                            ${deleteOption}
+                        </div>
+                        <div class="post-text">${p.content}</div>
+                        ${imageTag}
+                        <div class="post-actions" style="margin-top: 8px;">
+                            <span class="action-item" onclick="likePost(${p.id || index})">❤️ إعجاب (${p.likes || 0})</span>
+                            <span class="action-item" onclick="alert('التعليقات مفعلة بنجاح!')">💬 تعليق</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function addTweet() {
+            const text = document.getElementById('xText').value;
+            if(!text.trim()) return;
+            let tweets = JSON.parse(localStorage.getItem('mygram_tweets') || '[]');
+            tweets.unshift({ id: Date.now(), author: currentUser, content: text, likes: 0 });
+            localStorage.setItem('mygram_tweets', JSON.stringify(tweets));
+            document.getElementById('xText').value = '';
+            loadTweets();
+        }
+
+        function loadTweets() {
+            let tweets = JSON.parse(localStorage.getItem('mygram_tweets') || '[]');
+            const container = document.getElementById('tweetsContainer');
+            if(!container) return;
+            let html = '';
+            tweets.forEach((t, index) => {
+                html += `
+                    <div class="post-card">
+                        <div style="font-weight:bold; color:var(--primary-color); margin-bottom:5px;">@${t.author}</div>
+                        <div class="post-text">${t.content}</div>
+                        <div class="post-actions"><span class="action-item" onclick="alert('تم إعادة التغريد!')">🔁 إعادة تغريد</span></div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function sendAiMessage() {
+            const inputField = document.getElementById('aiInput');
+            const msg = inputField.value.trim();
+            if(!msg) return;
+            const box = document.getElementById('aiMessages');
+            box.innerHTML += `<div class="chat-msg user">${msg}</div>`;
+            inputField.value = '';
+            box.scrollTop = box.scrollHeight;
+
+            setTimeout(() => {
+                box.innerHTML += `<div class="chat-msg ai">أهلاً بك، لقد قمت بتحليل استفسارك عبر الذكاء الاصطناعي بنجاح. منصتنا مصممة لتلبي تطلعات الجميع!</div>`;
+                box.scrollTop = box.scrollHeight;
+            }, 600);
+        }
+
+        function sendChatMessage() {
+            const inputField = document.getElementById('chatInput');
+            const msg = inputField.value.trim();
+            if(!msg) return;
+            const box = document.getElementById('chatMessages');
+            box.innerHTML += `<div class="chat-msg user">${msg}</div>`;
+            inputField.value = '';
+            box.scrollTop = box.scrollHeight;
+
+            setTimeout(() => {
+                box.innerHTML += `<div class="chat-msg peer">سيف الدين: تم استلام رسالتك الفورية بنجاح عبر الشات المدمج!</div>`;
+                box.scrollTop = box.scrollHeight;
+            }, 600);
         }
 
         function updateProfilePic(event) {
@@ -155,62 +348,9 @@
             reader.readAsDataURL(file);
         }
 
-        function generateAIImage() {
-            let promptText = prompt('أدخل وصفاً للصورة المطلوبة بالـ AI:', 'futuristic cyberpunk city');
-            if(!promptText) return;
-            uploadedImage = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}`;
-            document.getElementById('imagePreviewContainer').innerHTML = `
-                <div style="font-size: 11px; color: var(--primary-color); margin-bottom: 4px;">صورة AI جاهزة للنشر:</div>
-                <img src="${uploadedImage}" class="post-image" alt="AI Generated">
-            `;
-        }
-
-        function addPost() {
-            const text = document.getElementById('postText').value;
-            if(!text.trim() && !uploadedImage) return;
-
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts.unshift({ id: Date.now(), author: currentUser, content: text, image: uploadedImage, likes: 0 });
-            localStorage.setItem('mygram_posts', JSON.stringify(posts));
-
-            uploadedImage = '';
-            document.getElementById('postText').value = '';
-            loadPosts();
-        }
-
-        function loadPosts() {
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            const container = document.getElementById('postsContainer');
-            if(!container) return;
-            
-            let html = `
-                <div class="post-card" style="border: 1px dashed var(--primary-color);">
-                    <div class="post-author">النظام الرسمي</div>
-                    <div class="post-text">أهلاً بك في منصة MYGRAM. سجل دخولك، ارفع صورتك الشخصية، وغير الثيم بحرية!</div>
-                </div>
-            `;
-
-            posts.forEach((p, index) => {
-                let deleteOption = p.author === currentUser ? `<button class="delete-btn" onclick="deletePost(${p.id || index})">حذف</button>` : '';
-                let imageTag = p.image ? `<img src="${p.image}" class="post-image" alt="Post Image">` : '';
-                html += `
-                    <div class="post-card">
-                        <div class="post-author"><span>${p.author}</span>${deleteOption}</div>
-                        <div class="post-text">${p.content}</div>
-                        ${imageTag}
-                        <div class="post-actions">
-                            <span class="action-item" onclick="likePost(${p.id || index})">❤️ إعجاب (${p.likes || 0})</span>
-                            <span class="action-item" onclick="alert('التعليقات مفعلة!')">💬 تعليق</span>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
         function likePost(id) {
             let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            let post = posts.find(p => (p.id === id) || (posts.indexOf(p) === id));
+            let post = posts.find(p => p.id === id || posts.indexOf(p) === id);
             if(post) {
                 post.likes = (post.likes || 0) + 1;
                 localStorage.setItem('mygram_posts', JSON.stringify(posts));
