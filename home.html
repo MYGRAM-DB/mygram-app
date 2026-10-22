@@ -232,4 +232,430 @@
             const header = document.getElementById('mainHeader');
             const navBar = document.getElementById('mainNavBar');
             if (scrollTop > lastScrollTop && scrollTop > 50) {
-                if(header
+                if(header) header.classList.add('hide'); 
+                if(navBar) navBar.classList.add('hide');
+            } else {
+                if(header) header.classList.remove('hide'); 
+                if(navBar) navBar.classList.remove('hide');
+            }
+            lastScrollTop = scrollTop;
+        });
+
+        function openSidebar() { document.getElementById("mySidebar").style.width = "250px"; }
+        function closeSidebar() { document.getElementById("mySidebar").style.width = "0"; }
+
+        function toggleTheme() {
+            const body = document.getElementById('pageBody');
+            body.classList.toggle('light-mode');
+            showToast('تم تغيير المظهر!');
+        }
+
+        function switchTab(tab, el) {
+            if(el) {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                el.classList.add('active');
+            }
+            currentTab = tab;
+            renderContent();
+        }
+
+        function renderContent() {
+            const content = document.getElementById('mainContent');
+            if(!content) return;
+
+            let userAvatarImg = currentAccount.avatar || '';
+            let genderIcon = userGender === 'female' ? '👩' : '👨';
+
+            if (currentTab === 'feed') {
+                document.getElementById('appTitle').innerText = 'ماذا يدور الآن؟';
+                content.innerHTML = `
+                    <div class="stories-bar">
+                        <div class="story-item" onclick="showToast('رفع قصة جديدة...')">
+                            <div class="story-avatar-wrap">
+                                <div class="story-avatar">${userAvatarImg ? `<img src="${userAvatarImg}" style="width:100%;height:100%;border-radius:50%;">` : genderIcon}</div>
+                            </div>
+                            <div class="story-name">قصتك +</div>
+                        </div>
+                    </div>
+
+                    <div class="quick-bar">
+                        <div class="quick-pill" onclick="showToast('🎬 ريلز')">🎬 ريلز</div>
+                        <div class="quick-pill" onclick="showToast('📱 شورت')">📱 شورت</div>
+                        <div class="quick-pill" onclick="showToast('🔴 بث مباشر')">🔴 بث مباشر</div>
+                        <div class="quick-pill" onclick="switchTab('ads_manager')">📣 إعلان ممول</div>
+                    </div>
+
+                    <div class="post-box">
+                        <textarea id="postText" placeholder="بماذا تفكر؟ شارك أفكارك مع العالم..."></textarea>
+                        <div id="mediaPreview"></div>
+                        <div class="post-tools">
+                            <label class="action-btn" style="cursor:pointer;">📷 الجاليري<input type="file" accept="image/*,video/*" style="display:none" onchange="handleMediaUpload(event)"></label>
+                            <button class="action-btn" onclick="showToast('🎥 كاميرا مباشرة')">🎥 كاميرا مباشرة</button>
+                            <button class="action-btn" onclick="enhanceTextWithAI()">✨ تحسين AI</button>
+                            <label style="font-size:10px; margin-right:auto; cursor:pointer;"><input type="checkbox" id="sensitiveCheck"> +18</label>
+                            <button class="action-btn btn-primary" onclick="addPost()">نشر</button>
+                        </div>
+                    </div>
+                    <div id="postsContainer"></div>
+                `;
+                loadPosts();
+            } else if (currentTab === 'profile') {
+                document.getElementById('appTitle').innerText = 'الملف الشخصي والبيانات';
+                let relation = currentAccount.relation || 'مرتبطة / مرتبط';
+                let hobbies = currentAccount.hobbies || 'الرياضة، البرمجة، السفر';
+                let family = currentAccount.family || 'لا يوجد أقارب مضافين';
+
+                content.innerHTML = `
+                    <div class="card-box" style="text-align:center;">
+                        <div class="profile-avatar-big">
+                            ${userAvatarImg ? `<img src="${userAvatarImg}">` : genderIcon}
+                        </div>
+                        <h3 style="margin:5px 0;">${currentUser}</h3>
+                        <p style="font-size:11px; color:var(--text-sub); margin-bottom:15px;">الحساب: ${currentAccount.account || ''} | العمر: ${userAge} سنة</p>
+
+                        <div class="info-row"><span>الجندر (الهوية):</span> <b>${userGender === 'female' ? 'أنثى 👩' : 'ذكر 👨'}</b></div>
+                        <div class="info-row"><span>الحالة الاجتماعية:</span> <b>${relation}</b></div>
+                        <div class="info-row"><span>أفراد العائلة:</span> <b>${family}</b></div>
+                        <div class="info-row"><span>الهوايات:</span> <b>${hobbies}</b></div>
+
+                        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+                        
+                        <h4 style="margin:0 0 10px; color:var(--primary); font-size:12px; text-align:right;">تعديل البيانات السريعة:</h4>
+                        <input type="text" id="editHobbies" placeholder="تعديل الهوايات والاهتمامات..." value="${hobbies}">
+                        <input type="text" id="editFamily" placeholder="تعديل أفراد العائلة..." value="${family}">
+                        <label class="action-btn" style="width:100%; justify-content:center; margin-bottom:8px; cursor:pointer;">
+                            🖼️ تحميل / تغيير صورة البروفايل
+                            <input type="file" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
+                        </label>
+                        <button class="action-btn btn-primary" onclick="saveProfileDetails()" style="width:100%; justify-content:center;">حفظ التعديلات</button>
+                    </div>
+                `;
+            } else if (currentTab === 'accounts') {
+                document.getElementById('appTitle').innerText = 'إدارة الحسابات';
+                let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
+                let accHtml = '';
+                accounts.forEach(acc => {
+                    let activeIndicator = (acc.account === currentAccount.account) ? ' (الحساب الحالي النشط)' : '';
+                    accHtml += `
+                        <div class="group-item" style="cursor:pointer;" onclick="switchAccount('${acc.account}')">
+                            <span class="group-name">👤 ${acc.name} (${acc.account})${activeIndicator}</span>
+                            <button class="action-btn btn-primary">تبديل</button>
+                        </div>
+                    `;
+                });
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--primary); margin-top:0;">🔄 الحسابات المسجلة على الجهاز</h3>
+                        <p style="font-size:11px; color:var(--text-sub);">يمكنك التبديل الفوري بين حساباتك المحفوظة دون الحاجة لإعادة إدخال كلمات السر:</p>
+                        ${accHtml || '<p style="font-size:12px;">لا توجد حسابات أخرى محفوظة.</p>'}
+                        <button class="action-btn" style="width:100%; justify-content:center; margin-top:10px;" onclick="window.location.href='index.html'">+ إضافة حساب جديد / تسجيل دخول</button>
+                    </div>
+                `;
+            } else if (currentTab === 'chats') {
+                document.getElementById('appTitle').innerText = 'MYGRAM CHAT';
+                content.innerHTML = `
+                    <div class="card-box chat-container">
+                        <div class="tab-sub-bar">
+                            <div class="tab-sub-btn ${chatSubTab === 'contacts' ? 'active' : ''}" onclick="chatSubTab='contacts'; renderContent();">📱 جهات الاتصال (أرقام الهواتف)</div>
+                            <div class="tab-sub-btn ${chatSubTab === 'friends' ? 'active' : ''}" onclick="chatSubTab='friends'; renderContent();">👥 أصدقاء المنصة</div>
+                        </div>
+                        ${chatSubTab === 'contacts' ? `
+                            <div style="margin-bottom:10px; display:flex; gap:6px;">
+                                <input type="text" id="phoneChatInput" placeholder="أدخل رقم الهاتف مع رمز الدولة..." style="flex:1; margin-bottom:0;">
+                                <button class="action-btn btn-primary" onclick="startPhoneChat()">بدء محادثة</button>
+                            </div>
+                            <div class="chat-messages">
+                                <div class="chat-msg peer">جهات الاتصال المحفوظة تفاعلية ومستقلة تماماً. أدخل رقم أي هاتف لبدء محادثة فورية!</div>
+                            </div>
+                        ` : `
+                            <div class="chat-messages">
+                                <div class="chat-msg peer">محادثات الأصدقاء المضافين داخل المنصة.</div>
+                            </div>
+                        `}
+                        <div class="chat-input-box">
+                            <input type="text" id="chatInput" placeholder="اكتب رسالتك...">
+                            <button class="action-btn btn-primary" onclick="showToast('تم إرسال الرسالة!')">إرسال</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'create_page') {
+                document.getElementById('appTitle').innerText = 'إنشاء صفحة جديدة';
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--primary); margin-top:0;">📄 إنشاء صفحة عامة / تجارية</h3>
+                        <input type="text" id="pageName" placeholder="اسم الصفحة...">
+                        <textarea placeholder="وصف الصفحة والنشاط..."></textarea>
+                        <button class="action-btn btn-primary" style="width:100%; justify-content:center;" onclick="showToast('تم إنشاء الصفحة بنجاح!'); switchTab('feed');">إنشاء الصفحة</button>
+                    </div>
+                `;
+            } else if (currentTab === 'create_group') {
+                document.getElementById('appTitle').innerText = 'إنشاء مجموعة جديدة';
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--primary); margin-top:0;">👥 إنشاء مجموعة مجتمعية</h3>
+                        <input type="text" id="groupName" placeholder="اسم المجموعة...">
+                        <select><option>عامة (يمكن للجميع الانضمام)</option><option>خاصة</option></select>
+                        <button class="action-btn btn-primary" style="width:100%; justify-content:center;" onclick="showToast('تم إنشاء المجموعة بنجاح!'); switchTab('feed');">إنشاء المجموعة</button>
+                    </div>
+                `;
+            } else if (currentTab === 'twits') {
+                document.getElementById('appTitle').innerText = 'MYGRAM TWITS';
+                content.innerHTML = `
+                    <div class="post-box">
+                        <textarea id="twitText" placeholder="خواطر قصيرة..." maxlength="280"></textarea>
+                        <button class="action-btn btn-primary" onclick="addTwit()" style="margin-top:5px; float:left;">نشر خاطرة ⚡</button>
+                        <div style="clear:both;"></div>
+                    </div>
+                    <div id="twitsContainer"></div>
+                `;
+                loadTwits();
+            } else if (currentTab === 'ai') {
+                document.getElementById('appTitle').innerText = 'المساعد الذكي AI';
+                content.innerHTML = `
+                    <div class="card-box chat-container">
+                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">مساعد MYGRAM الذكي الشامل</h3>
+                        <div class="chat-messages" id="aiMessages">
+                            <div class="chat-msg peer">أهلاً بك يا ${currentUser}! أنا عقلك الذكي المساعد. كيف أمكنني خدمتك اليوم؟</div>
+                        </div>
+                        <div class="chat-input-box">
+                            <input type="text" id="aiInput" placeholder="اكتب سؤالك للذكاء الاصطناعي...">
+                            <button class="action-btn btn-primary" onclick="sendAiMessage()">إرسال</button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'ads_manager') {
+                document.getElementById('appTitle').innerText = 'مدير الإعلانات الممولة';
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--ad-gold); margin-top:0;">📣 إطلاق إعلان ممول جديد (MYGRAM Ads)</h3>
+                        <input type="text" id="adTitle" placeholder="عنوان الحملة أو النشاط التجاري...">
+                        <textarea id="adText" placeholder="نص الإعلان الممول..."></textarea>
+                        <button class="action-btn btn-primary" style="width:100%; justify-content:center; background:var(--ad-gold); color:#0b1120;" onclick="createSponsoredAd()">🚀 إطلاق الإعلان الممول</button>
+                    </div>
+                `;
+            } else if (currentTab === 'news') {
+                document.getElementById('appTitle').innerText = 'MYGRAM NEWS';
+                content.innerHTML = `
+                    <div class="card-box">
+                        <h3 style="color:var(--primary); margin-top:0; font-size:14px;">🌐 الأخبار العالمية والسياسية والاقتصادية المباشرة</h3>
+                        <div class="group-item"><span class="group-name">📈 الأسواق العالمية تسجل مؤشرات إيجابية.</span></div>
+                        <div class="group-item"><span class="group-name">💻 تقنيات الذكاء الاصطناعي تشهد قفزات نوعية.</span></div>
+                    </div>
+                `;
+            }
+        }
+
+        function switchAccount(accEmail) {
+            let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
+            let target = accounts.find(a => a.account === accEmail);
+            if(target) {
+                localStorage.setItem('mygram_current_account', JSON.stringify(target));
+                currentAccount = target;
+                currentUser = target.name;
+                userGender = target.gender;
+                userAge = target.age;
+                showToast('تم التبديل إلى الحساب بنجاح!');
+                renderContent();
+            }
+        }
+
+        function createSponsoredAd() {
+            const title = document.getElementById('adTitle').value.trim();
+            const text = document.getElementById('adText').value.trim();
+            if(!title || !text) { showToast('أدخل عنوان الإعلان والنص!'); return; }
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            posts.unshift({ id: Date.now(), author: title, isSponsored: true, content: text, likes: 0, views: 1 });
+            localStorage.setItem('mygram_posts', JSON.stringify(posts));
+            showToast('تم إطلاق الإعلان الممول بنجاح!');
+            switchTab('feed');
+        }
+
+        function uploadAvatar(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                currentAccount.avatar = evt.target.result;
+                localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
+                
+                let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
+                accounts = accounts.map(a => a.account === currentAccount.account ? currentAccount : a);
+                localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
+
+                showToast('تم تحديث الصورة الشخصية!');
+                renderContent();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveProfileDetails() {
+            let hobbies = document.getElementById('editHobbies').value.trim();
+            let family = document.getElementById('editFamily').value.trim();
+            if(hobbies) currentAccount.hobbies = hobbies;
+            if(family) currentAccount.family = family;
+            
+            localStorage.setItem('mygram_current_account', JSON.stringify(currentAccount));
+            let accounts = JSON.parse(localStorage.getItem('mygram_all_accounts') || '[]');
+            accounts = accounts.map(a => a.account === currentAccount.account ? currentAccount : a);
+            localStorage.setItem('mygram_all_accounts', JSON.stringify(accounts));
+
+            showToast('تم حفظ التعديلات!');
+            renderContent();
+        }
+
+        function handleMediaUpload(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                attachedMedia = evt.target.result;
+                document.getElementById('mediaPreview').innerHTML = `<img src="${attachedMedia}" class="post-image">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function enhanceTextWithAI() {
+            const input = document.getElementById('postText');
+            if(!input.value.trim()) { showToast('اكتب نصاً أولاً!'); return; }
+            input.value = "✨ " + input.value + " 🚀 #MYGRAM";
+            showToast('تم تحسين النص بالـ AI!');
+        }
+
+        function addPost() {
+            const text = document.getElementById('postText').value;
+            const isSens = document.getElementById('sensitiveCheck') ? document.getElementById('sensitiveCheck').checked : false;
+            if(!text.trim() && !attachedMedia) return;
+
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            posts.unshift({ id: Date.now(), author: currentUser, content: text, image: attachedMedia, sensitive: isSens, likes: 0, views: 1 });
+            localStorage.setItem('mygram_posts', JSON.stringify(posts));
+
+            attachedMedia = '';
+            document.getElementById('postText').value = '';
+            showToast('تم النشر بنجاح!');
+            loadPosts();
+        }
+
+        function loadPosts() {
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            const container = document.getElementById('postsContainer');
+            if(!container) return;
+            let html = '';
+            let genderIcon = userGender === 'female' ? '👩' : '👨';
+            let userAvatarImg = currentAccount.avatar || '';
+
+            posts.forEach((p, idx) => {
+                let sponsoredTag = p.isSponsored ? `<span class="sponsored-tag">ممول / Sponsored 📣</span>` : '';
+                let mediaHtml = '';
+                if (p.image) {
+                    if (p.sensitive) {
+                        mediaHtml = `
+                            <div class="post-image-container">
+                                <img src="${p.image}" class="post-image media-blur" id="img_${idx}">
+                                <div class="sensitive-overlay" id="overlay_${idx}">
+                                    <div style="font-size:12px; margin-bottom:5px;">⚠️ محتوى حساس (+18)</div>
+                                    <button class="action-btn btn-primary" onclick="revealMedia(${idx})">عرض المحتوى</button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        mediaHtml = `<img src="${p.image}" class="post-image">`;
+                    }
+                }
+
+                html += `
+                    <div class="post-card">
+                        <div class="post-author-row">
+                            <div class="avatar-container">
+                                <div class="mini-avatar">${userAvatarImg ? `<img src="${userAvatarImg}" style="width:100%;height:100%;border-radius:50%;">` : genderIcon}</div>
+                                <div class="online-dot"></div>
+                            </div>
+                            <div class="post-author-info">${p.author} ${sponsoredTag}</div>
+                        </div>
+                        <div class="post-text">${p.content}</div>
+                        ${mediaHtml}
+                        <div class="post-actions">
+                            <span class="action-item" onclick="likePost(${idx})">❤️ إعجاب (${p.likes || 0})</span>
+                            <span class="action-item" onclick="showToast('تم نسخ رابط المنشور!')">🚀 مشاركة</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function revealMedia(idx) {
+            if (userAge < 18) {
+                showToast('محتوى +18 محظور لمن هم أقل من 18 سنة!');
+                return;
+            }
+            document.getElementById(`img_${idx}`).classList.remove('media-blur');
+            document.getElementById(`overlay_${idx}`).style.display = 'none';
+        }
+
+        function likePost(idx) {
+            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
+            posts[idx].likes = (posts[idx].likes || 0) + 1;
+            localStorage.setItem('mygram_posts', JSON.stringify(posts));
+            loadPosts();
+        }
+
+        function addTwit() {
+            const text = document.getElementById('twitText').value;
+            if(!text.trim()) return;
+            let twits = JSON.parse(localStorage.getItem('mygram_tweets') || '[]');
+            twits.unshift({ id: Date.now(), author: currentUser, content: text });
+            localStorage.setItem('mygram_tweets', JSON.stringify(twits));
+            document.getElementById('twitText').value = '';
+            showToast('تم نشر الخاطرة!');
+            loadTwits();
+        }
+
+        function loadTwits() {
+            let twits = JSON.parse(localStorage.getItem('mygram_tweets') || '[]');
+            const container = document.getElementById('twitsContainer');
+            if(!container) return;
+            let html = '';
+            twits.forEach(t => {
+                html += `<div class="post-card"><div style="font-weight:bold; color:var(--primary);">@${t.author}</div><div class="post-text">${t.content}</div></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function sendAiMessage() {
+            const input = document.getElementById('aiInput');
+            if(!input.value.trim()) return;
+            const box = document.getElementById('aiMessages');
+            box.innerHTML += `<div class="chat-msg user">${input.value}</div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+            setTimeout(() => {
+                box.innerHTML += `<div class="chat-msg peer">المساعد AI: تم استلام استفسارك ومعالجته بنجاح تام!</div>`;
+                box.scrollTop = box.scrollHeight;
+            }, 500);
+        }
+
+        function startPhoneChat() {
+            const phone = document.getElementById('phoneChatInput').value.trim();
+            if(!phone) { showToast('أدخل رقم الهاتف مع الرمز أولاً!'); return; }
+            showToast('تم فتح محادثة آمنة مع: ' + phone);
+            document.getElementById('phoneChatInput').value = '';
+        }
+
+        window.onload = function() {
+            if (!currentAccount.account) {
+                window.location.href = 'index.html';
+                return;
+            }
+            populateLangSelect();
+            renderContent();
+        };
+
+        function logout() {
+            localStorage.removeItem('mygram_is_logged');
+            localStorage.removeItem('mygram_current_account');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
