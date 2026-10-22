@@ -3,199 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - منصة الذكاء الاصطناعي والتواصل</title>
+    <title>MYGRAM - الرئيسية</title>
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #fff;
-            --border-color: #334155;
-            --primary-color: #38bdf8;
-            --secondary-text: #94a3b8;
-        }
-        .light-mode {
-            --bg-color: #f1f5f9;
-            --card-bg: #ffffff;
-            --text-color: #0f172a;
-            --border-color: #cbd5e1;
-            --primary-color: #0284c7;
-            --secondary-text: #64748b;
-        }
-
-        body { font-family: sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding-bottom: 70px; transition: 0.3s; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
-        h2 { color: var(--primary-color); margin: 0; font-size: 20px; }
-        .header-btns { display: flex; gap: 8px; }
-        .btn-theme, .btn-logout { border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .btn-theme { background: #475569; color: #fff; }
-        .btn-logout { background: #f87171; color: #fff; }
+        body { font-family: sans-serif; background: #0f172a; color: #fff; margin: 0; padding-bottom: 70px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 15px 20px; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 100; }
+        h2 { color: #38bdf8; margin: 0; font-size: 20px; }
+        .btn-logout { background: #f87171; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
         
         .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
         
-        .post-box, .card-box, .post-card, .ad-card { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .post-box textarea { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 8px; padding: 10px; resize: none; box-sizing: border-box; height: 80px; font-family: sans-serif; }
+        .post-box, .card-box { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+        .post-box textarea { width: 100%; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 8px; padding: 10px; resize: none; box-sizing: border-box; height: 80px; font-family: sans-serif; }
+        .post-box button { background: #38bdf8; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; float: left; }
         
-        .post-tools { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
-        .action-btn, .add-btn, .ai-gen-btn { background: var(--primary-color); color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
-        .ai-gen-btn { background: linear-gradient(135deg, #8b5cf6, #38bdf8); }
-        
-        .post-author { font-weight: bold; color: var(--primary-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .post-text { color: var(--text-color); font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
-        .post-image { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 350px; object-fit: cover; }
-        
-        /* إعلانات وتفاعلات */
-        .ad-card { border: 2px dashed #f59e0b; background: rgba(245, 158, 11, 0.05); }
-        .ad-tag { background: #f59e0b; color: #000; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-        .post-actions { display: flex; gap: 15px; border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 13px; color: var(--secondary-text); align-items: center; }
-        .action-item { cursor: pointer; transition: 0.2s; }
-        .action-item:hover { color: var(--primary-color); }
-        .delete-btn { color: #f87171; background: none; border: none; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .post-card { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
+        .post-author { font-weight: bold; color: #38bdf8; margin-bottom: 8px; }
+        .post-text { color: #e2e8f0; font-size: 15px; line-height: 1.5; }
 
-        /* شات الذكاء الاصطناعي */
-        .chat-container { display: flex; flex-direction: column; height: 60vh; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; background: var(--bg-color); border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); }
-        .chat-msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 14px; line-height: 1.4; }
-        .chat-msg.user { background: var(--primary-color); color: #fff; margin-left: auto; }
-        .chat-msg.ai { background: var(--card-bg); border: 1px solid var(--border-color); margin-right: auto; }
-        .chat-input-box { display: flex; gap: 8px; }
-        .chat-input-box input { flex: 1; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 10px; border-radius: 6px; }
-
-        .friend-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); }
-        .friend-name { color: var(--text-color); font-weight: bold; }
-
-        /* شريط التنقل السفلي */
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border-color); z-index: 100; }
-        .nav-item { color: var(--secondary-text); text-decoration: none; font-size: 12px; text-align: center; cursor: pointer; }
-        .nav-item.active { color: var(--primary-color); font-weight: bold; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #334155; z-index: 100; }
+        .nav-item { color: #94a3b8; text-decoration: none; font-size: 12px; text-align: center; cursor: pointer; }
+        .nav-item.active { color: #38bdf8; font-weight: bold; }
     </style>
 </head>
-<body id="pageBody">
+<body>
 
     <div class="header">
         <h2 id="appTitle">MYGRAM</h2>
-        <div class="header-btns">
-            <button class="btn-theme" onclick="toggleTheme()">🌓 النمط</button>
-            <button class="btn-logout" onclick="logout()">خروج</button>
-        </div>
+        <button class="btn-logout" onclick="logout()">خروج</button>
     </div>
 
-    <div class="container" id="mainContent"></div>
+    <div class="container" id="mainContent">
+        <div class="post-box">
+            <textarea id="postText" placeholder="بماذا تفكر يا غالي؟"></textarea>
+            <button onclick="addPost()">نشر</button>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="postsContainer"></div>
+    </div>
 
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('home', this)">🏠 الرئيسية</div>
-        <div class="nav-item" onclick="switchTab('ai', this)">🤖 مساعد AI</div>
         <div class="nav-item" onclick="switchTab('friends', this)">👥 الأصدقاء</div>
         <div class="nav-item" onclick="switchTab('profile', this)">⚙️ حسابي</div>
     </div>
 
     <script>
         let currentUser = localStorage.getItem('mygram_username') || 'مستخدم مجهول';
-        let currentTab = 'home';
-        let generatedImageUrl = '';
-
-        if (localStorage.getItem('mygram_theme') === 'light') {
-            document.getElementById('pageBody').classList.add('light-mode');
-        }
-
-        function toggleTheme() {
-            const body = document.getElementById('pageBody');
-            body.classList.toggle('light-mode');
-            localStorage.setItem('mygram_theme', body.classList.contains('light-mode') ? 'light' : 'dark');
-        }
-
-        function renderContent() {
-            const content = document.getElementById('mainContent');
-            
-            if (currentTab === 'home') {
-                document.getElementById('appTitle').innerText = 'MYGRAM';
-                content.innerHTML = `
-                    <div class="post-box">
-                        <textarea id="postText" placeholder="بماذا تفكر يا غالي؟"></textarea>
-                        <div id="imagePreviewContainer" style="margin-bottom: 10px;"></div>
-                        <div class="post-tools">
-                            <button class="ai-gen-btn" onclick="generateAIImage()">🎨 توليد صورة بالـ AI</button>
-                            <button class="action-btn" onclick="addPost()" style="margin-top:0; margin-right:auto;">نشر</button>
-                        </div>
-                    </div>
-                    <div id="postsContainer"></div>
-                `;
-                loadPosts();
-            } else if (currentTab === 'ai') {
-                document.getElementById('appTitle').innerText = 'المساعد الذكي (AI)';
-                content.innerHTML = `
-                    <div class="card-box chat-container">
-                        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 16px;">اسأل مساعد MYGRAM الذكي أي شيء</h3>
-                        <div class="chat-messages" id="chatMessages">
-                            <div class="chat-msg ai">أهلاً بك يا ${currentUser}! أنا مساعدك الذكي، كيف يمكنني مساعدتك اليوم في أفكار أو كتابة المحتوى؟</div>
-                        </div>
-                        <div class="chat-input-box">
-                            <input type="text" id="chatInput" placeholder="اكتب رسالتك للمساعد...">
-                            <button class="action-btn" onclick="sendAiMessage()" style="margin-top:0;">إرسال</button>
-                        </div>
-                    </div>
-                `;
-            } else if (currentTab === 'friends') {
-                document.getElementById('appTitle').innerText = 'الأصدقاء والمشاهير';
-                content.innerHTML = `
-                    <div class="card-box">
-                        <h3 style="color: var(--primary-color); margin-top: 0;">اقتراحات المتابعة</h3>
-                        <div class="friend-item">
-                            <span class="friend-name">سيف الدين (مهندس برمجيات)</span>
-                            <button class="add-btn" onclick="alert('تم إرسال طلب المتابعة بنجاح!')">متابعة</button>
-                        </div>
-                        <div class="friend-item">
-                            <span class="friend-name">عمر الفاروق (مطور تطبيقات)</span>
-                            <button class="add-btn" onclick="alert('تم إرسال طلب المتابعة بنجاح!')">متابعة</button>
-                        </div>
-                    </div>
-                `;
-            } else if (currentTab === 'profile') {
-                document.getElementById('appTitle').innerText = 'الملف الشخصي';
-                let bio = localStorage.getItem('mygram_bio') || 'لم تضف نبذة تعريفية بعد...';
-                content.innerHTML = `
-                    <div class="card-box" style="text-align: center;">
-                        <div style="font-size: 50px; margin-bottom: 10px;">👤</div>
-                        <div class="post-author" style="font-size: 18px; margin-bottom: 5px; justify-content: center;">${currentUser}</div>
-                        <p style="color: var(--secondary-text); font-size: 14px;">${bio}</p>
-                        <button class="action-btn" onclick="editBio()">تعديل النبذة التعريفية</button>
-                    </div>
-                `;
-            }
-        }
-
-        // مولد الصور بالذكاء الاصطناعي
-        function generateAIImage() {
-            let promptText = prompt('أدخل وصفاً للصورة التي تريد توليدها بالذكاء الاصطناعي (بالإنجليزية أو العربية):', 'futuristic sports car glowing neon');
-            if (!promptText) return;
-
-            alert('جاري توليد الصورة عبر الذكاء الاصطناعي، يرجى الانتظار ثواني معدودة...');
-            
-            // استخدام واجهة مجانية لتوليد الصور بناءً على النص
-            let encodedPrompt = encodeURIComponent(promptText);
-            generatedImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}`;
-
-            const previewContainer = document.getElementById('imagePreviewContainer');
-            previewContainer.innerHTML = `
-                <div style="font-size: 12px; color: var(--primary-color); margin-bottom: 5px;">تم توليد الصورة بنجاح وتجهيزها للإرفاق:</div>
-                <img src="${generatedImageUrl}" class="post-image" alt="AI Generated">
-            `;
-        }
 
         function addPost() {
             const text = document.getElementById('postText').value;
-            if (!text.trim() && !generatedImageUrl) return;
+            if (!text.trim()) return;
 
             let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts.unshift({ 
-                id: Date.now(), 
-                author: currentUser, 
-                content: text, 
-                image: generatedImageUrl, 
-                likes: 0 
-            });
+            posts.unshift({ author: currentUser, content: text });
             localStorage.setItem('mygram_posts', JSON.stringify(posts));
 
-            generatedImageUrl = '';
             document.getElementById('postText').value = '';
             loadPosts();
         }
@@ -206,94 +68,60 @@
             if(!container) return;
             
             let html = `
-                <div class="ad-card">
-                    <div class="post-author">
-                        <span>إعلان ممول 📢</span>
-                        <span class="ad-tag">مُعْلَن</span>
-                    </div>
-                    <div class="post-text">اكتشف ميزات الذكاء الاصطناعي الجديدة في MYGRAM! ولد صورك وشاركها مع أصدقائك الآن.</div>
+                <div class="post-card">
+                    <div class="post-author">النظام</div>
+                    <div class="post-text">أهلاً بك يا ${currentUser} في منصة MYGRAM! التطبيق يعمل الآن بكامل قوة وسلاسة.</div>
                 </div>
             `;
 
-            posts.forEach((p, index) => {
-                let deleteOption = p.author === currentUser ? `<button class="delete-btn" onclick="deletePost(${p.id || index})">حذف</button>` : '';
-                let imageTag = p.image ? `<img src="${p.image}" class="post-image" alt="Post Image">` : '';
-                
+            posts.forEach(p => {
                 html += `
                     <div class="post-card">
-                        <div class="post-author">
-                            <span>${p.author}</span>
-                            ${deleteOption}
-                        </div>
+                        <div class="post-author">${p.author}</div>
                         <div class="post-text">${p.content}</div>
-                        ${imageTag}
-                        <div class="post-actions" style="margin-top: 10px;">
-                            <span class="action-item" onclick="likePost(${p.id || index})">❤️ إعجاب (${p.likes || 0})</span>
-                            <span class="action-item" onclick="alert('خاصية التعليقات قادمة قريباً!')">💬 تعليق</span>
-                        </div>
                     </div>
                 `;
             });
             container.innerHTML = html;
         }
 
-        // شات المساعد الذكي
-        function sendAiMessage() {
-            const inputField = document.getElementById('chatInput');
-            const msg = inputField.value.trim();
-            if(!msg) return;
-
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML += `<div class="chat-msg user">${msg}</div>`;
-            inputField.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            setTimeout(() => {
-                let aiReply = "أنا مساعد MYGRAM الذكي، فكرة ممتازة! يمكنني مساعدتك في صياغة الأفكار وتطوير تطبيقك وتوليد محتوى تفاعلي رائع.";
-                if(msg.includes('مرحبا') || msg.includes('هلا')) {
-                    aiReply = "أهلاً بك يا غالي! كيف يمكنني مساعدتك اليوم في منصتك؟";
-                } else if(msg.includes('فكرة') || msg.includes('تطوير')) {
-                    aiReply = "أنصحك بإضافة ميزات تفاعلية ومشاركة الصور باستمرار لجذب المزيد من المستخدمين!";
-                }
-                chatMessages.innerHTML += `<div class="chat-msg ai">${aiReply}</div>`;
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 800);
-        }
-
-        function likePost(id) {
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            let post = posts.find(p => (p.id === id) || (posts.indexOf(p) === id));
-            if(post) {
-                post.likes = (post.likes || 0) + 1;
-                localStorage.setItem('mygram_posts', JSON.stringify(posts));
-                loadPosts();
-            }
-        }
-
-        function deletePost(id) {
-            let posts = JSON.parse(localStorage.getItem('mygram_posts') || '[]');
-            posts = posts.filter(p => p.id !== id && posts.indexOf(p) !== id);
-            localStorage.setItem('mygram_posts', JSON.stringify(posts));
-            loadPosts();
-        }
-
-        function editBio() {
-            let newBio = prompt('أدخل نبذة تعريفية جديدة عنك:');
-            if (newBio !== null && newBio.trim() !== '') {
-                localStorage.setItem('mygram_bio', newBio);
-                renderContent();
-            }
-        }
-
         function switchTab(tab, element) {
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             element.classList.add('active');
-            currentTab = tab;
-            renderContent();
+
+            const content = document.getElementById('mainContent');
+            if (tab === 'home') {
+                document.getElementById('appTitle').innerText = 'MYGRAM';
+                content.innerHTML = `
+                    <div class="post-box">
+                        <textarea id="postText" placeholder="بماذا تفكر يا غالي؟"></textarea>
+                        <button onclick="addPost()">نشر</button>
+                        <div style="clear: both;"></div>
+                    </div>
+                    <div id="postsContainer"></div>
+                `;
+                loadPosts();
+            } else if (tab === 'friends') {
+                document.getElementById('appTitle').innerText = 'الأصدقاء';
+                content.innerHTML = `
+                    <div class="card-box">
+                        <div class="post-author">قائمة الأصدقاء</div>
+                        <div class="post-text">قريباً جداً سيتم إضافة مبحث الأصدقاء والمراسلة الفورية هنا.</div>
+                    </div>
+                `;
+            } else if (tab === 'profile') {
+                document.getElementById('appTitle').innerText = 'الملف الشخصي';
+                content.innerHTML = `
+                    <div class="card-box" style="text-align: center;">
+                        <div class="post-author" style="font-size: 18px; margin-bottom: 5px;">👤 ${currentUser}</div>
+                        <div class="post-text">أنت مسجل الدخول بنجاح وتستمتع بتطبيق MYGRAM.</div>
+                    </div>
+                `;
+            }
         }
 
         window.onload = function() {
-            renderContent();
+            loadPosts();
         };
 
         function logout() {
