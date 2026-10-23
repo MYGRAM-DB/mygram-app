@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --primary:#6254e8; --primary-dark:#4d40ce; --primary-soft:#f0eeff;
+  --primary:#1877f2; --primary-dark:#0f5fc7; --primary-soft:#eaf3ff;
   --bg:#f6f7fc; --surface:#fff; --text:#22233a; --muted:#85869d;
   --border:#e9eaf3; --success:#16803d; --danger:#b42318;
   --shadow:0 12px 36px rgba(38,35,83,.055); --radius:22px;
@@ -18,7 +18,7 @@ a{color:inherit;text-decoration:none}
 .tiny{font-size:11px;margin-top:22px;text-align:center}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
 .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800}
-.brand-mark{width:45px;height:45px;border-radius:15px;background:linear-gradient(140deg,#8b7fff,#5142d4);color:#fff;display:grid;place-items:center;font-size:24px;box-shadow:0 8px 18px #6254e82e}
+.brand-mark{width:45px;height:45px;border-radius:15px;background:linear-gradient(140deg,#1877f2,#e1306c);color:#fff;display:grid;place-items:center;font-size:24px;box-shadow:0 8px 18px #6254e82e}
 .brand-word{font-size:25px;letter-spacing:-.8px}
 .brand-word span{color:var(--primary)}
 .button{border:0;border-radius:13px;padding:11px 19px;font-weight:700;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
@@ -30,7 +30,7 @@ a{color:inherit;text-decoration:none}
 .button.full{width:100%;margin-top:7px;padding:13px}
 .field{display:block;font-weight:700;font-size:12px;margin:15px 0}
 .field input{display:block;width:100%;margin-top:7px;border:1px solid var(--border);border-radius:13px;background:#fcfcff;padding:12px 13px;outline:none;direction:rtl}
-.field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px #6254e817}
+.field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px #1877f217}
 .notice{display:none;margin-top:15px;padding:11px 13px;border-radius:12px;font-size:12px;overflow-wrap:anywhere}
 .notice:not(:empty){display:block}
 .notice.success{background:#eaf8ef;color:#166534}
@@ -80,7 +80,7 @@ a{color:inherit;text-decoration:none}
 .section-heading p{font-size:11px;color:var(--muted);margin:2px 0 0}
 .composer-row{display:flex;align-items:flex-start;gap:12px}
 .composer textarea{width:100%;min-height:118px;resize:vertical;padding:14px 16px;border:1px solid var(--border);border-radius:15px;background:#fcfcff;outline:none;color:var(--text);line-height:1.9}
-.composer textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px #6254e817;background:#fff}
+.composer textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px #1877f217;background:#fff}
 .composer textarea::placeholder{color:#a0a1b3}
 .composer-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:15px}
 .char-count{color:var(--muted);font-size:11px}
@@ -162,3 +162,12 @@ a{color:inherit;text-decoration:none}
 .account-popover a:hover,.account-popover button:hover{background:#f4f3ff}
 .account-popover .logout-item{border-top:1px solid #ececf3;margin-top:5px;padding-top:14px;color:#c03952}
 @media(min-width:681px){.mygram-bottom-nav{display:none}}
+
+/* MYGRAM 2.7 interactions */
+.post-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+.post-actions .is-liked{background:#eaf3ff;color:#1877f2;border-color:#1877f2}
+.post-comments{margin-top:10px;padding:12px;background:#f8fbff;border-radius:14px}
+.comment-list{max-height:240px;overflow:auto}
+.comment-row{margin:6px 0;padding:7px 10px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow-wrap:anywhere}
+.comment-form{display:flex;gap:8px;margin-top:10px}
+.comment-form input{min-width:0;flex:1;border:1px solid var(--border);border-radius:10px;padding:8px 10px}

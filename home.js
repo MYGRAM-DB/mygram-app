@@ -92,7 +92,75 @@
     const badge = document.createElement("span");
     badge.textContent = post.media_url ? "🌐 منشور مع مرفق · MYGRAM" : "🌐 منشور نصّي · MYGRAM";
     foot.appendChild(badge);
-    card.append(head, body, foot);
+    const actions = document.createElement("div");
+    actions.className = "post-actions";
+    actions.innerHTML = `<button type="button" class="button ghost small" data-like>❤️ <span>إعجاب</span> <b data-like-count>…</b></button>
+      <button type="button" class="button ghost small" data-toggle-comments>💬 التعليقات</button>`;
+    const comments = document.createElement("div");
+    comments.className = "post-comments";
+    comments.hidden = true;
+    const commentList = document.createElement("div");
+    commentList.className = "comment-list";
+    const commentForm = document.createElement("form");
+    commentForm.className = "comment-form";
+    commentForm.innerHTML = '<input maxlength="1000" required placeholder="اكتب تعليقاً..." aria-label="اكتب تعليقاً"><button class="button primary small" type="submit">إرسال</button>';
+    comments.append(commentList, commentForm);
+    card.append(head, body, foot, actions, comments);
+
+    const likeButton = actions.querySelector("[data-like]");
+    const likeCount = actions.querySelector("[data-like-count]");
+    async function refreshLikes() {
+      const { count, error } = await client.from("post_reactions").select("id", { count: "exact", head: true }).eq("post_id", post.id);
+      if (!error) likeCount.textContent = String(count || 0);
+      const { data: mine } = await client.from("post_reactions").select("id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle();
+      likeButton.classList.toggle("is-liked", !!mine);
+      likeButton.querySelector("span").textContent = mine ? "أعجبك" : "إعجاب";
+    }
+    likeButton.addEventListener("click", async () => {
+      likeButton.disabled = true;
+      try {
+        const { data: mine, error: readError } = await client.from("post_reactions").select("id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle();
+        if (readError) throw readError;
+        const result = mine
+          ? await client.from("post_reactions").delete().eq("id", mine.id)
+          : await client.from("post_reactions").insert({ post_id: post.id, user_id: user.id, reaction: "❤️" });
+        if (result.error) throw result.error;
+        await refreshLikes();
+      } catch (e) { toast("تعذر حفظ الإعجاب: " + e.message, "error"); }
+      finally { likeButton.disabled = false; }
+    });
+    async function refreshComments() {
+      commentList.replaceChildren();
+      const { data, error } = await client.from("post_comments").select("id,user_id,content,created_at").eq("post_id", post.id).order("created_at", { ascending: true }).limit(100);
+      if (error) { commentList.textContent = "تعذر تحميل التعليقات. تأكد من تطبيق ملف SQL الجديد."; return; }
+      if (!data?.length) { commentList.textContent = "لا توجد تعليقات بعد."; return; }
+      for (const c of data) {
+        const row = document.createElement("p");
+        row.className = "comment-row";
+        row.textContent = (c.user_id === user.id ? "أنت: " : "") + c.content;
+        commentList.appendChild(row);
+      }
+    }
+    actions.querySelector("[data-toggle-comments]").addEventListener("click", async () => {
+      comments.hidden = !comments.hidden;
+      if (!comments.hidden) await refreshComments();
+    });
+    commentForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = commentForm.querySelector("input");
+      const content = input.value.trim();
+      if (!content) return;
+      const button = commentForm.querySelector("button");
+      button.disabled = true;
+      try {
+        const { error } = await client.from("post_comments").insert({ post_id: post.id, user_id: user.id, content });
+        if (error) throw error;
+        input.value = "";
+        await refreshComments();
+      } catch (e) { toast("تعذر نشر التعليق: " + e.message, "error"); }
+      finally { button.disabled = false; }
+    });
+    refreshLikes();
     return card;
   }
 

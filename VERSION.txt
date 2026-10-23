@@ -1,4 +1,2 @@
-MYGRAM 2.6
-Prepared 2026-10-23
-Checks: ZIP integrity, JavaScript syntax, local HTML script references.
-Not a claim of full live integration testing.
+MYGRAM 2.7
+Local syntax and ZIP checks only; requires Supabase migration and live browser testing.
