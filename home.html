@@ -11,7 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="config.js"></script>
   <script defer src="home.js"></script>
-</head>
+<style>.media-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}.media-picker label{cursor:pointer}.media-preview img,.media-preview video{display:block;max-width:100%;max-height:360px;border-radius:14px;margin-top:10px}.post-media{width:100%;max-height:520px;object-fit:contain;border-radius:14px;margin-top:12px;background:#f1f5f9}.post-body:empty{display:none}</style></head>
 <body>
   <header class="topbar">
     <div class="topbar-inner">
@@ -37,7 +37,7 @@
         <strong>أهلاً بك في MYGRAM</strong>
         <p>شارك لحظاتك وأفكارك مع مجتمعك.</p>
       </div>
-      <div class="sidebar-foot">المرحلة الأولى · المنشورات النصية</div>
+      <div class="sidebar-foot">المرحلة 2.3 · منشورات نصية ووسائط</div>
     </aside>
 
     <main class="main-content" id="home">
@@ -58,7 +58,7 @@
             <label class="sr-only" for="postContent">محتوى المنشور</label>
             <textarea id="postContent" maxlength="5000" required placeholder="ماذا يدور في بالك اليوم؟"></textarea>
           </div>
-          <div class="composer-bottom">
+          <div class="media-picker"><label class="button ghost small" for="postMedia">＋ صورة أو فيديو</label><input id="postMedia" type="file" accept="image/*,video/*" hidden><span id="mediaFileName" class="muted">اختياري · صورة أو فيديو حتى 50 ميغابايت</span><button class="button ghost small" id="clearMediaButton" type="button" hidden>إزالة المرفق</button><div id="mediaPreview" class="media-preview"></div></div><div class="composer-bottom">
             <span class="char-count"><span id="charCount">0</span> / 5000 حرف</span>
             <button class="button primary" id="publishButton" type="submit"><span id="publishText">نشر</span><span aria-hidden="true"> ↗</span></button>
           </div>

@@ -13,6 +13,7 @@
   let profile = null;
   let loading = false;
   let toastTimer;
+  let selectedMedia = null;
 
   $("year").textContent = new Date().getFullYear();
 
@@ -81,6 +82,12 @@
     body.className = "post-body";
     // textContent يمنع تنفيذ HTML أو JavaScript أُدرج في المنشور.
     body.textContent = post.content;
+    if (post.media_url && post.media_type) {
+      let media;
+      if (post.media_type === "video") { media = document.createElement("video"); media.controls = true; media.preload = "metadata"; }
+      else { media = document.createElement("img"); media.alt = "مرفق المنشور"; }
+      media.className = "post-media"; media.src = post.media_url; card.appendChild(media);
+    }
     const foot = document.createElement("div");
     foot.className = "post-foot";
     const badge = document.createElement("span");
@@ -111,7 +118,7 @@
 
     try {
       const { data: posts, error } = await client.from("posts")
-        .select("id, user_id, content, created_at")
+        .select("id, user_id, content, media_url, media_type, created_at")
         .order("created_at", { ascending: false })
         .limit(50);
 
@@ -158,6 +165,20 @@
     $("charCount").textContent = contentInput.value.length;
   });
 
+  const mediaInput = $("postMedia");
+  const mediaName = $("mediaFileName");
+  const mediaPreview = $("mediaPreview");
+  const clearMedia = $("clearMediaButton");
+  if (mediaInput) mediaInput.addEventListener("change", () => {
+    const file = mediaInput.files?.[0]; selectedMedia = file || null; mediaPreview.replaceChildren();
+    if (!file) { mediaName.textContent = "اختياري · صورة أو فيديو حتى 50 ميغابايت"; clearMedia.hidden = true; return; }
+    if (!(file.type.startsWith("image/") || file.type.startsWith("video/"))) { toast("اختر صورة أو فيديو فقط.", "error"); mediaInput.value=""; selectedMedia=null; return; }
+    if (file.size > 50*1024*1024) { toast("حجم الملف يجب ألا يتجاوز 50 ميغابايت.", "error"); mediaInput.value=""; selectedMedia=null; return; }
+    mediaName.textContent = file.name; clearMedia.hidden = false;
+    const el = document.createElement(file.type.startsWith("video/") ? "video" : "img"); el.className="post-media"; el.src=URL.createObjectURL(file); if(el.tagName==="VIDEO") el.controls=true; mediaPreview.appendChild(el);
+  });
+  if (clearMedia) clearMedia.addEventListener("click",()=>{selectedMedia=null;mediaInput.value="";mediaPreview.replaceChildren();mediaName.textContent="اختياري · صورة أو فيديو حتى 50 ميغابايت";clearMedia.hidden=true;});
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!user) {
@@ -166,8 +187,8 @@
       return;
     }
     const content = contentInput.value.trim();
-    if (!content) {
-      toast("اكتب محتوى المنشور أولاً.", "error");
+    if (!content && !selectedMedia) {
+      toast("اكتب محتوى أو أرفق صورة/فيديو أولاً.", "error");
       contentInput.focus();
       return;
     }
@@ -179,10 +200,16 @@
     publishButton.disabled = true;
     publishText.textContent = "جارٍ النشر...";
     try {
-      const { error } = await client.from("posts").insert({
-        user_id: user.id,
-        content
-      });
+      let media_url = null, media_type = null;
+      if (selectedMedia) {
+        const ext = (selectedMedia.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+        const path = `${user.id}/posts/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+        const { error: uploadError } = await client.storage.from("mygram-media").upload(path, selectedMedia, { upsert: false, contentType: selectedMedia.type, cacheControl: "3600" });
+        if (uploadError) { toast("تعذّر رفع المرفق. تأكد من إعداد التخزين في Supabase. " + uploadError.message, "error"); return; }
+        media_url = client.storage.from("mygram-media").getPublicUrl(path).data.publicUrl;
+        media_type = selectedMedia.type.startsWith("video/") ? "video" : "image";
+      }
+      const { error } = await client.from("posts").insert({ user_id: user.id, content: content || "", media_url, media_type });
       if (error) {
         console.error("posts insert:", error);
         if (error.code === "42501") {
@@ -194,6 +221,7 @@
       }
       contentInput.value = "";
       $("charCount").textContent = "0";
+      if (mediaInput) { selectedMedia=null; mediaInput.value=""; mediaPreview.replaceChildren(); mediaName.textContent="اختياري · صورة أو فيديو حتى 50 ميغابايت"; clearMedia.hidden=true; }
       toast("تم نشر منشورك بنجاح 💜", "success");
       await loadPosts();
     } catch (error) {
