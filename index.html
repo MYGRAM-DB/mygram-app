@@ -1,91 +1,428 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" id="htmlRoot">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYGRAM - تسجيل الدخول وإنشاء حساب</title>
-    <style>
-        :root{--bg:#0b1120;--card:#152238;--p:#38bdf8;--ink:#f8fafc;--mute:#94a3b8;--line:#1e293b;--red:#ef4444;--ok:#22c55e;--gold:#f59e0b}
-        *{box-sizing:border-box;margin:0}
-        body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
-        .auth-container { width: 100%; max-width: 440px; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        .logo-box { text-align: center; margin-bottom: 20px; }
-        .logo-box h1 { color: var(--p); font-size: 24px; font-weight: 900; margin-bottom: 4px; }
-        .logo-box p { color: var(--mute); font-size: 11px; }
-        input,select{width:100%;padding:12px 14px;margin-bottom:12px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:12px;font:inherit;font-size:13px;outline:none;}
-        button{width:100%;font:inherit;font-size:13px;cursor:pointer;border:0;background:var(--p);color:#06101d;border-radius:12px;padding:12px;font-weight:800;display:flex;justify-content:center;align-items:center;margin-top:6px}
-        .tab-bar { display: flex; gap: 8px; margin-bottom: 20px; background: var(--bg); padding: 4px; border-radius: 12px; border: 1px solid var(--line); }
-        .tab-btn { flex: 1; padding: 10px; text-align: center; background: none; border: 0; color: var(--mute); font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 8px; }
-        .tab-btn.active { background: var(--p); color: #06101d; }
-        .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--p);color:#06101d;padding:9px 20px;border-radius:20px;font-size:12px;font-weight:800;z-index:3000;opacity:0;transition:opacity .3s;pointer-events:none}
-        .toast.on{opacity:1}
-        .mute-label { font-size: 11px; color: var(--mute); margin-bottom: 4px; display: block; text-align: right; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1120">
+  <title>MYGRAM - تسجيل الدخول وإنشاء حساب</title>
+
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card: #152238;
+      --primary: #38bdf8;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #1e293b;
+      --error: #f87171;
+      --success: #4ade80;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 440px;
+      padding: 25px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--card);
+      box-shadow: 0 10px 30px #0005;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .logo h1 {
+      margin: 0 0 6px;
+      color: var(--primary);
+      font-size: 30px;
+    }
+
+    .logo p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 4px;
+      border-radius: 12px;
+      background: var(--bg);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px 6px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--primary);
+      color: #06101d;
+      font-weight: 800;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+    }
+
+    .primary-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #06101d;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .primary-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .message {
+      display: none;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--bg);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      color: var(--error);
+    }
+
+    .message.success {
+      color: var(--success);
+    }
+
+    .hint {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="toast" id="toastMsg"></div>
-    <div class="auth-container">
-        <div class="logo-box">
-            <h1>MYGRAM</h1>
-            <p>منصة التواصل الاجتماعي العالمية</p>
-        </div>
-        <div class="tab-bar">
-            <button class="tab-btn active" id="tabLoginBtn" onclick="switchAuthMode('login')">تسجيل الدخول</button>
-            <button class="tab-btn" id="tabRegisterBtn" onclick="switchAuthMode('register')">إنشاء حساب جديد</button>
-        </div>
-        <div id="loginFormSection">
-            <label class="mute-label">البريد الإلكتروني أو اسم المستخدم:</label>
-            <input type="text" id="loginEmail" placeholder="example@mygram.com" value="louay@mygram.com">
-            <label class="mute-label">كلمة المرور:</label>
-            <input type="password" id="loginPass" placeholder="••••••••" value="123456">
-            <button onclick="handleLogin()">تسجيل الدخول الفوري</button>
-        </div>
-        <div id="registerFormSection" style="display: none;">
-            <label class="mute-label">الاسم الكامل:</label>
-            <input type="text" id="regName" placeholder="الاسم...">
-            <label class="mute-label">البريد الإلكتروني:</label>
-            <input type="email" id="regEmail" placeholder="example@mygram.com">
-            <label class="mute-label">كلمة المرور:</label>
-            <input type="password" id="regPass" placeholder="••••••••">
-            <button onclick="handleRegister()">إنشاء الحساب والانتقال</button>
-        </div>
+  <main class="container">
+    <div class="logo">
+      <h1>MYGRAM</h1>
+      <p>منصة التواصل الاجتماعي العالمية</p>
     </div>
-    <script>
-        function showToast(msg) {
-            const t = document.getElementById('toastMsg');
-            if(!t) return;
-            t.innerText = msg;
-            t.classList.add('on');
-            setTimeout(() => t.classList.remove('on'), 2000);
+
+    <div class="tabs">
+      <button type="button" class="tab active" id="loginTab">
+        تسجيل الدخول
+      </button>
+
+      <button type="button" class="tab" id="registerTab">
+        إنشاء حساب
+      </button>
+    </div>
+
+    <form id="authForm">
+      <div id="nameField" hidden>
+        <label for="fullName">الاسم الكامل</label>
+        <input
+          id="fullName"
+          type="text"
+          autocomplete="name"
+          maxlength="100"
+          placeholder="اكتب اسمك الكامل"
+        >
+      </div>
+
+      <label for="email">البريد الإلكتروني</label>
+      <input
+        id="email"
+        type="email"
+        autocomplete="email"
+        maxlength="254"
+        placeholder="name@example.com"
+        required
+      >
+
+      <label for="password">كلمة المرور</label>
+      <input
+        id="password"
+        type="password"
+        autocomplete="current-password"
+        minlength="8"
+        placeholder="أدخل كلمة المرور"
+        required
+      >
+
+      <button class="primary-btn" id="submitBtn" type="submit">
+        تسجيل الدخول
+      </button>
+    </form>
+
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+
+    <p class="hint">
+      تُدار عملية تسجيل الدخول عبر Supabase.
+      لا تشارك كلمة مرورك مع أي شخص.
+    </p>
+  </main>
+
+  <!-- مكتبة Supabase الرسمية -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <script>
+    /*
+      ضع رابط مشروعك العام ومفتاح Publishable Key هنا.
+      لا تضع Secret Key أو service_role في هذا الملف.
+    */
+    const SUPABASE_URL =
+      "https://rocztskcyakvekokftfx.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_EhY56n7FdI_w0W6opIfEbg_VeJvwa59";
+
+    const HOME_URL = "./home.html";
+
+    const loginTab = document.getElementById("loginTab");
+    const registerTab = document.getElementById("registerTab");
+    const authForm = document.getElementById("authForm");
+    const nameField = document.getElementById("nameField");
+    const fullName = document.getElementById("fullName");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const submitBtn = document.getElementById("submitBtn");
+    const messageBox = document.getElementById("message");
+
+    let mode = "login";
+    let supabaseClient = null;
+
+    function showMessage(text, type) {
+      messageBox.textContent = text;
+      messageBox.className = "message show " + type;
+    }
+
+    function setMode(newMode) {
+      mode = newMode;
+
+      const registering = mode === "register";
+
+      nameField.hidden = !registering;
+      fullName.required = registering;
+
+      passwordInput.autocomplete = registering
+        ? "new-password"
+        : "current-password";
+
+      loginTab.classList.toggle("active", !registering);
+      registerTab.classList.toggle("active", registering);
+
+      submitBtn.textContent = registering
+        ? "إنشاء الحساب"
+        : "تسجيل الدخول";
+
+      messageBox.className = "message";
+      messageBox.textContent = "";
+    }
+
+    loginTab.addEventListener("click", () => setMode("login"));
+    registerTab.addEventListener("click", () => setMode("register"));
+
+    function initializeSupabase() {
+      if (!window.supabase) {
+        showMessage(
+          "تعذّر تحميل مكتبة تسجيل الدخول. تحقق من اتصال الإنترنت ثم أعد المحاولة.",
+          "error"
+        );
+        return false;
+      }
+
+      if (
+        !SUPABASE_PUBLISHABLE_KEY ||
+        SUPABASE_PUBLISHABLE_KEY === "PASTE_YOUR_SB_PUBLISHABLE_KEY_HERE"
+      ) {
+        showMessage(
+          "لم تتم إضافة Publishable Key بعد. أضفه في الكود ثم احفظ الملف.",
+          "error"
+        );
+        return false;
+      }
+
+      if (!supabaseClient) {
+        supabaseClient = window.supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_PUBLISHABLE_KEY,
+          {
+            auth: {
+              persistSession: true,
+              autoRefreshToken: true,
+              detectSessionInUrl: true
+            }
+          }
+        );
+      }
+
+      return true;
+    }
+
+    authForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!initializeSupabase()) return;
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "يرجى الانتظار...";
+
+      try {
+        if (mode === "register") {
+          const name = fullName.value.trim();
+
+          if (!name) {
+            throw new Error("يرجى كتابة الاسم الكامل.");
+          }
+
+          if (password.length < 8) {
+            throw new Error("يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.");
+          }
+
+          const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: name
+              },
+              emailRedirectTo: new URL(HOME_URL, location.href).href
+            }
+          });
+
+          if (error) throw error;
+
+          if (data.session) {
+            showMessage(
+              "تم إنشاء الحساب بنجاح! سيتم فتح الصفحة الرئيسية.",
+              "success"
+            );
+
+            setTimeout(() => {
+              location.href = HOME_URL;
+            }, 1000);
+          } else {
+            showMessage(
+              "تم إرسال طلب إنشاء الحساب. افحص بريدك الإلكتروني واضغط رابط التأكيد، ثم ارجع إلى الموقع وسجّل الدخول.",
+              "success"
+            );
+          }
+        } else {
+          const { data, error } =
+            await supabaseClient.auth.signInWithPassword({
+              email,
+              password
+            });
+
+          if (error) throw error;
+
+          if (!data.session) {
+            throw new Error("لم يتم إنشاء جلسة دخول. حاول مرة أخرى.");
+          }
+
+          showMessage(
+            "تم تسجيل الدخول بنجاح! سيتم فتح الصفحة الرئيسية.",
+            "success"
+          );
+
+          setTimeout(() => {
+            location.href = HOME_URL;
+          }, 700);
         }
-        function switchAuthMode(mode) {
-            document.getElementById('loginFormSection').style.display = mode === 'login' ? 'block' : 'none';
-            document.getElementById('registerFormSection').style.display = mode === 'register' ? 'block' : 'none';
-            document.getElementById('tabLoginBtn').classList.toggle('active', mode === 'login');
-            document.getElementById('tabRegisterBtn').classList.toggle('active', mode === 'register');
+      } catch (error) {
+        console.error("MYGRAM authentication error:", error);
+
+        let text = error.message || "حدث خطأ غير متوقع.";
+
+        if (text.includes("Invalid login credentials")) {
+          text = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+        } else if (text.includes("User already registered")) {
+          text = "هذا البريد مسجّل بالفعل. استخدم تسجيل الدخول.";
+        } else if (text.includes("Email not confirmed")) {
+          text = "يرجى تأكيد بريدك الإلكتروني أولًا.";
+        } else if (
+          text.includes("Password should be") ||
+          text.includes("weak")
+        ) {
+          text = "كلمة المرور ضعيفة أو لا تحقق شروط الأمان المطلوبة.";
         }
-        function handleLogin() {
-            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('loginPass').value;
-            const defaultAcc = {
-                name: "Louay Chaghal",
-                account: email || "louay@mygram.com",
-                pass: pass || "123456",
-                birthDate: "1995-01-01",
-                age: 31,
-                gender: "male",
-                relation: "متزوج",
-                hobbies: "البرمجة وتقنية المصاعد",
-                avatar: ""
-            };
-            localStorage.setItem('mygram_current_account', JSON.stringify(defaultAcc));
-            localStorage.setItem('mygram_is_logged', 'true');
-            showToast('تم تسجيل الدخول بنجاح!');
-            setTimeout(() => { window.location.href = 'home.html'; }, 600);
-        }
-        function handleRegister() {
-            handleLogin();
-        }
-    </script>
+
+        showMessage(text, "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = mode === "register"
+          ? "إنشاء الحساب"
+          : "تسجيل الدخول";
+      }
+    });
+
+    setMode("login");
+  </script>
 </body>
 </html>
