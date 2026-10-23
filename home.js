@@ -33,9 +33,8 @@
       || "عضو MYGRAM";
   }
 
-  function initial(name) {
-    return Array.from((name || "م").trim())[0] || "م";
-  }
+  function initial(name) { return Array.from((name || "م").trim())[0] || "م"; }
+  function setAvatar(el, url, name) { if (!el) return; el.replaceChildren(); if (url) { const img=document.createElement("img"); img.src=url; img.alt="الصورة الشخصية"; img.style.cssText="width:100%;height:100%;object-fit:cover;border-radius:50%"; el.appendChild(img); } else el.textContent=initial(name); }
 
   function showState(icon, title, detail = "") {
     const box = document.createElement("div");
@@ -67,7 +66,7 @@
     head.className = "post-head";
     const avatar = document.createElement("div");
     avatar.className = "user-avatar";
-    avatar.textContent = initial(author);
+    setAvatar(avatar, post.author_avatar_url || (post.user_id === user.id ? profile?.avatar_url : null), author);
     const info = document.createElement("div");
     info.className = "post-author-info";
     const name = document.createElement("strong");
@@ -99,7 +98,7 @@
 
   async function loadProfile() {
     const { data, error } = await client.from("users")
-      .select("id, username, full_name")
+      .select("id, username, full_name, avatar_url")
       .eq("id", user.id)
       .maybeSingle();
     if (error) {
@@ -137,9 +136,9 @@
       let byId = {};
       if (ids.length) {
         const { data: profiles, error: profileError } = await client.from("users")
-          .select("id, username, full_name")
+          .select("id, username, full_name, avatar_url")
           .in("id", ids);
-        if (!profileError && profiles) byId = Object.fromEntries(profiles.map(p => [p.id, p]));
+        if (!profileError && profiles) { byId = Object.fromEntries(profiles.map(p => [p.id, p])); for (const post of posts) post.author_avatar_url=byId[post.user_id]?.avatar_url || null; }
       }
 
       const fragment = document.createDocumentFragment();
@@ -259,8 +258,9 @@
       profile = await loadProfile();
       const name = displayName();
       $("welcomeTitle").textContent = "أهلاً بك، " + name + " 👋";
-      $("headerAvatar").textContent = initial(name);
-      $("composerAvatar").textContent = initial(name);
+      setAvatar($("headerAvatar"), profile?.avatar_url, name);
+      setAvatar($("composerAvatar"), profile?.avatar_url, name);
+      setAvatar($("accountMenuToggle"), profile?.avatar_url, name);
       await loadPosts();
 
       client.auth.onAuthStateChange((event, session) => {
