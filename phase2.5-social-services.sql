@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.stories (
 CREATE INDEX IF NOT EXISTS stories_created_idx ON public.stories(created_at DESC);
 CREATE INDEX IF NOT EXISTS stories_expiry_idx ON public.stories(expires_at);
 
-CREATE TABLE IF NOT EXISTS public.messages (
+CREATE TABLE IF NOT EXISTS public.direct_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   recipient_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -24,11 +24,11 @@ CREATE TABLE IF NOT EXISTS public.messages (
   media_url TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   read_at TIMESTAMPTZ,
-  CONSTRAINT messages_not_empty CHECK (char_length(trim(body)) > 0 OR media_url IS NOT NULL),
-  CONSTRAINT messages_not_self CHECK (sender_id <> recipient_id)
+  CONSTRAINT direct_messages_not_empty CHECK (char_length(trim(body)) > 0 OR media_url IS NOT NULL),
+  CONSTRAINT direct_messages_not_self CHECK (sender_id <> recipient_id)
 );
-CREATE INDEX IF NOT EXISTS messages_pair_created_idx ON public.messages(sender_id, recipient_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS messages_recipient_unread_idx ON public.messages(recipient_id, read_at) WHERE read_at IS NULL;
+CREATE INDEX IF NOT EXISTS messages_pair_created_idx ON public.direct_messages(sender_id, recipient_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS messages_recipient_unread_idx ON public.direct_messages(recipient_id, read_at) WHERE read_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS public.reels (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS public.live_sessions (
 );
 
 ALTER TABLE public.stories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.direct_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.live_sessions ENABLE ROW LEVEL SECURITY;
 
@@ -65,14 +65,14 @@ DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='stories' AND policyname='MYGRAM users delete own stories') THEN
     CREATE POLICY "MYGRAM users delete own stories" ON public.stories FOR DELETE TO authenticated USING (user_id = (SELECT auth.uid()));
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='messages' AND policyname='MYGRAM participants read messages') THEN
-    CREATE POLICY "MYGRAM participants read messages" ON public.messages FOR SELECT TO authenticated USING (sender_id = (SELECT auth.uid()) OR recipient_id = (SELECT auth.uid()));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='direct_messages' AND policyname='MYGRAM participants read messages') THEN
+    CREATE POLICY "MYGRAM participants read messages" ON public.direct_messages FOR SELECT TO authenticated USING (sender_id = (SELECT auth.uid()) OR recipient_id = (SELECT auth.uid()));
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='messages' AND policyname='MYGRAM users send messages') THEN
-    CREATE POLICY "MYGRAM users send messages" ON public.messages FOR INSERT TO authenticated WITH CHECK (sender_id = (SELECT auth.uid()) AND recipient_id <> (SELECT auth.uid()));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='direct_messages' AND policyname='MYGRAM users send messages') THEN
+    CREATE POLICY "MYGRAM users send messages" ON public.direct_messages FOR INSERT TO authenticated WITH CHECK (sender_id = (SELECT auth.uid()) AND recipient_id <> (SELECT auth.uid()));
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='messages' AND policyname='MYGRAM recipient marks read') THEN
-    CREATE POLICY "MYGRAM recipient marks read" ON public.messages FOR UPDATE TO authenticated USING (recipient_id = (SELECT auth.uid())) WITH CHECK (recipient_id = (SELECT auth.uid()));
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='direct_messages' AND policyname='MYGRAM recipient marks read') THEN
+    CREATE POLICY "MYGRAM recipient marks read" ON public.direct_messages FOR UPDATE TO authenticated USING (recipient_id = (SELECT auth.uid())) WITH CHECK (recipient_id = (SELECT auth.uid()));
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='reels' AND policyname='MYGRAM authenticated read reels') THEN
     CREATE POLICY "MYGRAM authenticated read reels" ON public.reels FOR SELECT TO authenticated USING (true);
@@ -95,7 +95,7 @@ DO $$ BEGIN
 END $$;
 
 GRANT SELECT, INSERT, DELETE ON public.stories TO authenticated;
-GRANT SELECT, INSERT, UPDATE ON public.messages TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.direct_messages TO authenticated;
 GRANT SELECT, INSERT, DELETE ON public.reels TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.live_sessions TO authenticated;
 GRANT SELECT, UPDATE ON public.users TO authenticated;
