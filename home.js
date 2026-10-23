@@ -91,7 +91,7 @@
     const foot = document.createElement("div");
     foot.className = "post-foot";
     const badge = document.createElement("span");
-    badge.textContent = "🌐 منشور نصّي · MYGRAM";
+    badge.textContent = post.media_url ? "🌐 منشور مع مرفق · MYGRAM" : "🌐 منشور نصّي · MYGRAM";
     foot.appendChild(badge);
     card.append(head, body, foot);
     return card;
@@ -175,7 +175,7 @@
     if (!(file.type.startsWith("image/") || file.type.startsWith("video/"))) { toast("اختر صورة أو فيديو فقط.", "error"); mediaInput.value=""; selectedMedia=null; return; }
     if (file.size > 50*1024*1024) { toast("حجم الملف يجب ألا يتجاوز 50 ميغابايت.", "error"); mediaInput.value=""; selectedMedia=null; return; }
     mediaName.textContent = file.name; clearMedia.hidden = false;
-    const el = document.createElement(file.type.startsWith("video/") ? "video" : "img"); el.className="post-media"; el.src=URL.createObjectURL(file); if(el.tagName==="VIDEO") el.controls=true; mediaPreview.appendChild(el);
+    const el = document.createElement(file.type.startsWith("video/") ? "video" : "img"); el.className="post-media"; el.src=URL.createObjectURL(file); if(el.tagName==="VIDEO") el.controls=true; mediaPreview.appendChild(el); const x=document.createElement("button"); x.type="button"; x.className="attachment-remove"; x.textContent="×"; x.setAttribute("aria-label","إزالة المرفق المختار"); x.title="إزالة المرفق"; x.addEventListener("click",()=>{selectedMedia=null;mediaInput.value="";mediaPreview.replaceChildren();mediaName.textContent="اختياري · صورة أو فيديو حتى 50 ميغابايت";clearMedia.hidden=true;}); mediaPreview.appendChild(x);
   });
   if (clearMedia) clearMedia.addEventListener("click",()=>{selectedMedia=null;mediaInput.value="";mediaPreview.replaceChildren();mediaName.textContent="اختياري · صورة أو فيديو حتى 50 ميغابايت";clearMedia.hidden=true;});
 
