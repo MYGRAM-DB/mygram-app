@@ -153,12 +153,12 @@ a{color:inherit;text-decoration:none}
  .site-footer{padding:10px}
 }
 
-/* MYGRAM phase 2.1: distinctive, consistent navigation icons */
-.nav-icon{display:grid;place-items:center;width:29px;height:29px;border-radius:10px}
-.nav-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.mobile-nav .nav-icon{line-height:1}
-.mobile-nav .nav-create .nav-icon{background:var(--primary);color:#fff;border-radius:13px;width:36px;height:32px}
-.mobile-nav .nav-create .nav-icon svg{width:22px;height:22px}
-.mobile-nav a{min-width:55px}
-.nav-item .nav-svg{display:inline-grid;place-items:center;width:24px;height:24px;margin-left:6px;border-radius:8px;background:var(--primary-soft);color:var(--primary);font-size:18px;vertical-align:middle}
-@media(max-width:680px){.mobile-nav a small{font-size:9px}.mobile-nav .nav-create{color:var(--primary);font-weight:800}}
+/* MYGRAM phase 2.2: account menu */
+.account-menu-wrap{position:relative;display:inline-flex;align-items:center}
+.account-menu-toggle{width:42px;height:42px;border-radius:50%;border:1px solid #e2e5f0;background:#f0efff;color:#5547d8;font-weight:800;cursor:pointer;display:grid;place-items:center}
+.account-popover{position:absolute;top:calc(100% + 10px);inset-inline-end:0;width:230px;background:#fff;border:1px solid #e7e9f2;border-radius:16px;padding:8px;box-shadow:0 16px 42px #25254a20;z-index:100;display:none}
+.account-popover.open{display:block}
+.account-popover a,.account-popover button{display:flex;width:100%;padding:12px;border:0;border-radius:10px;background:transparent;color:#30334b;text-decoration:none;font:inherit;text-align:right;cursor:pointer}
+.account-popover a:hover,.account-popover button:hover{background:#f4f3ff}
+.account-popover .logout-item{border-top:1px solid #ececf3;margin-top:5px;padding-top:14px;color:#c03952}
+@media(min-width:681px){.mygram-bottom-nav{display:none}}

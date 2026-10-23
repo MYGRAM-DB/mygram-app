@@ -44,15 +44,6 @@
     }
     details.appendChild(actions);card.appendChild(details);return card;
   }
-  async function loadProfile() {
-    const {data,error}=await client.from("users").select("id,username,email,full_name,bio,avatar_url").eq("id",me.id).maybeSingle();
-    if(error) throw error;
-    myProfile=data;
-    $("fullName").value=data?.full_name||me.user_metadata?.full_name||"";
-    $("username").value=data?.username||"";
-    $("bio").value=data?.bio||"";
-    $("avatarUrl").value=data?.avatar_url||"";
-  }
   async function loadAllProfiles() {
     const {data,error}=await client.from("users").select("id,username,full_name,bio,avatar_url").neq("id",me.id).order("username").limit(200);
     if(error) throw error;
@@ -125,24 +116,13 @@
     if(error){toast("تعذر تحديث الطلب: "+error.message,"error");button.disabled=false;return;}
     toast(status==="accepted"?"أصبحتما صديقين! 🤝":"تم رفض الطلب.");await loadAllProfiles();
   }
-  $("profileForm").addEventListener("submit",async e=>{
-    e.preventDefault();
-    const username=$("username").value.trim().toLowerCase();
-    if(!/^[a-z0-9_]{3,30}$/.test(username)){toast("اسم المستخدم يجب أن يكون 3–30 حرفاً إنجليزياً أو رقماً أو _","error");return;}
-    const btn=$("saveProfileButton");btn.disabled=true;
-    const patch={full_name:$("fullName").value.trim(),username,bio:$("bio").value.trim(),avatar_url:safeImage($("avatarUrl").value.trim())||null,updated_at:new Date().toISOString()};
-    const {error}=await client.from("users").update(patch).eq("id",me.id);
-    btn.disabled=false;
-    if(error){toast(error.code==="23505"?"اسم المستخدم مستخدم؛ اختر اسماً آخر.":"تعذر حفظ الملف: "+error.message,"error");return;}
-    toast("تم حفظ ملفك الشخصي بنجاح.");await loadProfile();await loadAllProfiles();
-  });
   $("searchInput").addEventListener("input",()=>{clearTimeout(window._searchTimer);window._searchTimer=setTimeout(renderSearch,180);});
-  $("logoutButton").addEventListener("click",async()=>{await client.auth.signOut();location.href=config.loginUrl;});
+
   (async()=>{
     const {data,error}=await client.auth.getSession();
     if(error||!data.session){location.href=config.loginUrl;return;}
     me=data.session.user;
-    try{await loadProfile();await loadAllProfiles();}
+    try{await loadAllProfiles();}
     catch(err){toast("تعذر تحميل البيانات. شغّل ملف phase2.sql في Supabase أولاً. "+(err.message||""),"error");}
   })();
 })();
