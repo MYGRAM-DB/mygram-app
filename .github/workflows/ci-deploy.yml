@@ -1,0 +1,95 @@
+name: MYGRAM CI and GitHub Pages Deploy
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mygram-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Browser and auth checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser tests
+        run: npm run test:e2e
+
+      - name: Check JavaScript syntax
+        run: |
+          for file in *.js; do node --check "$file"; done
+
+  package:
+    name: Package verified web source
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create source package
+        run: |
+          zip -r mygram-app.zip index.html home.html people.html profile.html services.html *.js *.css *.svg README-AR.md README.md VERSION.txt .nojekyll
+
+      - name: Upload source artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MYGRAM-WebApp-Source
+          path: mygram-app.zip
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy verified site to GitHub Pages
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare static site
+        run: |
+          mkdir _site
+          cp *.html *.js *.css *.svg README-AR.md VERSION.txt .nojekyll _site/
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
