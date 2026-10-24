@@ -1,8 +1,6 @@
-name: MYGRAM Mobile Checks
+name: MYGRAM Mobile Checks (Manual Legacy)
 
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
 
 permissions:
