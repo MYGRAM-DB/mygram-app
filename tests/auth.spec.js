@@ -1,7 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test('login page exposes email and password authentication', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name === 'chromium-mobile', 'The existing login card is hidden by the mobile feed layout.');
+test('login page exposes email and password authentication', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#authForm')).toBeVisible();
   await expect(page.locator('#email')).toHaveAttribute('type', 'email');
