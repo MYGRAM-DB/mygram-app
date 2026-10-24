@@ -165,7 +165,7 @@
   }
 
   async function loadProfile() {
-    const { data, error } = await client.from("users")
+    const { data, error } = await client.from("profiles")
       .select("id, username, full_name, avatar_url")
       .eq("id", user.id)
       .maybeSingle();
@@ -203,7 +203,7 @@
       const ids = [...new Set(posts.map(p => p.user_id).filter(Boolean))];
       let byId = {};
       if (ids.length) {
-        const { data: profiles, error: profileError } = await client.from("users")
+        const { data: profiles, error: profileError } = await client.from("profiles")
           .select("id, username, full_name, avatar_url")
           .in("id", ids);
         if (!profileError && profiles) { byId = Object.fromEntries(profiles.map(p => [p.id, p])); for (const post of posts) post.author_avatar_url=byId[post.user_id]?.avatar_url || null; }
