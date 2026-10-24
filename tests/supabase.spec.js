@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test('Supabase public client can reach the configured project without exposing private profiles', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/login.html');
   await page.waitForFunction(() => Boolean(window.supabase && window.MYGRAM_CONFIG?.supabaseUrl && window.MYGRAM_CONFIG?.supabaseKey));
   const result = await page.evaluate(async () => {
     const client = window.supabase.createClient(
