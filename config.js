@@ -7,7 +7,7 @@
     supabaseUrl: SUPABASE_URL,            // read by auth/home/people/profile/services/account-menu
     supabaseKey: SUPABASE_PUBLISHABLE_KEY,
     homeUrl: "home.html",
-    loginUrl: "index.html",
+    loginUrl: "login.html",
     MEDIA_BUCKET: "mygram-media",
     POST_BUCKET: "mygram-media",          // was "post-media": every other page uses mygram-media
     STORY_BUCKET: "mygram-media"
