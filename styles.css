@@ -5,3 +5,6 @@
   .right-column>:not(.auth-card){display:none}
   .right-column .auth-card{display:block}
 }
+
+/* Preserve the native hidden state for form fields styled as flex labels. */
+.auth-card [hidden]{display:none!important}
