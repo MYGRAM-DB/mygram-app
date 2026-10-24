@@ -123,7 +123,7 @@
         if (readError) throw readError;
         const result = mine
           ? await client.from("post_reactions").delete().eq("id", mine.id)
-          : await client.from("post_reactions").insert({ post_id: post.id, user_id: user.id, reaction: "❤️" });
+          : await client.from("post_reactions").insert({ post_id: post.id, user_id: user.id, reaction: "like" });
         if (result.error) throw result.error;
         await refreshLikes();
       } catch (e) { toast("تعذر حفظ الإعجاب: " + e.message, "error"); }
