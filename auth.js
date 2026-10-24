@@ -7,6 +7,11 @@
   const form = document.getElementById("authForm");
   const loginTab = document.getElementById("loginTab");
   const signupTab = document.getElementById("signupTab");
+  const phoneTab = document.getElementById("phoneTab");
+  const phoneCountryLabel = document.getElementById("phoneCountryLabel"), phoneLabel = document.getElementById("phoneLabel");
+  const phoneCountry = document.getElementById("phoneCountry"), phoneNumber = document.getElementById("phoneNumber");
+  const otpLabel = document.getElementById("otpLabel"), otpCode = document.getElementById("otpCode");
+  let phoneOtpSent = false, pendingPhone = "";
   const tabs = document.querySelector(".auth-tabs");
   const nameLabel = document.getElementById("nameLabel");
   const fullName = document.getElementById("fullName");
@@ -29,20 +34,32 @@
     mode = nextMode;
     const signup = mode === "signup";
     const recovery = mode === "recovery";
+    const phone = mode === "phone" || mode === "phone-verify";
+    const phoneVerify = mode === "phone-verify";
     tabs.style.display = recovery ? "none" : "";
-    nameLabel.classList.toggle("hidden", !signup || recovery);
-    emailLabel.style.display = recovery ? "none" : "";
-    resetPasswordButton.hidden = recovery || signup;
+    nameLabel.classList.toggle("hidden", (!signup && mode !== "phone") || recovery || phoneVerify);
+    phoneCountryLabel.classList.toggle("hidden", !phone || phoneVerify || recovery);
+    phoneLabel.classList.toggle("hidden", !phone || phoneVerify || recovery);
+    otpLabel.classList.toggle("hidden", !phoneVerify);
+    passwordLabel.style.display = recovery || phone ? "none" : "";
+    password.required = !recovery && !phone;
+    phoneNumber.required = phone && !phoneVerify;
+    otpCode.required = phoneVerify;
+    loginTab.classList.toggle("active", mode === "login");
+    signupTab.classList.toggle("active", mode === "signup");
+    phoneTab.classList.toggle("active", phone);
+    emailLabel.style.display = recovery || phone ? "none" : "";
+    resetPasswordButton.hidden = recovery || signup || phone;
     fullName.required = signup && !recovery;
-    email.required = !recovery;
+    email.required = !recovery && !phone;
     password.autocomplete = signup || recovery ? "new-password" : "current-password";
-    document.getElementById("formTitle").textContent = recovery ? "تعيين كلمة مرور جديدة" : signup ? "انضم إلى MYGRAM ✨" : "أهلاً بعودتك 👋";
+    document.getElementById("formTitle").textContent = recovery ? "تعيين كلمة مرور جديدة" : phoneVerify ? "تحقق من رقم هاتفك" : phone ? "التسجيل برقم الهاتف" : signup ? "انضم إلى MYGRAM ✨" : "أهلاً بعودتك 👋";
     document.getElementById("formSubtitle").textContent = recovery
       ? "اختر كلمة مرور جديدة لا تقل عن 8 أحرف."
-      : signup ? "أنشئ حسابك وابدأ مشاركة أفكارك." : "سجّل الدخول للمتابعة إلى MYGRAM.";
+      : phoneVerify ? "أدخل رمز SMS المكوّن من 6 أرقام." : phone ? "اختر رمز الدولة وأدخل رقمك لاستلام رمز التحقق." : signup ? "أنشئ حسابك وابدأ مشاركة أفكارك." : "سجّل الدخول للمتابعة إلى MYGRAM.";
     password.placeholder = recovery ? "8 أحرف على الأقل" : "6 أحرف على الأقل";
     password.minLength = recovery ? 8 : 6;
-    submitButton.textContent = recovery ? "حفظ كلمة المرور الجديدة" : signup ? "إنشاء الحساب" : "تسجيل الدخول";
+    submitButton.textContent = recovery ? "حفظ كلمة المرور الجديدة" : phoneVerify ? "تأكيد الرمز" : phone ? (phoneOtpSent ? "إعادة إرسال الرمز" : "إرسال رمز SMS") : signup ? "إنشاء الحساب" : "تسجيل الدخول";
     setNotice("");
   }
   function safeError(error) {
@@ -69,8 +86,18 @@
     } finally { resetPasswordButton.disabled = false; }
   });
 
-  loginTab.addEventListener("click", () => setMode("login"));
-  signupTab.addEventListener("click", () => setMode("signup"));
+  loginTab.addEventListener("click", () => { phoneOtpSent=false;setMode("login"); });
+  signupTab.addEventListener("click", () => { phoneOtpSent=false;setMode("signup"); });
+  phoneTab.addEventListener("click", () => { phoneOtpSent=false;setMode("phone"); });
+  if(window.MYGRAM_FILL_COUNTRIES && phoneCountry){window.MYGRAM_FILL_COUNTRIES(phoneCountry,"ar",true);phoneCountry.value="US";}
+  function e164Phone(){
+    const raw=phoneNumber.value.trim();
+    if(raw.startsWith("+")) return "+"+raw.slice(1).replace(/\D/g,"");
+    const country=window.MYGRAM_COUNTRIES?.find(x=>x.code===phoneCountry.value);
+    const dial=(country?.dial||"").replace(/\D/g,"");
+    const national=raw.replace(/\D/g,"").replace(/^0+/,"");
+    return dial&&national?"+"+dial+national:"";
+  }
 
   client.auth.onAuthStateChange((event, session) => {
     if (event === "PASSWORD_RECOVERY") {
