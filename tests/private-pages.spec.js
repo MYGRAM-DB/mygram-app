@@ -25,7 +25,10 @@ window.supabase = {
       },
       from: (table) => {
         const q = Object.create(query); q._table = table;
+        q._filters = [];
         q.select = function() { this._op = this._op || 'select'; return this; };
+        q.eq = function(column, value) { this._filters.push([column, value]); return this; };
+        q.maybeSingle = function() { const rows = window.__mockTableData?.[table] || []; const found = rows.find(row => this._filters.every(([column, value]) => row[column] === value)); return Promise.resolve({ data: found || null, error: null }); };
         q.insert = function(payload) { this._op = 'insert'; window.__mockCalls.push({ table, op: 'insert', payload }); return this; };
         q.update = function(payload) { this._op = 'update'; window.__mockCalls.push({ table, op: 'update', payload }); return this; };
         q.delete = function() { this._op = 'delete'; window.__mockCalls.push({ table, op: 'delete' }); return this; };
@@ -120,6 +123,46 @@ test('authenticated member can schedule a live session', async ({ page }) => {
   await expect.poll(async () => page.evaluate(() =>
     window.__mockCalls.some(call => call.table === 'live_sessions' && call.op === 'insert' &&
       call.payload.user_id === 'test-user-uuid' && call.payload.title === 'Live smoke test')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can publish a story with media', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await page.locator('#storyMedia').setInputFiles({ name: 'story.png', mimeType: 'image/png', buffer: Buffer.from('mock-image') });
+  await page.locator('#storyCaption').fill('Story upload smoke test');
+  await page.locator('#storyForm button[type="submit"]').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'stories' && call.op === 'insert' &&
+      call.payload.user_id === 'test-user-uuid' && call.payload.caption === 'Story upload smoke test' &&
+      call.payload.media_type === 'image')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can publish a reel with video', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await page.locator('#reelVideo').setInputFiles({ name: 'reel.mp4', mimeType: 'video/mp4', buffer: Buffer.from('mock-video') });
+  await page.locator('#reelCaption').fill('Reel upload smoke test');
+  await page.locator('#reelForm button[type="submit"]').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'reels' && call.op === 'insert' &&
+      call.payload.user_id === 'test-user-uuid' && call.payload.caption === 'Reel upload smoke test')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can send a direct message to another member', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await page.locator('#messageUsername').fill('someone');
+  await page.locator('#loadChat').click();
+  await expect(page.locator('#chatBox')).toContainText('ابدأ المحادثة');
+  await page.locator('#messageBody').fill('Direct message smoke test');
+  await page.locator('#messageForm button[type="submit"]').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'direct_messages' && call.op === 'insert' &&
+      call.payload.sender_id === 'test-user-uuid' && call.payload.recipient_id === 'other-user-uuid' &&
+      call.payload.body === 'Direct message smoke test')
   )).toBe(true);
   expect(errors).toEqual([]);
 });
