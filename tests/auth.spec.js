@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test('login page exposes email and password authentication on desktop and mobile', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/login.html');
   await expect(page.locator('#authForm')).toBeVisible();
   await expect(page.locator('#email')).toHaveAttribute('type', 'email');
   await expect(page.locator('#password')).toHaveAttribute('type', 'password');
@@ -9,7 +9,7 @@ test('login page exposes email and password authentication on desktop and mobile
 });
 
 test('login page can switch to account creation mode on desktop and mobile', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/login.html');
   await page.locator('#authMode').click();
   await expect(page.locator('#nameWrap')).toBeVisible();
   await expect(page.locator('#authSubmit')).toHaveText('إنشاء حساب');
