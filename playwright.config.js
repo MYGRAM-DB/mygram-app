@@ -1,4 +1,3 @@
-
 const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
@@ -15,8 +14,12 @@ module.exports = defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
+      name: 'chromium-desktop',
       use: { ...devices['Desktop Chrome'] }
+    },
+    {
+      name: 'chromium-mobile',
+      use: { ...devices['Pixel 7'] }
     }
   ]
 });
