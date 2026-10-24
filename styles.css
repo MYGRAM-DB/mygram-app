@@ -8,3 +8,15 @@
 
 /* Preserve the native hidden state for form fields styled as flex labels. */
 .auth-card [hidden]{display:none!important}
+
+/* MYGRAM identity + language controls */
+.brand-icon{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 5px 9px #243d7a22)}
+.brand-icon-large{display:block;width:104px;height:104px;object-fit:contain;filter:drop-shadow(0 12px 22px #635bff33)}
+.brand-mark,.brand-symbol{overflow:hidden;display:grid;place-items:center}
+.brand-mark .brand-icon,.brand-symbol .brand-icon{width:100%;height:100%;padding:2px}
+.language-switch{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--line,#e3eaf4);border-radius:11px;background:#fff;color:#53657c;font-size:12px;white-space:nowrap}
+.language-switch select{border:0;background:transparent;color:inherit;font:inherit;max-width:94px;outline-offset:3px;cursor:pointer}
+.lang-ltr{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.lang-ltr .topbar-inner,.lang-ltr .topbar{direction:ltr}
+.lang-ltr .brand{direction:ltr}
+@media(max-width:700px){.language-switch{padding:4px 6px}.language-switch select{max-width:76px;font-size:11px}.brand-icon-large{width:76px;height:76px}}
