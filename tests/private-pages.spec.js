@@ -2,6 +2,9 @@ const { test, expect } = require('@playwright/test');
 
 const mockSupabase = `
 window.__mockCalls = [];
+window.__mockTableData = {
+  profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }]
+};
 window.supabase = {
   createClient: () => {
     const result = { data: [], error: null, count: 0 };
@@ -12,7 +15,7 @@ window.supabase = {
       order() { return this; }, limit() { return this; },
       maybeSingle() { return Promise.resolve({ data: null, error: null }); },
       single() { return Promise.resolve({ data: null, error: null }); },
-      then(resolve, reject) { return Promise.resolve(result).then(resolve, reject); }
+      then(resolve, reject) { return Promise.resolve({ data: window.__mockTableData?.[this._table] || [], error: null, count: (window.__mockTableData?.[this._table] || []).length }).then(resolve, reject); }
     };
     return {
       auth: {
@@ -82,6 +85,41 @@ test('authenticated member can submit a post through the feed flow', async ({ pa
   await page.locator('#publishButton').click();
   await expect.poll(async () => page.evaluate(() =>
     window.__mockCalls.some(call => call.table === 'posts' && call.op === 'insert' && call.payload.content === 'Playwright feed smoke test')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can save profile changes through the editor', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/profile.html');
+  await page.locator('#fullName').fill('Test Member');
+  await page.locator('#username').fill('test_member_95');
+  await page.locator('#bio').fill('Profile save regression test');
+  await page.locator('#saveProfileButton').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'profiles' && call.op === 'update' &&
+      call.payload.username === 'test_member_95' && call.payload.full_name === 'Test Member')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can send a friend request from member search', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/people.html');
+  await expect(page.getByText('@someone')).toBeVisible();
+  await page.getByRole('button', { name: 'إرسال طلب صداقة' }).click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'friend_requests' && call.op === 'insert' &&
+      call.payload.requester_id === 'test-user-uuid' && call.payload.receiver_id === 'other-user-uuid')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can schedule a live session', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await page.locator('#liveTitle').fill('Live smoke test');
+  await page.locator('#liveForm button[type="submit"]').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'live_sessions' && call.op === 'insert' &&
+      call.payload.user_id === 'test-user-uuid' && call.payload.title === 'Live smoke test')
   )).toBe(true);
   expect(errors).toEqual([]);
 });
