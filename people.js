@@ -45,7 +45,7 @@
     details.appendChild(actions);card.appendChild(details);return card;
   }
   async function loadAllProfiles() {
-    const {data,error}=await client.from("users").select("id,username,full_name,bio,avatar_url").neq("id",me.id).order("username").limit(200);
+    const {data,error}=await client.from("profiles").select("id,username,full_name,bio,avatar_url").neq("id",me.id).order("username").limit(200);
     if(error) throw error;
     profiles=data||[];
     await loadRequests();
@@ -58,7 +58,7 @@
     const profileIds=[...new Set(reqs.map(r=>r.requester_id===me.id?r.receiver_id:r.requester_id))];
     let reqProfiles=[];
     if(profileIds.length){
-      const result=await client.from("users").select("id,username,full_name,bio,avatar_url").in("id",profileIds);
+      const result=await client.from("profiles").select("id,username,full_name,bio,avatar_url").in("id",profileIds);
       if(!result.error) reqProfiles=result.data||[];
     }
     const byId=new Map(reqProfiles.map(p=>[p.id,p]));
