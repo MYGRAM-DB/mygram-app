@@ -10,6 +10,7 @@
   const email = document.getElementById("email");
   const password = document.getElementById("password");
   const submitButton = document.getElementById("submitButton");
+  const resetPasswordButton = document.getElementById("resetPasswordButton");
   const notice = document.getElementById("authNotice");
   let mode = "login";
 
@@ -35,6 +36,22 @@
     submitButton.textContent = signup ? "إنشاء الحساب" : "تسجيل الدخول";
     setNotice("");
   }
+
+  resetPasswordButton.addEventListener("click", async () => {
+    const normalizedEmail = email.value.trim().toLowerCase();
+    if (!normalizedEmail) { setNotice("أدخل بريدك الإلكتروني أولاً لإرسال رابط الاستعادة.", "error"); email.focus(); return; }
+    resetPasswordButton.disabled = true;
+    setNotice("جارٍ إرسال رابط استعادة كلمة المرور...");
+    try {
+      const redirectTo = new URL("login.html?reset=1", location.href).href;
+      const { error } = await client.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
+      if (error) throw error;
+      setNotice("إذا كان البريد مسجلاً، ستصلك رسالة لاستعادة كلمة المرور.", "success");
+    } catch (error) {
+      console.error("MYGRAM password reset:", error);
+      setNotice("تعذّر إرسال رسالة الاستعادة. تحقّق من إعدادات البريد وحاول مجدداً.", "error");
+    } finally { resetPasswordButton.disabled = false; }
+  });
 
   loginTab.addEventListener("click", () => setMode("login"));
   signupTab.addEventListener("click", () => setMode("signup"));
