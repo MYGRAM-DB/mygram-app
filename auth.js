@@ -29,9 +29,9 @@
     mode = nextMode;
     const signup = mode === "signup";
     const recovery = mode === "recovery";
-    tabs.hidden = recovery;
+    tabs.style.display = recovery ? "none" : "";
     nameLabel.classList.toggle("hidden", !signup || recovery);
-    emailLabel.hidden = recovery;
+    emailLabel.style.display = recovery ? "none" : "";
     resetPasswordButton.hidden = recovery || signup;
     fullName.required = signup && !recovery;
     email.required = !recovery;
@@ -40,7 +40,6 @@
     document.getElementById("formSubtitle").textContent = recovery
       ? "اختر كلمة مرور جديدة لا تقل عن 8 أحرف."
       : signup ? "أنشئ حسابك وابدأ مشاركة أفكارك." : "سجّل الدخول للمتابعة إلى MYGRAM.";
-    passwordLabel.querySelector("label");
     password.placeholder = recovery ? "8 أحرف على الأقل" : "6 أحرف على الأقل";
     password.minLength = recovery ? 8 : 6;
     submitButton.textContent = recovery ? "حفظ كلمة المرور الجديدة" : signup ? "إنشاء الحساب" : "تسجيل الدخول";
@@ -85,14 +84,9 @@
     const params = new URLSearchParams(location.search);
     if (params.get("reset") === "1") {
       const { data, error } = await client.auth.getSession();
-      if (data.session) {
-        recoverySessionReady = true;
-        setMode("recovery");
-        setNotice("إذا كان رابط الاستعادة صالحاً، يمكنك تعيين كلمة مرور جديدة.", "success");
-      } else {
-        setMode("login");
-        setNotice("افتح رابط الاستعادة من أحدث رسالة بريدية. قد تكون الروابط القديمة منتهية الصلاحية.", "error");
-      }
+      setMode("login");
+      setNotice("افتح رابط الاستعادة من أحدث رسالة بريدية. يجب أن يكون الرابط صالحاً وغير منتهي الصلاحية.", "error");
+      recoverySessionReady = false;
       if (error) console.warn("MYGRAM recovery session check failed");
       return;
     }
