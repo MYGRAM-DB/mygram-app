@@ -1,9 +1,7 @@
-name: Build MYGRAM WebApp Package
+name: Build MYGRAM WebApp Package (Manual Legacy)
 
 on:
   workflow_dispatch:
-  push:
-    branches: ["main"]
 
 permissions:
   contents: read
