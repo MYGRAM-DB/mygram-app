@@ -8,8 +8,9 @@ test('MYGRAM mobile home layout fits a phone screen', async ({ page }) => {
   expect(response.status()).toBeLessThan(400);
 
   await expect(page.locator('body')).not.toBeEmpty();
-  await expect(page.locator('.mobile-nav')).toBeVisible();
-  await expect(page.locator('.mobile-nav a[aria-label="الرئيسية"]')).toBeVisible();
+  const mobileNav = page.locator('nav.mobile-nav');
+  await expect(mobileNav).toBeVisible();
+  await expect(mobileNav.locator('a[href="home.html"]').filter({ hasText: 'الرئيسية' })).toBeVisible();
 
   const dimensions = await page.evaluate(() => ({
     viewportWidth: document.documentElement.clientWidth,
