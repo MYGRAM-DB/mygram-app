@@ -25,7 +25,7 @@ body.login-page{min-height:100vh;background:radial-gradient(ellipse at 15% 15%,#
 .login-panel label{display:flex;flex-direction:column;gap:8px;margin:12px 0;color:#52637a;font-weight:700;font-size:12px}
 .login-panel input{width:100%;border:1px solid #dfe8f3;border-radius:12px;padding:13px 14px;background:#fbfdff;outline:0;direction:ltr;text-align:left;font-size:14px;transition:border-color .2s,box-shadow .2s}
 .login-panel input:focus{border-color:#65b2ff;box-shadow:0 0 0 4px #087cf014}
-.login-panel .primary-btn{width:100%;padding:13px;margin-top:15px;font-size:14px}
+.login-panel .primary-btn{width:100%;padding:13px;margin-top:15px;font-size:14px}.reset-password-btn{display:block;margin:10px auto 0;border:0;background:transparent;color:#087cf0;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.reset-password-btn:hover{text-decoration:underline}
 .login-panel .notice{min-height:24px;margin:14px 0 0;font-size:12px;line-height:1.8}
 .notice.error{color:#d43f58}.notice.success{color:#10865d}
 .login-panel .login-small{font-size:11px;color:#8a98aa;text-align:center;margin-top:20px}
@@ -45,7 +45,7 @@ body.login-page{min-height:100vh;background:radial-gradient(ellipse at 15% 15%,#
 <label id="nameLabel" class="hidden">الاسم الظاهر<input id="fullName" name="fullName" autocomplete="name" placeholder="كيف نناديك؟"></label>
 <label>البريد الإلكتروني<input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" required></label>
 <label>كلمة المرور<input id="password" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="6 أحرف على الأقل" required></label>
-<button class="primary-btn" id="submitButton" type="submit">تسجيل الدخول</button><p class="notice" id="authNotice" role="status" aria-live="polite"></p>
+<button class="primary-btn" id="submitButton" type="submit">تسجيل الدخول</button><button class="reset-password-btn" id="resetPasswordButton" type="button">نسيت كلمة المرور؟</button><p class="notice" id="authNotice" role="status" aria-live="polite"></p>
 </form><p class="login-small">بتسجيل الدخول، أنت جاهز للانضمام إلى مجتمع MYGRAM.</p>
 </section></main><span id="year" hidden></span>
 </body></html>
