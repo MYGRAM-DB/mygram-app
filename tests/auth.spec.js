@@ -1,7 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test('login page exposes email and password authentication', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name === 'chromium-mobile', 'Login form is not displayed in the mobile feed layout.');
+test('login page exposes email and password authentication on desktop and mobile', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#authForm')).toBeVisible();
   await expect(page.locator('#email')).toHaveAttribute('type', 'email');
@@ -9,12 +8,15 @@ test('login page exposes email and password authentication', async ({ page }, te
   await expect(page.locator('#authSubmit')).toBeVisible();
 });
 
-test('login page can switch to account creation mode', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name === 'chromium-mobile', 'Login form is not displayed in the mobile feed layout.');
+test('login page can switch to account creation mode on desktop and mobile', async ({ page }) => {
   await page.goto('/');
   await page.locator('#authMode').click();
   await expect(page.locator('#nameWrap')).toBeVisible();
   await expect(page.locator('#authSubmit')).toHaveText('إنشاء حساب');
+  await expect(page.locator('#password')).toHaveAttribute('autocomplete', 'new-password');
+  await page.locator('#authMode').click();
+  await expect(page.locator('#nameWrap')).toBeHidden();
+  await expect(page.locator('#authSubmit')).toHaveText('تسجيل الدخول');
 });
 
 test('signed-out visitor is redirected from the private home page', async ({ page }) => {
