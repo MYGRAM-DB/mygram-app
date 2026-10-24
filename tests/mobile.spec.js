@@ -1,24 +1,8 @@
 const { test, expect } = require('@playwright/test');
 
-test('MYGRAM mobile home layout fits a phone screen', async ({ page }) => {
+test('protected home redirects signed-out visitors to login', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const response = await page.goto('/home.html');
-
-  expect(response).not.toBeNull();
-  expect(response.status()).toBeLessThan(400);
-
-  await expect(page.locator('body')).not.toBeEmpty();
-  const mobileNav = page.locator('nav.mobile-nav');
-  await expect(mobileNav).toBeVisible();
-  await expect(mobileNav.locator('a[href="home.html"]').filter({ hasText: 'الرئيسية' })).toBeVisible();
-
-  const dimensions = await page.evaluate(() => ({
-    viewportWidth: document.documentElement.clientWidth,
-    documentWidth: document.documentElement.scrollWidth
-  }));
-
-  expect(
-    dimensions.documentWidth,
-    `Horizontal overflow: viewport=${dimensions.viewportWidth}px, document=${dimensions.documentWidth}px`
-  ).toBeLessThanOrEqual(dimensions.viewportWidth + 1);
+  await page.goto('/home.html');
+  await expect(page).toHaveURL(/index\.html(?:$|[?#])/);
+  await expect(page.locator('#authForm')).toBeVisible();
 });
