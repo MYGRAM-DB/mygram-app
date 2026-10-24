@@ -8,8 +8,7 @@ test('login page exposes email and password authentication', async ({ page }) =>
   await expect(page.locator('#authSubmit')).toBeVisible();
 });
 
-test('login page can switch to account creation mode', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name === 'chromium-mobile', 'The existing login card is hidden by the mobile feed layout.');
+test('login page can switch to account creation mode', async ({ page }) => {
   await page.goto('/');
   await page.locator('#authMode').click();
   await expect(page.locator('#nameWrap')).toBeVisible();
