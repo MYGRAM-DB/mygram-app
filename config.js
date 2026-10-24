@@ -1,7 +1,7 @@
 /* Public Supabase settings only. NEVER put service_role or any secret here. */
 (() => {
   const SUPABASE_URL = "https://rocztskcyakvekokftfx.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_EhY56n7FdI_wW0aW6opIfEbg_VeJvwa59";
+  const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvY3p0c2tjeWFrdmVrb2tmdGZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NjkzNzcsImV4cCI6MjEwODI0NTM3N30.UhDU0IXmknrG8c0znIBkB8_tCrJrI6N1Qz9cZO9ZGVY"; // Verified legacy anon key; safe for browser use with RLS enabled.
   window.MYGRAM_CONFIG = {
     SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY,
     supabaseUrl: SUPABASE_URL,            // read by auth/home/people/profile/services/account-menu
