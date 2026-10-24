@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 const mockSupabase = `
+window.__mockCalls = [];
 window.supabase = {
   createClient: () => {
     const result = { data: [], error: null, count: 0 };
@@ -19,7 +20,14 @@ window.supabase = {
         signOut: async () => ({ error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } })
       },
-      from: () => Object.create(query),
+      from: (table) => {
+        const q = Object.create(query); q._table = table;
+        q.select = function() { this._op = this._op || 'select'; return this; };
+        q.insert = function(payload) { this._op = 'insert'; window.__mockCalls.push({ table, op: 'insert', payload }); return this; };
+        q.update = function(payload) { this._op = 'update'; window.__mockCalls.push({ table, op: 'update', payload }); return this; };
+        q.delete = function() { this._op = 'delete'; window.__mockCalls.push({ table, op: 'delete' }); return this; };
+        return q;
+      },
       storage: { from: () => ({
         upload: async () => ({ data: { path: 'mock' }, error: null }),
         getPublicUrl: () => ({ data: { publicUrl: 'https://example.test/mock.png' } })
@@ -64,5 +72,16 @@ test('authenticated services page exposes story, reel, live and messaging forms'
   await expect(page.locator('#reelForm')).toBeVisible();
   await expect(page.locator('#liveForm')).toBeVisible();
   await expect(page.locator('#messageForm')).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can submit a post through the feed flow', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/home.html');
+  await expect(page.locator('#postForm')).toBeVisible();
+  await page.locator('#postContent').fill('Playwright feed smoke test');
+  await page.locator('#publishButton').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'posts' && call.op === 'insert' && call.payload.content === 'Playwright feed smoke test')
+  )).toBe(true);
   expect(errors).toEqual([]);
 });
