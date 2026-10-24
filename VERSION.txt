@@ -1,2 +1,3 @@
-MYGRAM 2.7
-Local syntax and ZIP checks only; requires Supabase migration and live browser testing.
+MYGRAM 2.8 (integration fix release)
+Verified: node tests/check.js (static: syntax, config keys, table/bucket/column names vs SQL, local refs, no secrets).
+NOT verified: SQL execution on Postgres, live Supabase auth/RLS/Storage, browser rendering.
