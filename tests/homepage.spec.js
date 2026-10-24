@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test('MYGRAM homepage renders its real authentication and community interface', async ({ page }) => {
-  const response = await page.goto('/');
+  const response = await page.goto('/login.html');
   expect(response).not.toBeNull();
   expect(response.status()).toBeLessThan(400);
   await expect(page.locator('body')).not.toBeEmpty();
@@ -13,7 +13,7 @@ test('MYGRAM homepage renders its real authentication and community interface', 
 });
 
 test('login form rejects malformed email before submitting', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/login.html');
   await page.locator('#email').fill('not-an-email');
   await page.locator('#password').fill('long-enough-password');
   const invalid = await page.locator('#email').evaluate(el => !el.checkValidity());
