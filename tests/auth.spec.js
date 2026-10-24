@@ -19,7 +19,7 @@ test('login page can switch to account creation mode', async ({ page }, testInfo
 
 test('signed-out visitor is redirected from the private home page', async ({ page }) => {
   await page.goto('/home.html');
-  await expect(page).toHaveURL(/index\\.html(?:$|[?#])/);
+  await expect(page).toHaveURL(/index\.html(?:$|[?#])/);
   await expect(page.locator('#authForm')).toHaveCount(1);
 });
 
