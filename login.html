@@ -19,7 +19,7 @@ body.login-page{min-height:100vh;background:radial-gradient(ellipse at 15% 15%,#
 .login-panel{padding:54px clamp(25px,5vw,62px);display:flex;flex-direction:column;justify-content:center}
 .login-panel h2{font-size:27px;margin:0 0 6px;font-weight:900}
 .login-subtitle{color:#78869b;margin:0 0 28px;line-height:1.9}
-.auth-tabs{display:grid;grid-template-columns:1fr 1fr;background:#f0f5fb;padding:5px;border-radius:13px;margin-bottom:22px;gap:5px}
+.auth-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:#f0f5fb;padding:5px;border-radius:13px;margin-bottom:22px;gap:5px}
 .auth-tabs button{border:0;background:transparent;color:#75849a;padding:11px;border-radius:10px;font-weight:800}
 .auth-tabs button.active{background:#fff;color:#087cf0;box-shadow:0 3px 12px #183c6410}
 .login-panel label{display:flex;flex-direction:column;gap:8px;margin:12px 0;color:#52637a;font-weight:700;font-size:12px}
@@ -32,7 +32,7 @@ body.login-page{min-height:100vh;background:radial-gradient(ellipse at 15% 15%,#
 .login-panel [hidden],.login-panel .hidden{display:none!important}
 @media(max-width:720px){body.login-page{padding:12px}.login-shell{grid-template-columns:1fr;min-height:0;border-radius:22px;max-width:460px}.login-art{padding:22px 25px;min-height:175px}.login-art h1{font-size:24px;margin-top:24px}.login-art p{font-size:12px;margin:0}.login-art .login-foot{display:none}.login-panel{padding:28px 24px 32px}.login-panel h2{font-size:23px}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="config.js"></script><script defer src="auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="config.js"></script><script defer src="country-data.js"></script><script defer src="auth.js"></script>
 <script defer src="language.js"></script>
 </head>
 <body class="login-page">
@@ -40,9 +40,12 @@ body.login-page{min-height:100vh;background:radial-gradient(ellipse at 15% 15%,#
 <section class="login-art"><div class="login-brand"><span class="brand-symbol"><img src="logo.svg" alt="MYGRAM" class="brand-icon"></span><span>MYGRAM</span></div><div><h1>عالمك، قصتك.<br>ومكانك بين أصدقائك 💙</h1><p>شارك لحظاتك، اكتشف أشخاصاً يشبهونك، وخلي التواصل أقرب وأسهل.</p></div><div class="login-foot">مجتمع يجمعنا، وقصص تستحق أن تُروى.</div></section>
 <section class="login-panel">
 <h2 id="formTitle">أهلاً بعودتك 👋</h2><p class="login-subtitle" id="formSubtitle">سجّل الدخول للمتابعة إلى MYGRAM.</p>
-<div class="auth-tabs"><button id="loginTab" class="active" type="button">تسجيل الدخول</button><button id="signupTab" type="button">إنشاء حساب</button></div>
+<div class="auth-tabs"><button id="loginTab" class="active" type="button">البريد الإلكتروني</button><button id="signupTab" type="button">إنشاء حساب</button><button id="phoneTab" type="button">الهاتف</button></div>
 <form id="authForm">
 <label id="nameLabel" class="hidden">الاسم الظاهر<input id="fullName" name="fullName" autocomplete="name" placeholder="كيف نناديك؟"></label>
+<label id="phoneCountryLabel" class="hidden">رمز الدولة للهاتف<select id="phoneCountry"><option value="US">جارٍ تحميل الدول…</option></select></label>
+<label id="phoneLabel" class="hidden">رقم الهاتف<input id="phoneNumber" name="phoneNumber" type="tel" autocomplete="tel" inputmode="tel" placeholder="رقم الهاتف الدولي أو المحلي"></label>
+<label id="otpLabel" class="hidden">رمز التحقق المرسل برسالة SMS<input id="otpCode" name="otpCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="••••••" /></label>
 <label>البريد الإلكتروني<input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" required></label>
 <label>كلمة المرور<input id="password" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="6 أحرف على الأقل" required></label>
 <button class="primary-btn" id="submitButton" type="submit">تسجيل الدخول</button><button class="reset-password-btn" id="resetPasswordButton" type="button">نسيت كلمة المرور؟</button><p class="notice" id="authNotice" role="status" aria-live="polite"></p>
