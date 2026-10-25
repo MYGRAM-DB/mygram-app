@@ -30,6 +30,8 @@
     toastTimer = setTimeout(() => { el.className = "toast"; }, 3600);
   }
 
+  function uiText(value) { return window.MYGRAM_TRANSLATE_TEXT ? window.MYGRAM_TRANSLATE_TEXT(value) : value; }
+
   function displayName() {
     return user?.user_metadata?.full_name?.trim()
       || profile?.full_name?.trim()
@@ -61,12 +63,14 @@
   function dateLabel(value) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "";
-    return new Intl.DateTimeFormat("ar", { dateStyle: "medium", timeStyle: "short" }).format(date);
+    const locale = document.documentElement.lang || "ar";
+    return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
   }
 
   function makePost(post, author) {
     const card = document.createElement("article");
     card.className = "panel post-card";
+    card.id = "post-" + post.id;
     const head = document.createElement("div");
     head.className = "post-head";
     const avatar = document.createElement("div");
@@ -86,30 +90,30 @@
     body.className = "post-body";
     // textContent يمنع تنفيذ HTML أو JavaScript أُدرج في المنشور.
     body.textContent = post.content;
+    let media = null;
     if (post.media_url && post.media_type) {
-      let media;
-      if (post.media_type === "video") { media = document.createElement("video"); media.controls = true; media.preload = "metadata"; }
-      else { media = document.createElement("img"); media.alt = "مرفق المنشور"; }
-      media.className = "post-media"; media.src = post.media_url; card.appendChild(media);
+      if (post.media_type === "video") { media = document.createElement("video"); media.controls = true; media.preload = "metadata"; media.playsInline = true; }
+      else { media = document.createElement("img"); media.alt = uiText("مرفق المنشور"); media.loading = "lazy"; }
+      media.className = "post-media"; media.src = post.media_url;
     }
     const foot = document.createElement("div");
     foot.className = "post-foot";
     const badge = document.createElement("span");
-    badge.textContent = post.media_url ? "🌐 منشور مع مرفق · MYGRAM" : "🌐 منشور نصّي · MYGRAM";
+    badge.textContent = uiText(post.media_url ? "🌐 منشور مع مرفق · MYGRAM" : "🌐 منشور نصّي · MYGRAM");
     foot.appendChild(badge);
     const actions = document.createElement("div");
     actions.className = "post-actions";
-    actions.innerHTML = `<button type="button" class="button ghost small reaction-trigger" data-reaction-trigger aria-label="اضغط مطولاً لعرض التفاعلات" aria-expanded="false">👍 <span>أعجبني</span> <b data-primary-reaction-count>0</b></button>
-      <div class="post-reaction-picker" role="group" aria-label="التفاعلات" hidden>
-      <button type="button" class="button ghost small" data-reaction="like" aria-label="إعجاب 👍" aria-pressed="false">👍 <b data-reaction-count="like">0</b></button>
-      <button type="button" class="button ghost small" data-reaction="love" aria-label="حب ❤️" aria-pressed="false">❤️ <b data-reaction-count="love">0</b></button>
-      <button type="button" class="button ghost small" data-reaction="haha" aria-label="ضحك 😂" aria-pressed="false">😂 <b data-reaction-count="haha">0</b></button>
-      <button type="button" class="button ghost small" data-reaction="care" aria-label="رعاية 🥰" aria-pressed="false">🥰 <b data-reaction-count="care">0</b></button>
-      <button type="button" class="button ghost small" data-reaction="wow" aria-label="دهشة 😮" aria-pressed="false">😮 <b data-reaction-count="wow">0</b></button>
-      <button type="button" class="button ghost small" data-reaction="sad" aria-label="حزن 😢" aria-pressed="false">😢 <b data-reaction-count="sad">0</b></button>
-      <button type="button" class="button ghost small" data-reaction="angry" aria-label="غضب 😡" aria-pressed="false">😡 <b data-reaction-count="angry">0</b></button>
-      <button type="button" class="button ghost small" data-reaction="fire" aria-label="نار 🔥" aria-pressed="false">🔥 <b data-reaction-count="fire">0</b></button>
-      </div><button type="button" class="button ghost small" data-toggle-comments>💬 التعليقات</button>`;
+    actions.innerHTML = `<button type="button" class="button ghost small reaction-trigger" data-reaction-trigger aria-label="${uiText("اضغط مطولاً لعرض التفاعلات")}" aria-expanded="false">👍 <span>${uiText("أعجبني")}</span> <b data-primary-reaction-count>0</b></button>
+      <div class="post-reaction-picker" role="group" aria-label="${uiText("التفاعلات")}" hidden>
+      <button type="button" class="button ghost small" data-reaction="like" aria-label="${uiText("إعجاب 👍")}" aria-pressed="false">👍 <b data-reaction-count="like">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="love" aria-label="${uiText("حب ❤️")}" aria-pressed="false">❤️ <b data-reaction-count="love">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="haha" aria-label="${uiText("ضحك 😂")}" aria-pressed="false">😂 <b data-reaction-count="haha">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="care" aria-label="${uiText("رعاية 🥰")}" aria-pressed="false">🥰 <b data-reaction-count="care">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="wow" aria-label="${uiText("دهشة 😮")}" aria-pressed="false">😮 <b data-reaction-count="wow">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="sad" aria-label="${uiText("حزن 😢")}" aria-pressed="false">😢 <b data-reaction-count="sad">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="angry" aria-label="${uiText("غضب 😡")}" aria-pressed="false">😡 <b data-reaction-count="angry">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="fire" aria-label="${uiText("نار 🔥")}" aria-pressed="false">🔥 <b data-reaction-count="fire">0</b></button>
+      </div><button type="button" class="button ghost small" data-toggle-comments>💬 ${uiText("التعليقات")}</button>`;
     const comments = document.createElement("div");
     comments.className = "post-comments";
     comments.hidden = true;
@@ -117,9 +121,11 @@
     commentList.className = "comment-list";
     const commentForm = document.createElement("form");
     commentForm.className = "comment-form";
-    commentForm.innerHTML = '<input maxlength="1000" required placeholder="اكتب تعليقاً..." aria-label="اكتب تعليقاً"><button class="button primary small" type="submit">إرسال</button>';
+    commentForm.innerHTML = '<input maxlength="1000" required placeholder="' + uiText("اكتب تعليقاً...") + '" aria-label="' + uiText("اكتب تعليقاً") + '"><button class="button primary small" type="submit">' + uiText("إرسال") + '</button>';
     comments.append(commentList, commentForm);
-    card.append(head, body, foot, actions, comments);
+    card.append(head, body);
+    if (media) card.appendChild(media);
+    card.append(foot, actions, comments);
 
     const reactionButtons = [...actions.querySelectorAll("[data-reaction]")];
     const reactionPicker = actions.querySelector(".post-reaction-picker");
@@ -170,9 +176,9 @@
       const primaryCount = reactionTrigger.querySelector("[data-primary-reaction-count]");
       if (primaryCount) primaryCount.textContent = String(Object.values(counts).reduce((sum, count) => sum + count, 0));
       const primary = mine?.reaction;
-      const labels = { like: ["👍", "أعجبني"], love: ["❤️", "أحببته"], haha: ["😂", "أضحكني"], care: ["🥰", "أهتم"], wow: ["😮", "أدهشني"], sad: ["😢", "أحزنني"], angry: ["😡", "أغضبني"], fire: ["🔥", "رائع"] };
+      const labels = { like: ["👍", uiText("أعجبني")], love: ["❤️", uiText("أحببته")], haha: ["😂", uiText("أضحكني")], care: ["🥰", uiText("أهتم")], wow: ["😮", uiText("أدهشني")], sad: ["😢", uiText("أحزنني")], angry: ["😡", uiText("أغضبني")], fire: ["🔥", uiText("رائع")] };
       const face = labels[primary] || labels.like;
-      reactionTrigger.querySelector("span").textContent = primary ? face[1] : "أعجبني";
+      reactionTrigger.querySelector("span").textContent = primary ? face[1] : uiText("أعجبني");
       reactionTrigger.firstChild.textContent = face[0] + " ";
       reactionTrigger.classList.toggle("is-liked", Boolean(primary));
     }
@@ -198,15 +204,15 @@
     async function refreshComments() {
       commentList.replaceChildren();
       const { data, error } = await client.from("post_comments").select("id,user_id,content,created_at").eq("post_id", post.id).order("created_at", { ascending: true }).limit(100);
-      if (error) { commentList.textContent = "تعذر تحميل التعليقات. تحقق من سياسات التعليقات في Supabase."; return; }
-      if (!data?.length) { commentList.textContent = "لا توجد تعليقات بعد."; return; }
+      if (error) { commentList.textContent = uiText("تعذر تحميل التعليقات. تحقق من سياسات التعليقات في Supabase."); return; }
+      if (!data?.length) { commentList.textContent = uiText("لا توجد تعليقات بعد."); return; }
       const ids=[...new Set(data.map(c=>c.user_id).filter(Boolean))];
       let byId={};
       if(ids.length){const result=await client.from("profiles").select("id,username,full_name").in("id",ids);if(!result.error)byId=Object.fromEntries((result.data||[]).map(p=>[p.id,p]))}
       for (const comment of data) {
         const row = document.createElement("p");
         row.className = "comment-row";
-        const author=comment.user_id===user.id?"أنت":byId[comment.user_id]?.full_name||byId[comment.user_id]?.username||"عضو MYGRAM";
+        const author=comment.user_id===user.id?uiText("أنت"):byId[comment.user_id]?.full_name||byId[comment.user_id]?.username||uiText("عضو MYGRAM");
         row.textContent = author + ": " + comment.content;
         commentList.appendChild(row);
       }
@@ -230,6 +236,16 @@
       } catch (e) { toast("تعذر نشر التعليق: " + e.message, "error"); }
       finally { button.disabled = false; }
     });
+    window.addEventListener("mygram:languagechange", () => {
+      reactionTrigger.setAttribute("aria-label", uiText("اضغط مطولاً لعرض التفاعلات"));
+      reactionPicker.setAttribute("aria-label", uiText("التفاعلات"));
+      actions.querySelector("[data-toggle-comments]").textContent = "💬 " + uiText("التعليقات");
+      const input = commentForm.querySelector("input");
+      input.placeholder = uiText("اكتب تعليقاً...");
+      input.setAttribute("aria-label", uiText("اكتب تعليقاً"));
+      commentForm.querySelector("button").textContent = uiText("إرسال");
+      void refreshLikes();
+    });
     refreshLikes();
     return card;
   }
@@ -250,7 +266,7 @@
     if (loading || !user) return;
     loading = true;
     refreshButton.disabled = true;
-    refreshButton.textContent = "جارٍ التحديث...";
+    refreshButton.textContent = uiText("جارٍ التحديث...");
     showState("◌", "جارٍ تحميل المنشورات...");
 
     try {
@@ -288,13 +304,14 @@
         fragment.appendChild(makePost(post, author));
       }
       postsContainer.replaceChildren(fragment);
+      if (typeof window.MYGRAM_TRANSLATE_DYNAMIC_UI === "function") window.MYGRAM_TRANSLATE_DYNAMIC_UI();
     } catch (error) {
       console.error(error);
       showState("⚠️", "حدث خطأ أثناء تحميل المنشورات", "تحقّق من اتصال الإنترنت ثم حدّث الصفحة.");
     } finally {
       loading = false;
       refreshButton.disabled = false;
-      refreshButton.textContent = "↻ تحديث";
+      refreshButton.textContent = "↻ " + uiText("تحديث");
     }
   }
 
@@ -335,7 +352,7 @@
     }
 
     publishButton.disabled = true;
-    publishText.textContent = "جارٍ النشر...";
+    publishText.textContent = uiText("جارٍ النشر...");
     try {
       let media_url = null, media_type = null;
       if (selectedMedia) {
@@ -366,7 +383,7 @@
       toast("تعذّر الاتصال بالخادم. حاول مجدداً.", "error");
     } finally {
       publishButton.disabled = false;
-      publishText.textContent = "نشر";
+      publishText.textContent = uiText("نشر");
     }
   });
 
