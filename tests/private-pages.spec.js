@@ -3,6 +3,7 @@ const { test, expect } = require('@playwright/test');
 const mockSupabase = `
 window.__mockCalls = [];
 window.__mockChannels = [];
+window.__mockFunctionInvocations = [];
 window.__mockTableData = {
   profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }],
   reels: [{ id: 'reel-test-uuid', user_id: 'other-user-uuid', video_url: 'https://example.test/reel.mp4', caption: 'A test reel', created_at: '2026-10-25T10:00:00.000Z' }],
@@ -25,6 +26,17 @@ window.supabase = {
         getSession: async () => ({ data: { session: { user: { id: 'test-user-uuid', email: 'tester@example.com', user_metadata: { full_name: 'Test User' } } } }, error: null }),
         signOut: async () => ({ error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } })
+      },
+      functions: {
+        invoke: async (name, options) => {
+          const body = options?.body || {};
+          window.__mockFunctionInvocations.push({ name, body });
+          const translations = Object.fromEntries((body.items || []).map(item => [
+            item.key,
+            window.__translationTestMode ? 'AI:' + item.text : item.text
+          ]));
+          return { data: { translations, cached: false }, error: null };
+        }
       },
       rpc: async () => ({ data: [], error: null }),
       from: (table) => {
@@ -257,5 +269,29 @@ test('standalone MYGRAM Chat can create a group conversation', async ({ page }) 
     window.__mockCalls.some(call => call.table === 'chat_members' && call.op === 'insert' &&
       Array.isArray(call.payload) && call.payload.length === 3)
   )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('signed-in language fallback invokes translate-text and leaves user content unchanged', async ({ page }) => {
+  await page.addInitScript(() => { window.__translationTestMode = true; });
+  const errors = await openAuthenticatedPage(page, '/profile.html');
+  await page.evaluate(() => {
+    const ui = document.createElement('p');
+    ui.id = 'translationFallbackFixture';
+    ui.textContent = 'Untranslated MYGRAM test label';
+    document.querySelector('main').appendChild(ui);
+    const userContent = document.createElement('p');
+    userContent.id = 'translationUserFixture';
+    userContent.className = 'post-body';
+    userContent.textContent = 'Untranslated user post must stay original';
+    document.querySelector('main').appendChild(userContent);
+    window.MYGRAM_APPLY_LANGUAGE('es');
+  });
+  await expect(page.locator('#translationFallbackFixture')).toHaveText('AI:Untranslated MYGRAM test label');
+  await expect(page.locator('#translationUserFixture')).toHaveText('Untranslated user post must stay original');
+  const calls = await page.evaluate(() => window.__mockFunctionInvocations.filter(call => call.name === 'translate-text'));
+  expect(calls.some(call => call.body.targetLocale === 'es' && call.body.sourceLocale === 'auto' &&
+    call.body.items.some(item => item.text === 'Untranslated MYGRAM test label'))).toBe(true);
+  expect(calls.every(call => call.body.items.every(item => item.text !== 'Untranslated user post must stay original'))).toBe(true);
   expect(errors).toEqual([]);
 });
