@@ -63,6 +63,14 @@ window.supabase = {
 };
 `;
 
+async function selectServiceTab(page, name) {
+  await page.locator('[data-service-tab="' + name + '"]').click();
+}
+
+async function selectPeopleTab(page, name) {
+  await page.locator('[data-people-tab="' + name + '"]').click();
+}
+
 async function openAuthenticatedPage(page, route) {
   await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2**', routeHandler =>
     routeHandler.fulfill({ status: 200, contentType: 'application/javascript', body: mockSupabase })
@@ -85,9 +93,12 @@ test('authenticated profile page exposes a working profile editor', async ({ pag
 
 test('authenticated people page exposes member search and request sections', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/people.html');
+  await selectPeopleTab(page, 'search');
   await expect(page.locator('#searchInput')).toBeVisible();
   await expect(page.locator('#membersList')).toBeVisible();
+  await selectPeopleTab(page, 'incoming');
   await expect(page.locator('#incomingList')).toBeVisible();
+  await selectPeopleTab(page, 'outgoing');
   await expect(page.locator('#outgoingList')).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -95,8 +106,11 @@ test('authenticated people page exposes member search and request sections', asy
 test('authenticated services page exposes story, reel, live and messaging forms', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/services.html');
   await expect(page.locator('#storyForm')).toBeVisible();
+  await selectServiceTab(page, 'reels');
   await expect(page.locator('#reelForm')).toBeVisible();
+  await selectServiceTab(page, 'live');
   await expect(page.locator('#liveForm')).toBeVisible();
+  await selectServiceTab(page, 'messages');
   await expect(page.locator('#messageForm')).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -139,6 +153,7 @@ test('authenticated member can save profile changes through the editor', async (
 
 test('authenticated member can send a friend request from member search', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/people.html');
+  await selectPeopleTab(page, 'search');
   await expect(page.getByText('@someone')).toBeVisible();
   await page.getByRole('button', { name: 'إرسال طلب صداقة' }).click();
   await expect.poll(async () => page.evaluate(() =>
@@ -150,6 +165,7 @@ test('authenticated member can send a friend request from member search', async 
 
 test('authenticated member can schedule a live session', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/services.html');
+  await selectServiceTab(page, 'live');
   await page.locator('#liveTitle').fill('Live smoke test');
   await page.locator('#liveForm button[type="submit"]').click();
   await expect.poll(async () => page.evaluate(() =>
@@ -174,6 +190,7 @@ test('authenticated member can publish a story with media', async ({ page }) => 
 
 test('authenticated member can publish a reel with video', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/services.html');
+  await selectServiceTab(page, 'reels');
   await page.locator('#reelVideo').setInputFiles({ name: 'reel.mp4', mimeType: 'video/mp4', buffer: Buffer.from('mock-video') });
   await page.locator('#reelCaption').fill('Reel upload smoke test');
   await page.locator('#reelForm button[type="submit"]').click();
@@ -186,6 +203,7 @@ test('authenticated member can publish a reel with video', async ({ page }) => {
 
 test('authenticated member can send a direct message to another member', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/services.html');
+  await selectServiceTab(page, 'messages');
   await page.locator('#messageUsername').fill('someone');
   await page.locator('#loadChat').click();
   await expect(page.locator('#chatBox')).toContainText('ابدأ المحادثة');
@@ -201,6 +219,7 @@ test('authenticated member can send a direct message to another member', async (
 
 test('messenger exposes voice recording and media attachment controls', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/services.html');
+  await selectServiceTab(page, 'messages');
   await expect(page.locator('#messageAttachment')).toHaveAttribute('accept', 'image/*,video/*,audio/*');
   await expect(page.locator('#recordVoiceButton')).toBeVisible();
   await expect(page.locator('#voiceRecordStatus')).toHaveAttribute('role', 'status');
@@ -209,6 +228,7 @@ test('messenger exposes voice recording and media attachment controls', async ({
 
 test('authenticated member can react to a reel with emoji', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/services.html');
+  await selectServiceTab(page, 'reels');
   const reel = page.locator('#reelsList .reel-card').first();
   await expect(reel).toBeVisible();
   await reel.getByRole('button', { name: 'تفاعل ❤️' }).click();
@@ -221,6 +241,7 @@ test('authenticated member can react to a reel with emoji', async ({ page }) => 
 
 test('authenticated member can comment on a reel', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/services.html');
+  await selectServiceTab(page, 'reels');
   const form = page.locator('#reelsList .reel-card .reel-comment-form').first();
   await form.locator('input').fill('Great reel!');
   await form.getByRole('button', { name: 'إرسال' }).click();
