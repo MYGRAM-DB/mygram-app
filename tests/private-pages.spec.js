@@ -23,6 +23,7 @@ window.supabase = {
         signOut: async () => ({ error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } })
       },
+      rpc: async () => ({ data: [], error: null }),
       from: (table) => {
         const q = Object.create(query); q._table = table;
         q._filters = [];
