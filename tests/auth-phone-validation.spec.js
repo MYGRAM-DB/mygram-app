@@ -6,7 +6,7 @@ test('phone country picker contains the supported 205-country catalog', async ({
   const countries = page.locator('#phoneCountry option');
   await expect(countries).toHaveCount(205);
   await expect(page.locator('#phoneCountry')).toHaveValue('US');
-  const catalog = await page.evaluate(() => window.MYGRAM_COUNTRIES.map(c => ({ code: c.code, dial: c.dial })));
+  const catalog = await page.evaluate(() => window.MYGRAM_COUNTRIES.map(c => ({ code: c.code, dial: c.dial, nationalPrefix: c.nationalPrefix })));
   expect(new Set(catalog.map(c => c.code)).size).toBe(205);
   expect(catalog.every(c => new RegExp("^\\+[0-9]+(?:-[0-9]+)*$").test(c.dial))).toBe(true);
   const byCode = Object.fromEntries(catalog.map(c => [c.code, c.dial]));
@@ -90,4 +90,19 @@ test('NANP territory prefixes are applied to seven-digit local numbers', async (
   await page.locator('#submitButton').click();
   await expect.poll(() => sentPhones.length).toBe(1);
   expect(sentPhones[0]).toBe('+12685551234');
+});
+
+test('NANP territory rejects a ten-digit number with the wrong area code', async ({ page }) => {
+  let otpRequests = 0;
+  await page.route('**/auth/v1/otp**', async route => {
+    otpRequests += 1;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+  await page.goto('/login.html');
+  await page.locator('#phoneTab').click();
+  await page.locator('#phoneCountry').selectOption('AG');
+  await page.locator('#phoneNumber').fill('2025550123');
+  await page.locator('#submitButton').click();
+  await expect(page.locator('#authNotice')).toContainText('رقم الهاتف غير مكتمل');
+  expect(otpRequests).toBe(0);
 });

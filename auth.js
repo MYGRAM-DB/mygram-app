@@ -115,11 +115,11 @@
     let national=raw.replace(/\D/g,"").replace(/^0+/,"");
     const prefix=String(country?.nationalPrefix||"").replace(/\D/g,"");
     if(dial==="1"&&national.length===11&&national.startsWith("1"))national=national.slice(1);
-    if(prefix){
-      if(dial==="1"&&national.length===7)national=prefix+national;
-      else if(!national.startsWith(prefix))national=prefix+national;
-      if(dial==="1"&&national.length===10&&!national.startsWith(prefix))return "";
-    }
+    if(prefix&&dial==="1"){
+      if(national.length===7)national=prefix+national;
+      else if(national.length===10){if(!national.startsWith(prefix))return "";}
+      else return "";
+    }else if(prefix&&!national.startsWith(prefix))national=prefix+national;
     return dial&&national?"+"+dial+national:"";
   }
 
