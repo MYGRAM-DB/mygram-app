@@ -22,7 +22,7 @@
 <section class="card chat-panel" style="grid-column:1/-1">
 <div id="threadHead" class="chat-thread-head">اختر محادثة من القائمة أو ابدأ محادثة جديدة.</div>
 <div class="chat-thread"><div id="chatMessages" class="chat-messages" aria-live="polite"><div class="chat-empty">محادثاتك ستظهر هنا.</div></div>
-<form id="chatCompose" class="chat-compose"><label for="chatBody">رسالتك</label><textarea id="chatBody" maxlength="10000" placeholder="اكتب رسالة..." ></textarea><label for="chatFile">إرفاق صورة أو فيديو أو صوت</label><input id="chatFile" type="file" accept="image/*,video/*,audio/*"><button class="button primary" type="submit">إرسال</button></form></div>
+<form id="chatCompose" class="chat-compose"><label for="chatBody">رسالتك</label><textarea id="chatBody" maxlength="10000" placeholder="اكتب رسالة..." ></textarea><label for="chatFile">إرفاق صورة أو فيديو أو صوت</label><input id="chatFile" type="file" accept="image/*,video/*,audio/*"><div class="voice-actions"><button id="recordVoiceButton" class="button" type="button" aria-pressed="false">🎙️ تسجيل رسالة صوتية</button><span id="voiceRecordingStatus" role="status" aria-live="polite"></span></div><button class="button primary" type="submit">إرسال</button></form></div>
 </section>
 </div>
 <div id="chatToast" role="status" aria-live="polite" class="toast"></div>
