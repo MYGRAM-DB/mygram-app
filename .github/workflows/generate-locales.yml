@@ -1,0 +1,42 @@
+name: Generate 60-language UI catalogs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Generate static catalogs
+        run: npm run translate:locales
+        env:
+          AZURE_TRANSLATOR_KEY: ${{ secrets.AZURE_TRANSLATOR_KEY }}
+          AZURE_TRANSLATOR_REGION: ${{ secrets.AZURE_TRANSLATOR_REGION }}
+      - name: Verify coverage and placeholders
+        run: npm run check:locales
+      - name: Open a catalog review pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          branch="generated/locales-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add locales/*.json
+          if git diff --cached --quiet; then
+            echo "Generated locale catalogs are already up to date."
+            exit 0
+          fi
+          git commit -m "Generate full 60-language UI catalogs"
+          git push origin "$branch"
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" --title "Generate full 60-language UI catalogs" --body "Static catalogs generated from source-code UI strings with Azure Translator F0. No user-generated content was sent. Automated coverage and placeholder checks passed; native-speaker review is still required."

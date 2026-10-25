@@ -31,6 +31,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+      - name: Audit locale source coverage
+        run: npm run check:locale-source
 
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
@@ -52,7 +54,7 @@ jobs:
 
       - name: Create source package
         run: |
-          zip -r mygram-app.zip index.html home.html people.html profile.html services.html chat.html communities.html *.js *.css *.svg README-AR.md README.md VERSION.txt .nojekyll
+          zip -r mygram-app.zip index.html home.html people.html profile.html services.html chat.html communities.html *.js *.css *.svg README-AR.md README.md VERSION.txt .nojekyll locales/ scripts/ docs/LOCALIZATION-PIPELINE.md
 
       - name: Upload source artifact
         uses: actions/upload-artifact@v4
@@ -81,6 +83,7 @@ jobs:
         run: |
           mkdir _site
           cp *.html *.js *.css *.svg README-AR.md VERSION.txt .nojekyll _site/
+          cp -r locales _site/locales
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

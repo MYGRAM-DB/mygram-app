@@ -105,3 +105,19 @@ test('non-Arabic-script locales avoid Arabic-script fragments in the password fi
     expect(placeholder, 'password placeholder for ' + code).not.toMatch(/[\u0600-\u06FF]/);
   }
 });
+
+test('generated locale catalogs can translate feature-specific UI strings without a runtime translator call', async ({ page }) => {
+  await page.route('**/locales/manifest.json', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ version: 1, generated: true, available: ['es'], sourceCount: 1 })
+  }));
+  await page.route('**/locales/es.json', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ 'خدمة البث غير جاهزة.': 'El servicio de transmisión no está listo.' })
+  }));
+  await page.goto('/login.html');
+  await page.locator('#mygramLanguage').selectOption('es');
+  await expect.poll(() => page.evaluate(() => window.MYGRAM_TRANSLATE_TEXT('خدمة البث غير جاهزة.'))).toBe('El servicio de transmisión no está listo.');
+});
