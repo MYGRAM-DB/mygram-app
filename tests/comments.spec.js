@@ -56,3 +56,25 @@ test('feed comments show the author name and comment text safely', async ({ page
   await expect(page.locator('.comment-list')).toContainText('Someone: <script>not executable</script> Hello!');
   await expect(page.locator('.comment-list script')).toHaveCount(0);
 });
+
+test('feed members can use all eight emoji reaction types', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2**', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockSupabase })
+  );
+  await page.goto('/home.html');
+  await page.evaluate(() => {
+    window.__mockTableData.posts = [{
+      id: 'reaction-post-id', user_id: 'test-user-uuid', content: 'Reaction test',
+      media_url: null, media_type: null, created_at: new Date().toISOString()
+    }];
+    window.__mockTableData.post_reactions = [];
+  });
+  await page.locator('#refreshButton').click();
+  const card = page.locator('.post-card').first();
+  await expect(card.locator('[data-reaction]')).toHaveCount(8);
+  await card.locator('[data-reaction="fire"]').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'post_reactions' && call.op === 'insert' &&
+      call.payload.post_id === 'reaction-post-id' && call.payload.reaction === 'fire')
+  )).toBe(true);
+});
