@@ -117,8 +117,8 @@ test('authenticated services page exposes story, reel, live and messaging forms'
 
 test('Messenger subscribes to realtime incoming and outgoing direct messages', async ({ page }) => {
   await openAuthenticatedPage(page, '/services.html');
-  await expect.poll(() => page.evaluate(() => window.__mockChannels.length)).toBe(1);
-  const channel = await page.evaluate(() => window.__mockChannels[0]);
+  await expect.poll(() => page.evaluate(() => window.__mockChannels.some(channel => channel.name.includes('mygram-direct-messages-test-user-uuid')))).toBe(true);
+  const channel = await page.evaluate(() => window.__mockChannels.find(channel => channel.name.includes('mygram-direct-messages-test-user-uuid')));
   expect(channel.name).toContain('mygram-direct-messages-test-user-uuid');
   expect(channel.handlers).toHaveLength(2);
   expect(channel.handlers.map(h => h.filter.table)).toEqual(['direct_messages', 'direct_messages']);

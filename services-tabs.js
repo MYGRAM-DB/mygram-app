@@ -53,12 +53,15 @@
     let language = "ar";
     try { language = localStorage.getItem("mygram-language") || "ar"; } catch {}
     if (picker && [...picker.options].some(option => option.value === language)) picker.value = language;
-    let selected = "stories";
-    try {
-      const saved = sessionStorage.getItem("mygram-services-tab");
-      if (tabs.some(tab => tab.dataset.serviceTab === saved)) selected = saved;
-    } catch {}
-    activate(selected);
+    const requested = new URLSearchParams(window.location.search).get("tab");
+    let selected = tabs.some(tab => tab.dataset.serviceTab === requested) ? requested : "";
+    if (!selected) {
+      try {
+        const saved = sessionStorage.getItem("mygram-services-tab");
+        if (tabs.some(tab => tab.dataset.serviceTab === saved)) selected = saved;
+      } catch {}
+    }
+    activate(selected || "stories");
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initialize, { once: true });
   else initialize();
