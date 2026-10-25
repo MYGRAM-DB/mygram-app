@@ -110,3 +110,12 @@ test('password breach check uses k-anonymity and blocks known compromised passwo
   await expect(page.locator('#authNotice')).toContainText('ظهرت في تسريبات');
   expect(authOtpOrSignupCalls).toBe(0);
 });
+
+test('phone sign-in exposes country and phone fields before requesting an OTP', async ({ page }) => {
+  await page.goto('/login.html');
+  await page.locator('#phoneTab').click();
+  await expect(page.locator('#phoneCountry')).toBeVisible();
+  await expect(page.locator('#phoneNumber')).toBeVisible();
+  await expect(page.locator('#otpCode')).toBeHidden();
+  await expect(page.locator('#submitButton')).toHaveText('إرسال رمز SMS');
+});
