@@ -132,12 +132,16 @@
     async function refreshComments() {
       commentList.replaceChildren();
       const { data, error } = await client.from("post_comments").select("id,user_id,content,created_at").eq("post_id", post.id).order("created_at", { ascending: true }).limit(100);
-      if (error) { commentList.textContent = "تعذر تحميل التعليقات. تأكد من تطبيق ملف SQL الجديد."; return; }
+      if (error) { commentList.textContent = "تعذر تحميل التعليقات. تحقق من سياسات التعليقات في Supabase."; return; }
       if (!data?.length) { commentList.textContent = "لا توجد تعليقات بعد."; return; }
-      for (const c of data) {
+      const ids=[...new Set(data.map(c=>c.user_id).filter(Boolean))];
+      let byId={};
+      if(ids.length){const result=await client.from("profiles").select("id,username,full_name").in("id",ids);if(!result.error)byId=Object.fromEntries((result.data||[]).map(p=>[p.id,p]))}
+      for (const comment of data) {
         const row = document.createElement("p");
         row.className = "comment-row";
-        row.textContent = (c.user_id === user.id ? "أنت: " : "") + c.content;
+        const author=comment.user_id===user.id?"أنت":byId[comment.user_id]?.full_name||byId[comment.user_id]?.username||"عضو MYGRAM";
+        row.textContent = author + ": " + comment.content;
         commentList.appendChild(row);
       }
     }
