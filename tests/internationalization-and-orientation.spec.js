@@ -35,6 +35,7 @@ test('login remains usable in portrait and landscape mobile orientations', async
 
 test('password recovery action is visible and does not submit the login form', async ({ page }) => {
   await page.goto('/login.html');
+  await page.locator('#loginTab').click();
   const recovery = page.locator('#resetPasswordButton');
   await expect(recovery).toBeVisible();
   await expect(recovery).toHaveAttribute('type', 'button');
@@ -42,6 +43,7 @@ test('password recovery action is visible and does not submit the login form', a
 
 test('Spanish locale translates core navigation and uses left-to-right layout', async ({ page }) => {
   await page.goto('/login.html');
+  await page.locator('#loginTab').click();
   const picker = page.locator('#mygramLanguage');
   await picker.selectOption('es');
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
