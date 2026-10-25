@@ -161,3 +161,31 @@ test('all 60 language choices translate the login action and set writing directi
     }
   }
 });
+
+
+test('rapid language changes keep the latest selection after asynchronous catalog loads', async ({ page }) => {
+  await page.goto('/login.html');
+  const picker = page.locator('#mygramLanguage');
+  await expect(picker).toBeVisible();
+
+  await picker.selectOption('si');
+  await picker.selectOption('ne');
+  await picker.selectOption('fr');
+
+  await expect(picker).toHaveValue('fr');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+  await page.waitForTimeout(300);
+  await expect(picker).toHaveValue('fr');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+});
+
+test('a manually selected language is restored after reloading the page', async ({ page }) => {
+  await page.goto('/login.html');
+  const picker = page.locator('#mygramLanguage');
+  await picker.selectOption('fr');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+
+  await page.reload();
+  await expect(page.locator('#mygramLanguage')).toHaveValue('fr');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+});
