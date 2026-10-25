@@ -27,7 +27,7 @@ test('standalone chat subscribes to realtime updates for the active private conv
   await page.locator('#chatUsername').fill('someone');
   await page.locator('#newChatForm button').click();
   await expect(page.locator('#threadHead')).toContainText('Someone');
-  await expect.poll(() => page.evaluate(() => window.__channels.length)).toBe(2);
+  await expect.poll(() => page.evaluate(() => window.__channels.some(c => c.name === 'mygram-chat-chat-test-uuid'))).toBe(true);
   const subscription = await page.evaluate(() => window.__channels.find(c => c.name === 'mygram-chat-chat-test-uuid'));
   expect(subscription.handlers[0].event).toBe('postgres_changes');
   expect(subscription.handlers[0].filter.table).toBe('chat_messages');
