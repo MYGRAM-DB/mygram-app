@@ -105,3 +105,23 @@ test('non-Arabic-script locales avoid Arabic-script fragments in the password fi
     expect(placeholder, 'password placeholder for ' + code).not.toMatch(/[\u0600-\u06FF]/);
   }
 });
+
+
+test('additional core locales translate the login action without English fallback', async ({ page }) => {
+  await page.goto('/login.html');
+  await page.locator('#loginTab').click();
+  const picker = page.locator('#mygramLanguage');
+  const expected = {
+    hu: 'Bejelentkezés',
+    ca: 'Inicia sessió',
+    eu: 'Hasi saioa',
+    gl: 'Iniciar sesión',
+    is: 'Skrá inn',
+  };
+  for (const [locale, label] of Object.entries(expected)) {
+    await picker.selectOption(locale);
+    await expect(page.locator('#submitButton')).toHaveText(label);
+    await expect(page.locator('html')).toHaveAttribute('lang', locale);
+    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+  }
+});
