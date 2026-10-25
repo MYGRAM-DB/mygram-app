@@ -3,7 +3,7 @@ const { test, expect } = require('@playwright/test');
 const mockSupabase = `
 window.__mockCalls = [];
 window.__mockTableData = {
-  profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }, { id: 'second-user-uuid', username: 'another', full_name: 'Another Person', bio: 'Second test profile', avatar_url: null }],
+  profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }],
   reels: [{ id: 'reel-test-uuid', user_id: 'other-user-uuid', video_url: 'https://example.test/reel.mp4', caption: 'A test reel', created_at: '2026-10-25T10:00:00.000Z' }],
   reel_reactions: [], reel_comments: [], chat_members: [], chat_messages: []
 };
@@ -230,6 +230,7 @@ test('standalone MYGRAM Chat can create a private conversation', async ({ page }
 
 test('standalone MYGRAM Chat can create a group conversation', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/chat.html');
+  await page.evaluate(() => window.__mockTableData.profiles.push({ id: 'second-user-uuid', username: 'another', full_name: 'Another Person', bio: 'Second test profile', avatar_url: null }));
   await page.locator('#chatUsername').fill('someone, another');
   await page.locator('#newChatForm button').click();
   await expect(page.locator('#threadHead')).toContainText('Someone, Another Person');
