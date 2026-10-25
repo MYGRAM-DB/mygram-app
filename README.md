@@ -1,27 +1,44 @@
-# MYGRAM 2.8
+# MYGRAM
 
-Static web app (HTML/CSS/JS) on GitHub Pages + Supabase (Auth, Postgres, Storage).
+MYGRAM is a static HTML/CSS/JavaScript social platform deployed with GitHub Pages and backed by Supabase Auth, Postgres, and Storage.
 
-## What this release fixes
-- `config.js` only defined `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY`, but `auth/home/people/profile/services/account-menu` read `supabaseUrl`, `supabaseKey`, `homeUrl`, `loginUrl` (all `undefined` -> clients failed to start). Both key styles are now defined.
-- `app.js` queried a `profiles` table; every other page uses `users`. Unified on `users`.
-- `app.js` used bucket `post-media`; other pages use `mygram-media`. Unified.
-- The repo had no SQL (profile.js referenced a missing `MYGRAM-2.7-setup.sql`). Added `supabase/migrations/20261024000000_mygram_core.sql`.
-- Added `.nojekyll`, `tests/check.js`, and a workflow that runs the checks.
+## Implemented in the repository
 
-## Install
-1. **Inspect legacy data first** (Supabase SQL editor): `select count(*) from public.users; select count(*) from public.messages;` and confirm `public.users.id` is `uuid`.
-2. Run `supabase/migrations/20261024000000_mygram_core.sql` (idempotent; drops nothing).
-3. Auth -> URL Configuration: Site URL `https://mygram-db.github.io/mygram-app/`; add the same + `/home.html` to Redirect URLs.
-4. Push the contents of `app/` to the repo root (not the ZIP itself). Pages serves from the root.
-5. `node tests/check.js`
+- Email/password sign-in, sign-up, password recovery UI, session guards, and profile creation.
+- Phone-number formatting/validation and a 205-country calling-code catalog. Real SMS OTP requires enabling Supabase Phone Auth and configuring an SMS provider.
+- Profile editing, avatar/cover media, country/language preferences, member discovery, and friend requests.
+- Feed posts, image/video attachments, comments, and eight reaction types.
+- Stories with expiry filtering and owner deletion.
+- Reels with video publishing, emoji reactions, comments, and owner deletion.
+- Direct Messenger with text, image/video/audio attachments, microphone voice recording, and Supabase Realtime subscriptions.
+- A separate MYGRAM Chat for private/group conversations, media and recorded voice notes, conversation-scoped Realtime updates, plus slower polling as a fallback.
+- Community creation, membership, and community posts, protected by row-level security.
+- 60 language choices with 47 translated core interface strings per locale; feature-specific labels still need broader localization review.
+- Database migrations and RLS policies for social content, private messages, reels, and communities.
 
-## Status (honest)
-Working in code, **not yet live-tested**: signup/login, auto profile creation, profile edit + avatar/cover upload, posts with media, reactions, comments, friend requests, stories, reels, direct messages (no realtime yet).
-Not implemented: groups, pages, notifications, blocking/reporting, realtime, password recovery UI, search beyond user lookup, AI assistance. Live streaming is a placeholder (`provider: external-provider-required`).
+## Deploy and configure
+
+1. Set the Supabase project URL and publishable/anon key in `config.js`. Never put a service-role key in browser code.
+2. Apply the SQL migrations in `supabase/migrations/` in filename order to a fresh project. For an existing project, inspect migration history and data before applying any migration manually.
+3. In Supabase Auth URL Configuration, set the Site URL to `https://mygram-db.github.io/mygram-app/` and add the deployed login/home URLs to the redirect allow-list.
+4. Enable **Phone** under Auth providers and configure an SMS provider before expecting real phone OTP to work. Email confirmation and recovery also depend on the project’s SMTP and redirect settings.
+5. Deploy the repository root through GitHub Pages. CI runs Playwright browser tests and JavaScript syntax checks before publishing the main branch.
+
+## Verified vs. still requiring live setup
+
+CI browser tests exercise mocked sign-up/login states, post/comment/reaction flows, friend requests, stories, reels, community flows, Messenger, standalone Chat, and responsive layouts. The Supabase integration smoke test checks that the configured public client can query the public profile interface.
+
+The following still require account/provider setup or real-user end-to-end verification:
+
+- Phone OTP, because Supabase Phone Auth and an SMS provider must be enabled/configured in the project dashboard.
+- Production email deliverability, confirmation links, and password-recovery email delivery.
+- A real external live-streaming provider. The current live-session feature creates scheduling/session records; it is not a production live-video broadcast.
+- Full human review of translations across every page, and authoritative validation of all 205 calling codes against an up-to-date numbering-plan source.
+- Production abuse controls such as blocking/reporting, moderation workflows, and a notification center.
 
 ## Troubleshooting
-- "client failed to start": hard-refresh; confirm `config.js` loads before page scripts.
-- Upload fails: migration not run (bucket/policies missing).
-- Login works but profile empty: run the backfill section of the migration.
-- Email confirmation link goes to wrong URL: fix Auth URL Configuration (step 3).
+
+- If the Supabase client fails to start, confirm `config.js` loads before page scripts and hard-refresh the browser.
+- If an upload fails, verify the required migrations, Storage buckets, and bucket policies are present.
+- If a new account has no profile, inspect the profile-creation trigger and Supabase Auth logs.
+- If email links point to the wrong page, correct the Supabase Auth redirect allow-list and SMTP configuration.
