@@ -166,3 +166,11 @@ test('authenticated member can send a direct message to another member', async (
   )).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('messenger exposes voice recording and media attachment controls', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await expect(page.locator('#messageAttachment')).toHaveAttribute('accept', 'image/*,video/*,audio/*');
+  await expect(page.locator('#recordVoiceButton')).toBeVisible();
+  await expect(page.locator('#voiceRecordStatus')).toHaveAttribute('role', 'status');
+  expect(errors).toEqual([]);
+});
