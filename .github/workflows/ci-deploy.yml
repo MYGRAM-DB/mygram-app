@@ -52,7 +52,7 @@ jobs:
 
       - name: Create source package
         run: |
-          zip -r mygram-app.zip index.html home.html people.html profile.html services.html *.js *.css *.svg README-AR.md README.md VERSION.txt .nojekyll
+          zip -r mygram-app.zip index.html home.html people.html profile.html services.html chat.html *.js *.css *.svg README-AR.md README.md VERSION.txt .nojekyll
 
       - name: Upload source artifact
         uses: actions/upload-artifact@v4
