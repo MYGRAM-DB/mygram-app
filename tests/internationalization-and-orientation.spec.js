@@ -139,3 +139,25 @@ test('additional core locales translate the login action without English fallbac
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
   }
 });
+
+
+test('all 60 language choices translate the login action and set writing direction', async ({ page }) => {
+  await page.goto('/login.html');
+  await page.locator('#loginTab').click();
+  const picker = page.locator('#mygramLanguage');
+  const locales = await picker.locator('option').evaluateAll(options =>
+    options.map(option => option.value).filter(Boolean)
+  );
+  expect(locales).toHaveLength(60);
+  for (const locale of locales) {
+    await picker.selectOption(locale);
+    await expect(page.locator('html')).toHaveAttribute('lang', locale);
+    await expect(page.locator('html')).toHaveAttribute(
+      'dir',
+      ['ar', 'ur', 'fa', 'he'].includes(locale) ? 'rtl' : 'ltr'
+    );
+    if (locale !== 'en') {
+      await expect(page.locator('#submitButton')).not.toHaveText('Sign in');
+    }
+  }
+});
