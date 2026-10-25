@@ -50,7 +50,7 @@ alter table public.chat_members enable row level security;
 alter table public.chat_messages enable row level security;
 
 drop policy if exists "Members can read their chats" on public.chats;
-create policy "Members can read their chats" on public.chats for select to authenticated using (private.is_chat_member(id));
+create policy "Members can read their chats" on public.chats for select to authenticated using (created_by=(select auth.uid()) or private.is_chat_member(id));
 drop policy if exists "Users can create chats" on public.chats;
 create policy "Users can create chats" on public.chats for insert to authenticated with check (created_by=(select auth.uid()));
 drop policy if exists "Creators can update chat details" on public.chats;
