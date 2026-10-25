@@ -50,8 +50,8 @@ alter table public.user_preferences
   add column if not exists timezone_name text,
   add column if not exists country_detection_source text check (country_detection_source is null or country_detection_source in ('manual','browser_locale','ip_approximate','gps_consent')),
   add column if not exists language_detection_source text check (language_detection_source is null or language_detection_source in ('manual','browser_locale','account_default')),
-  add column if not exists location_consent_at timestamptz,
-  add column if not exists updated_by uuid generated always as (user_id) stored;
+  add column if not exists location_consent_at timestamptz;
+
 -- Existing user_preferences policies are preserved; enforce ownership at row level.
 alter table public.user_preferences enable row level security;
 drop policy if exists user_preferences_select_own on public.user_preferences;
@@ -66,6 +66,42 @@ create policy user_preferences_update_own on public.user_preferences
 drop policy if exists user_preferences_delete_own on public.user_preferences;
 create policy user_preferences_delete_own on public.user_preferences
   for delete to authenticated using (user_id = (select auth.uid()));
+
+
+create table if not exists public.translation_usage (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  requested_at timestamptz not null default now()
+);
+create index if not exists translation_usage_user_time_idx on public.translation_usage(user_id, requested_at desc);
+alter table public.translation_usage enable row level security;
+revoke all on public.translation_usage from public, anon, authenticated;
+
+create or replace function public.consume_translation_quota(p_user_id uuid, p_max_per_hour integer default 30)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  recent_count integer;
+begin
+  if p_user_id is null or p_max_per_hour < 1 or p_max_per_hour > 120 then
+    return false;
+  end if;
+  delete from public.translation_usage where requested_at < now() - interval '2 days';
+  select count(*) into recent_count
+  from public.translation_usage
+  where user_id = p_user_id and requested_at >= now() - interval '1 hour';
+  if recent_count >= p_max_per_hour then
+    return false;
+  end if;
+  insert into public.translation_usage(user_id) values (p_user_id);
+  return true;
+end;
+$;
+revoke all on function public.consume_translation_quota(uuid, integer) from public, anon, authenticated;
+grant execute on function public.consume_translation_quota(uuid, integer) to service_role;
 
 comment on table public.translation_catalog is 'Reviewed UI translation catalog; only approved strings are visible to app clients.';
 comment on table public.translation_cache is 'Private AI translation cache for dynamic text; service functions only.';
