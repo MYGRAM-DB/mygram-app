@@ -126,7 +126,7 @@ test('additional core locales translate the login action without English fallbac
     ga: 'Logáil isteach',
     cy: 'Mewngofnodi',
     ne: 'लगइन',
-    ta: 'உள்நுழைக',
+    ta: 'உள்நுழை',
     te: 'లాగిన్ అవ్వండి',
     mr: 'लॉग इन करा',
     am: 'ግባ',
