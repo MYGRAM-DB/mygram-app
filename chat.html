@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#087cf0"><title>MYGRAM Chat | المحادثات</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="config.js"></script><script defer src="auth-guard.js"></script><script defer src="chat.js"></script>
+<style>
+.chat-shell{max-width:1100px;margin:24px auto;padding:0 14px}.chat-layout{display:grid;grid-template-columns:minmax(230px,320px) minmax(0,1fr);gap:14px}.chat-panel{padding:16px;min-width:0}.chat-list{display:grid;gap:8px;max-height:65vh;overflow:auto}.chat-entry{display:block;width:100%;text-align:start;background:transparent;color:inherit;border:1px solid #e2e8f0;border-radius:12px;padding:12px;cursor:pointer}.chat-entry[aria-current=true]{border-color:#087cf0;background:#eff6ff}.chat-thread{display:flex;flex-direction:column;min-height:65vh}.chat-messages{flex:1;max-height:58vh;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:8px}.chat-bubble{max-width:min(88%,560px);padding:10px 12px;border-radius:14px;background:#f1f5f9;align-self:flex-start;overflow-wrap:anywhere}.chat-bubble.mine{align-self:flex-end;background:#dbeafe}.chat-bubble img,.chat-bubble video{display:block;max-width:100%;max-height:260px;border-radius:10px}.chat-bubble audio{max-width:100%}.chat-compose{display:grid;gap:8px;margin-top:12px}.chat-compose textarea{min-height:72px}.chat-compose input,.chat-compose textarea,.chat-new input{width:100%;padding:11px;border:1px solid #dce5f0;border-radius:10px;font:inherit}.chat-new{display:flex;gap:8px;margin:10px 0}.chat-new input{min-width:0;flex:1}.chat-subtitle{color:#718096;font-size:13px}.chat-thread-head{padding:10px;border-bottom:1px solid #e5e7eb}.chat-empty{padding:24px;text-align:center;color:#64748b}@media(max-width:700px){.chat-layout{grid-template-columns:1fr}.chat-thread{min-height:50vh}.chat-messages{max-height:45vh}.chat-list{max-height:32vh}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="home.html">MYGRAM</a><nav><a href="home.html">الرئيسية</a> · <a href="services.html">Messenger</a> · <strong>Chat</strong></nav></div></header>
+<main class="chat-shell">
+<section class="card chat-panel">
+<h1>💬 MYGRAM Chat</h1><p class="chat-subtitle">مساحة محادثات منفصلة عن الرسائل المباشرة في Messenger.</p>
+<form id="newChatForm" class="chat-new"><input id="chatUsername" autocomplete="off" placeholder="اسم مستخدم أو عدة أسماء مفصولة بفواصل" minlength="3" maxlength="30" required><button class="button primary" type="submit">محادثة جديدة</button></form>
+<div id="chatList" class="chat-list" aria-label="قائمة المحادثات"></div>
+</section>
+<div class="chat-layout">
+<section class="card chat-panel" style="grid-column:1/-1">
+<div id="threadHead" class="chat-thread-head">اختر محادثة من القائمة أو ابدأ محادثة جديدة.</div>
+<div class="chat-thread"><div id="chatMessages" class="chat-messages" aria-live="polite"><div class="chat-empty">محادثاتك ستظهر هنا.</div></div>
+<form id="chatCompose" class="chat-compose"><label for="chatBody">رسالتك</label><textarea id="chatBody" maxlength="10000" placeholder="اكتب رسالة..." ></textarea><label for="chatFile">إرفاق صورة أو فيديو أو صوت</label><input id="chatFile" type="file" accept="image/*,video/*,audio/*"><button class="button primary" type="submit">إرسال</button></form></div>
+</section>
+</div>
+<div id="chatToast" role="status" aria-live="polite" class="toast"></div>
+</main>
+</body></html>
