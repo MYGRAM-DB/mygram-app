@@ -62,6 +62,22 @@
     submitButton.textContent = recovery ? "حفظ كلمة المرور الجديدة" : phoneVerify ? "تأكيد الرمز" : phone ? (phoneOtpSent ? "إعادة إرسال الرمز" : "إرسال رمز SMS") : signup ? "إنشاء الحساب" : "تسجيل الدخول";
     setNotice("");
   }
+  // HIBP Pwned Passwords range API: only the first 5 SHA-1 hex characters leave the browser.
+  async function checkCompromisedPassword(value) {
+    if (!window.crypto?.subtle) throw new Error("لا يمكن إجراء فحص أمان كلمة المرور في هذا المتصفح. حدّث المتصفح وحاول مجدداً.");
+    const bytes = new TextEncoder().encode(value);
+    const digest = await crypto.subtle.digest("SHA-1", bytes);
+    const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("").toUpperCase();
+    const response = await fetch("https://api.pwnedpasswords.com/range/" + hash.slice(0, 5), {
+      headers: { "Add-Padding": "true" }, cache: "no-store", credentials: "omit"
+    });
+    if (!response.ok) throw new Error("تعذّر فحص كلمة المرور المسربة حالياً. حاول مجدداً بعد قليل.");
+    const suffix = hash.slice(5);
+    const rows = (await response.text()).split(/\r?\n/);
+    const match = rows.find(row => row.slice(0, 35).toUpperCase() === suffix);
+    if (match && Number(match.split(":")[1]) > 0) throw new Error("كلمة المرور هذه ظهرت في تسريبات سابقة. اختر كلمة مرور مختلفة تماماً.");
+  }
+
   function safeError(error) {
     const raw = String(error?.message || "");
     if (/Invalid login credentials/i.test(raw)) return "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
@@ -163,6 +179,7 @@
     setNotice("");
     try {
       if (recovery) {
+        await checkCompromisedPassword(pass);
         const { error } = await client.auth.updateUser({ password: pass });
         if (error) throw error;
         await client.auth.signOut();
@@ -172,6 +189,7 @@
         password.value = "";
         setNotice("تم تحديث كلمة المرور. سجّل الدخول بكلمة المرور الجديدة.", "success");
       } else if (mode === "signup") {
+        await checkCompromisedPassword(pass);
         const name = fullName.value.trim();
         const { data, error } = await client.auth.signUp({
           email: normalizedEmail,
