@@ -5,7 +5,7 @@ window.__mockCalls = [];
 window.__mockTableData = {
   profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }],
   reels: [{ id: 'reel-test-uuid', user_id: 'other-user-uuid', video_url: 'https://example.test/reel.mp4', caption: 'A test reel', created_at: '2026-10-25T10:00:00.000Z' }],
-  reel_reactions: [], reel_comments: []
+  reel_reactions: [], reel_comments: [], chat_members: [], chat_messages: []
 };
 window.supabase = {
   createClient: () => {
@@ -32,6 +32,7 @@ window.supabase = {
         q.select = function() { this._op = this._op || 'select'; return this; };
         q.eq = function(column, value) { this._filters.push([column, value]); return this; };
         q.maybeSingle = function() { const rows = window.__mockTableData?.[table] || []; const found = rows.find(row => this._filters.every(([column, value]) => row[column] === value)); return Promise.resolve({ data: found || null, error: null }); };
+        q.single = function() { if (table === 'chats' && this._op === 'insert') return Promise.resolve({ data: { id: 'chat-test-uuid' }, error: null }); return Promise.resolve({ data: null, error: null }); };
         q.insert = function(payload) { this._op = 'insert'; window.__mockCalls.push({ table, op: 'insert', payload }); return this; };
         q.update = function(payload) { this._op = 'update'; window.__mockCalls.push({ table, op: 'update', payload }); return this; };
         q.delete = function() { this._op = 'delete'; window.__mockCalls.push({ table, op: 'delete' }); return this; };
@@ -199,6 +200,30 @@ test('authenticated member can comment on a reel', async ({ page }) => {
   await expect.poll(async () => page.evaluate(() =>
     window.__mockCalls.some(call => call.table === 'reel_comments' && call.op === 'insert' &&
       call.payload.reel_id === 'reel-test-uuid' && call.payload.content === 'Great reel!')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('standalone MYGRAM Chat opens separately from Messenger', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/chat.html');
+  await expect(page.getByRole('heading', { name: '💬 MYGRAM Chat' })).toBeVisible();
+  await expect(page.locator('#newChatForm')).toBeVisible();
+  await expect(page.locator('#chatCompose')).toBeVisible();
+  await expect(page.locator('#chatList')).toContainText('لا توجد محادثات بعد');
+  expect(errors).toEqual([]);
+});
+
+test('standalone MYGRAM Chat can create a private conversation', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/chat.html');
+  await page.locator('#chatUsername').fill('someone');
+  await page.locator('#newChatForm button').click();
+  await expect(page.locator('#threadHead')).toContainText('Someone');
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'chats' && call.op === 'insert' && call.payload.created_by === 'test-user-uuid')
+  )).toBe(true);
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'chat_members' && call.op === 'insert' &&
+      Array.isArray(call.payload) && call.payload.length === 2)
   )).toBe(true);
   expect(errors).toEqual([]);
 });
