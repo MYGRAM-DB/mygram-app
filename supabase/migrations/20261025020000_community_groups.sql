@@ -43,6 +43,6 @@ create policy "Members can leave communities" on public.community_members for de
 drop policy if exists "Members can view community posts" on public.community_posts;
 create policy "Members can view community posts" on public.community_posts for select to authenticated using (true);
 drop policy if exists "Community members can publish posts" on public.community_posts;
-create policy "Community members can publish posts" on public.community_posts for insert to authenticated with check (user_id=(select auth.uid()) and exists(select 1 from public.community_members cm where cm.community_id=community_id and cm.user_id=(select auth.uid())));
+create policy "Community members can publish posts" on public.community_posts for insert to authenticated with check (user_id=(select auth.uid()) and exists(select 1 from public.community_members cm where cm.community_id=community_posts.community_id and cm.user_id=(select auth.uid())));
 drop policy if exists "Authors or community owners can delete posts" on public.community_posts;
 create policy "Authors or community owners can delete posts" on public.community_posts for delete to authenticated using (user_id=(select auth.uid()) or exists(select 1 from public.communities c where c.id=community_id and c.created_by=(select auth.uid())));
