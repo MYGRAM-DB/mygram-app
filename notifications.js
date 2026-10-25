@@ -77,7 +77,7 @@
   function createHost() {
     if ($(".mygram-notifications-host")) return $(".mygram-notifications-host");
     const right = $(".topbar-right");
-    const header = $(".services-topbar") || $("header .topbar-inner") || $("header.topbar");
+    const header = $(".services-topbar") || $("header .topbar-inner") || $("header.topbar") || $("header.people-topbar");
     if (!right && !header) return null;
     const host = make("div", "mygram-notifications-host");
     const trigger = make("button", "mygram-notifications-trigger");
