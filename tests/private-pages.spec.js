@@ -3,7 +3,9 @@ const { test, expect } = require('@playwright/test');
 const mockSupabase = `
 window.__mockCalls = [];
 window.__mockTableData = {
-  profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }]
+  profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }],
+  reels: [{ id: 'reel-test-uuid', user_id: 'other-user-uuid', video_url: 'https://example.test/reel.mp4', caption: 'A test reel', created_at: '2026-10-25T10:00:00.000Z' }],
+  reel_reactions: [], reel_comments: []
 };
 window.supabase = {
   createClient: () => {
@@ -33,6 +35,7 @@ window.supabase = {
         q.insert = function(payload) { this._op = 'insert'; window.__mockCalls.push({ table, op: 'insert', payload }); return this; };
         q.update = function(payload) { this._op = 'update'; window.__mockCalls.push({ table, op: 'update', payload }); return this; };
         q.delete = function() { this._op = 'delete'; window.__mockCalls.push({ table, op: 'delete' }); return this; };
+        q.upsert = function(payload) { this._op = 'upsert'; window.__mockCalls.push({ table, op: 'upsert', payload }); return this; };
         return q;
       },
       storage: { from: () => ({
@@ -173,5 +176,29 @@ test('messenger exposes voice recording and media attachment controls', async ({
   await expect(page.locator('#messageAttachment')).toHaveAttribute('accept', 'image/*,video/*,audio/*');
   await expect(page.locator('#recordVoiceButton')).toBeVisible();
   await expect(page.locator('#voiceRecordStatus')).toHaveAttribute('role', 'status');
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can react to a reel with emoji', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  const reel = page.locator('#reelsList .reel-card').first();
+  await expect(reel).toBeVisible();
+  await reel.getByRole('button', { name: 'تفاعل ❤️' }).click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'reel_reactions' && call.op === 'upsert' &&
+      call.payload.reel_id === 'reel-test-uuid' && call.payload.reaction === 'love')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can comment on a reel', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  const form = page.locator('#reelsList .reel-card .reel-comment-form').first();
+  await form.locator('input').fill('Great reel!');
+  await form.getByRole('button', { name: 'إرسال' }).click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'reel_comments' && call.op === 'insert' &&
+      call.payload.reel_id === 'reel-test-uuid' && call.payload.content === 'Great reel!')
+  )).toBe(true);
   expect(errors).toEqual([]);
 });
