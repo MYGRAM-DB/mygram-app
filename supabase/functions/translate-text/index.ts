@@ -54,7 +54,16 @@ Deno.serve(async (req) => {
     .select("code").eq("code", targetLocale).eq("enabled", true).maybeSingle();
   if (localeError || !locale) return json({ error: "Target language is not enabled" }, 400);
 
-  const cacheKey = await sha256([sourceLocale, targetLocale, text].join("\u0000"));
+  const { data: quotaAllowed, error: quotaError } = await admin.rpc("consume_translation_quota", {
+    p_user_id: user.id, p_max_per_hour: 30,
+  });
+  if (quotaError) {
+    console.error("Translation quota check failed", quotaError.message);
+    return json({ error: "Translation service temporarily unavailable" }, 503);
+  }
+  if (quotaAllowed !== true) return json({ error: "Translation rate limit reached. Try again later." }, 429);
+
+  const cacheKey = await sha256([sourceLocale, targetLocale, text].join("\\u0000"));
   const { data: cached } = await admin.from("translation_cache").select("translated_text,provider,model_name")
     .eq("cache_key", cacheKey).maybeSingle();
   if (cached) return json({ translatedText: cached.translated_text, cached: true, provider: cached.provider });
