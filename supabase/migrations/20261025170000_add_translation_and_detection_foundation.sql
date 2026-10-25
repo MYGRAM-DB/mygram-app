@@ -82,13 +82,14 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $function$
 declare
   recent_count integer;
 begin
   if p_user_id is null or p_max_per_hour < 1 or p_max_per_hour > 120 then
     return false;
   end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext(p_user_id::text));
   delete from public.translation_usage where requested_at < now() - interval '2 days';
   select count(*) into recent_count
   from public.translation_usage
@@ -99,7 +100,7 @@ begin
   insert into public.translation_usage(user_id) values (p_user_id);
   return true;
 end;
-$;
+$function$;
 revoke all on function public.consume_translation_quota(uuid, integer) from public, anon, authenticated;
 grant execute on function public.consume_translation_quota(uuid, integer) to service_role;
 
