@@ -34,7 +34,7 @@ test('signed-out visitor is redirected from the private home page', async ({ pag
   await expect(page.locator('#authForm')).toHaveCount(1);
 });
 
-for (const route of ['/people.html', '/profile.html', '/services.html']) {
+for (const route of ['/people.html', '/profile.html', '/services.html', '/communities.html', '/chat.html']) {
   test(`signed-out visitor cannot access private page ${route}`, async ({ page }) => {
     await page.goto(route);
     await expect(page).toHaveURL(/login\.html(?:$|[?#])/);
