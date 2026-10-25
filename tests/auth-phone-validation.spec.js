@@ -6,6 +6,17 @@ test('phone country picker contains the supported 205-country catalog', async ({
   const countries = page.locator('#phoneCountry option');
   await expect(countries).toHaveCount(205);
   await expect(page.locator('#phoneCountry')).toHaveValue('US');
+  const catalog = await page.evaluate(() => window.MYGRAM_COUNTRIES.map(c => ({ code: c.code, dial: c.dial })));
+  expect(new Set(catalog.map(c => c.code)).size).toBe(205);
+  expect(catalog.every(c => /^\\+[0-9]+(?:-[0-9]+)*$/.test(c.dial))).toBe(true);
+  const byCode = Object.fromEntries(catalog.map(c => [c.code, c.dial]));
+  expect(byCode.US).toBe('+1');
+  expect(byCode.NL).toBe('+31');
+  expect(byCode.GB).toBe('+44');
+  expect(byCode.IN).toBe('+91');
+  expect(byCode.JP).toBe('+81');
+  expect(byCode.GG).toBe('+44-1481');
+
 });
 
 test('valid E.164 phone numbers pass local validation and reach Supabase OTP', async ({ page }) => {
