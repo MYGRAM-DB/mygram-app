@@ -13,7 +13,7 @@ create table if not exists public.supported_countries (
   national_prefix text not null default '',
   enabled boolean not null default true,
   updated_at timestamptz not null default now(),
-  constraint supported_countries_calling_code_format check (calling_code is null or calling_code ~ '^\\+[0-9]{1,4}$')
+  constraint supported_countries_calling_code_format check (calling_code is null or calling_code ~ '^[+][0-9]{1,4}$')
 );
 create index if not exists supported_countries_calling_code_idx on public.supported_countries(calling_code);
 alter table public.supported_locales enable row level security;
