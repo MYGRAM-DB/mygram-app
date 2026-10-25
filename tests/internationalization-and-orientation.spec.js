@@ -117,6 +117,20 @@ test('additional core locales translate the login action without English fallbac
     eu: 'Hasi saioa',
     gl: 'Iniciar sesión',
     is: 'Skrá inn',
+    mk: 'Најави се',
+    sq: 'Hyr',
+    bs: 'Prijava',
+    ka: 'შესვლა',
+    hy: 'Մուտք գործել',
+    az: 'Daxil ol',
+    ga: 'Logáil isteach',
+    cy: 'Mewngofnodi',
+    ne: 'लगइन गर्नुहोस्',
+    ta: 'உள்நுழைக',
+    te: 'లాగిన్ అవ్వండి',
+    mr: 'लॉग इन करा',
+    am: 'ግባ',
+    si: 'පිවිසෙන්න',
   };
   for (const [locale, label] of Object.entries(expected)) {
     await picker.selectOption(locale);
