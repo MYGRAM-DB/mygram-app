@@ -55,7 +55,7 @@ export async function collectUiCatalog() {
   const tEnd = languageSource.indexOf("};", tStart) + 1;
   if (tStart < "const T=".length || tEnd <= tStart) throw new Error("Could not locate the base locale dictionaries.");
   const baseT = Function(`"use strict"; return (${languageSource.slice(tStart, tEnd)});`)();
-  const fallback = parseObject(languageSource, /const englishFallback=(\{.*?\});\s*function translateKey/s, "englishFallback");
+  const fallback = parseObject(languageSource, /const englishFallback=(\{.*?\});/s, "englishFallback");
   const coreArabic = new Set([...Object.values(baseT.ar || {}), ...Object.keys(baseT.en || {}), ...Object.keys(baseT.fr || {})]);
   const candidates = new Set(Object.keys(fallback));
   const entries = await readdir(ROOT, { withFileTypes: true });
