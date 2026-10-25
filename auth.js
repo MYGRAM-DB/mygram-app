@@ -63,10 +63,19 @@
     setNotice("");
     window.MYGRAM_APPLY_LANGUAGE?.();
     const translate = window.MYGRAM_TRANSLATE_TEXT || (value => value);
-    document.getElementById("formTitle").textContent = translate(recovery ? "تعيين كلمة مرور جديدة" : phoneVerify ? "تحقق من رقم هاتفك" : phone ? "التسجيل برقم الهاتف" : signup ? "انضم إلى MYGRAM ✨" : "أهلاً بعودتك 👋");
-    document.getElementById("formSubtitle").textContent = translate(recovery ? "اختر كلمة مرور جديدة لا تقل عن 8 أحرف." : phoneVerify ? "أدخل رمز SMS المكوّن من 6 أرقام." : phone ? "اختر رمز الدولة وأدخل رقمك لاستلام رمز التحقق." : signup ? "أنشئ حسابك وابدأ مشاركة أفكارك." : "سجّل الدخول للمتابعة إلى MYGRAM.");
-    password.placeholder = translate(signup || recovery ? "8 أحرف على الأقل" : "أدخل كلمة المرور");
-    submitButton.textContent = translate(recovery ? "حفظ كلمة المرور الجديدة" : phoneVerify ? "تأكيد الرمز" : phone ? (phoneOtpSent ? "إعادة إرسال الرمز" : "إرسال رمز SMS") : signup ? "إنشاء الحساب" : "تسجيل الدخول");
+    const titleSource = recovery ? "تعيين كلمة مرور جديدة" : phoneVerify ? "تحقق من رقم هاتفك" : phone ? "التسجيل برقم الهاتف" : signup ? "انضم إلى MYGRAM ✨" : "أهلاً بعودتك 👋";
+    const subtitleSource = recovery ? "اختر كلمة مرور جديدة لا تقل عن 8 أحرف." : phoneVerify ? "أدخل رمز SMS المكوّن من 6 أرقام." : phone ? "اختر رمز الدولة وأدخل رقمك لاستلام رمز التحقق." : signup ? "أنشئ حسابك وابدأ مشاركة أفكارك." : "سجّل الدخول للمتابعة إلى MYGRAM.";
+    const placeholderSource = signup || recovery ? "8 أحرف على الأقل" : "أدخل كلمة المرور";
+    const submitSource = recovery ? "حفظ كلمة المرور الجديدة" : phoneVerify ? "تأكيد الرمز" : phone ? (phoneOtpSent ? "إعادة إرسال الرمز" : "إرسال رمز SMS") : signup ? "إنشاء الحساب" : "تسجيل الدخول";
+    const titleElement = document.getElementById("formTitle");
+    const subtitleElement = document.getElementById("formSubtitle");
+    titleElement.dataset.i18n = titleSource;
+    subtitleElement.dataset.i18n = subtitleSource;
+    submitButton.dataset.i18n = submitSource;
+    titleElement.textContent = translate(titleSource);
+    subtitleElement.textContent = translate(subtitleSource);
+    password.placeholder = translate(placeholderSource);
+    submitButton.textContent = translate(submitSource);
   }
   // HIBP Pwned Passwords range API: only the first 5 SHA-1 hex characters leave the browser.
   async function checkCompromisedPassword(value) {
