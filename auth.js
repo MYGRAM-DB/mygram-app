@@ -112,7 +112,14 @@
     if(raw.startsWith("+")) return "+"+raw.slice(1).replace(/\D/g,"");
     const country=window.MYGRAM_COUNTRIES?.find(x=>x.code===phoneCountry.value);
     const dial=(country?.dial||"").replace(/\D/g,"");
-    const national=raw.replace(/\D/g,"").replace(/^0+/,"");
+    let national=raw.replace(/\D/g,"").replace(/^0+/,"");
+    const prefix=String(country?.nationalPrefix||"").replace(/\D/g,"");
+    if(dial==="1"&&national.length===11&&national.startsWith("1"))national=national.slice(1);
+    if(prefix){
+      if(dial==="1"&&national.length===7)national=prefix+national;
+      else if(!national.startsWith(prefix))national=prefix+national;
+      if(dial==="1"&&national.length===10&&!national.startsWith(prefix))return "";
+    }
     return dial&&national?"+"+dial+national:"";
   }
 

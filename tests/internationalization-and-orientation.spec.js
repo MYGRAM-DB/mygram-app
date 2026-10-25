@@ -71,4 +71,10 @@ test('known Arabic interface messages fall back to English rather than leaking A
   });
   await page.locator('#mygramLanguage').selectOption('fr');
   await expect(page.locator('#localeFallbackProbe')).toHaveText('Could not load reactions:');
+  await page.locator('#mygramLanguage').selectOption('ar');
+  await page.evaluate(() => { document.querySelector('#localeFallbackProbe').textContent = 'إرسال'; });
+  await page.locator('#mygramLanguage').selectOption('fr');
+  await expect(page.locator('#localeFallbackProbe')).toHaveText('Send');
+  await page.locator('#mygramLanguage').selectOption('ar');
+  await expect(page.locator('#localeFallbackProbe')).toHaveText('إرسال');
 });

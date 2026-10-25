@@ -15,7 +15,10 @@ test('phone country picker contains the supported 205-country catalog', async ({
   expect(byCode.GB).toBe('+44');
   expect(byCode.IN).toBe('+91');
   expect(byCode.JP).toBe('+81');
-  expect(byCode.GG).toBe('+44-1481');
+  expect(byCode.GG).toBe('+44');
+  expect(catalog.find(c => c.code === 'GG').nationalPrefix).toBe('1481');
+  expect(byCode.AG).toBe('+1');
+  expect(catalog.find(c => c.code === 'AG').nationalPrefix).toBe('268');
 
 });
 
@@ -58,4 +61,33 @@ test('password minimum follows Supabase policy for signup but does not block exi
   await expect(password).toHaveAttribute('placeholder', '8 أحرف على الأقل');
   await page.locator('#loginTab').click();
   await expect(password).toHaveAttribute('minlength', '1');
+});
+
+test('territory national prefixes are applied once when creating E.164 numbers', async ({ page }) => {
+  const sentPhones = [];
+  await page.route('**/auth/v1/otp**', async route => {
+    sentPhones.push(route.request().postDataJSON().phone);
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+  await page.goto('/login.html');
+  await page.locator('#phoneTab').click();
+  await page.locator('#phoneCountry').selectOption('GG');
+  await page.locator('#phoneNumber').fill('123456');
+  await page.locator('#submitButton').click();
+  await expect.poll(() => sentPhones.length).toBe(1);
+  expect(sentPhones[0]).toBe('+441481123456');
+});
+test('NANP territory prefixes are applied to seven-digit local numbers', async ({ page }) => {
+  const sentPhones = [];
+  await page.route('**/auth/v1/otp**', async route => {
+    sentPhones.push(route.request().postDataJSON().phone);
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+  await page.goto('/login.html');
+  await page.locator('#phoneTab').click();
+  await page.locator('#phoneCountry').selectOption('AG');
+  await page.locator('#phoneNumber').fill('5551234');
+  await page.locator('#submitButton').click();
+  await expect.poll(() => sentPhones.length).toBe(1);
+  expect(sentPhones[0]).toBe('+12685551234');
 });
