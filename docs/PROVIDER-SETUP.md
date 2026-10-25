@@ -60,10 +60,10 @@ This is a useful free additional guard, but it runs in the browser and can be by
 
 MYGRAM Chat now has one-to-one WebRTC audio/video call controls and RLS-protected, expiring call-signaling records in Supabase. Media flows peer-to-peer; Supabase stores only short-lived signaling data, not call audio/video.
 
-- No API key is required for the initial peer-to-peer implementation.
-- The app uses a public STUN server for network discovery. Some networks (strict NAT/firewalls) require a TURN relay, and direct peer-to-peer calls can fail on those networks.
-- For reliable production calls and one-to-many live streaming, evaluate [LiveKit Cloud pricing](https://livekit.com/pricing) or self-host the open-source [LiveKit server](https://docs.livekit.io/transport/self-hosting/). LiveKit Cloud's free quota can change and requires account-owned API credentials. Those credentials must be configured as server-side secrets, never exposed in `chat.js`.
-- The current peer-to-peer implementation is for one-to-one calls. It is not a scalable live broadcast service or group-call mesh.
+- One-to-one calls in standalone Chat use peer-to-peer WebRTC and do not require provider keys, but some networks need a TURN relay.
+- Live-session cards now connect to LiveKit through the deployed, authenticated Supabase Edge Function `livekit-token`. To activate broadcast, create a LiveKit Cloud project and set `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET` under Supabase Dashboard → Edge Functions → Secrets. The function checks the authenticated user and host/viewer role before minting a short-lived room token.
+- The LiveKit Cloud free quota can change and is not unlimited forever. For self-hosting, the [LiveKit server is open source](https://docs.livekit.io/transport/self-hosting/), but a reliable public server still needs hosting and bandwidth.
+- Do not expose LiveKit secrets in `services.js`, `chat.js`, or any other browser asset.
 
 ## 5. Validation checklist
 
