@@ -82,6 +82,16 @@ async function openAuthenticatedPage(page, route) {
   return pageErrors;
 }
 
+test('signed-in home exposes the notification bell and opens its panel', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/home.html');
+  const bell = page.locator('.mygram-notifications-trigger');
+  await expect(bell).toBeVisible();
+  await bell.click();
+  await expect(page.locator('.mygram-notifications-panel')).toBeVisible();
+  await expect(page.locator('.mygram-notifications-empty')).toContainText('أنت على اطلاع');
+  expect(errors).toEqual([]);
+});
+
 test('authenticated profile page exposes a working profile editor', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/profile.html');
   await expect(page.locator('#profileForm')).toBeVisible();
