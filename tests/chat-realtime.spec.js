@@ -27,9 +27,20 @@ test('standalone chat subscribes to realtime updates for the active private conv
   await page.locator('#chatUsername').fill('someone');
   await page.locator('#newChatForm button').click();
   await expect(page.locator('#threadHead')).toContainText('Someone');
-  await expect.poll(() => page.evaluate(() => window.__channels.length)).toBe(1);
-  const subscription = await page.evaluate(() => window.__channels[0]);
+  await expect.poll(() => page.evaluate(() => window.__channels.length)).toBe(2);
+  const subscription = await page.evaluate(() => window.__channels.find(c => c.name === 'mygram-chat-chat-test-uuid'));
   expect(subscription.handlers[0].event).toBe('postgres_changes');
   expect(subscription.handlers[0].filter.table).toBe('chat_messages');
   expect(subscription.handlers[0].filter.filter).toBe('chat_id=eq.chat-test-uuid');
+});
+
+test('standalone chat exposes one-to-one audio and video call controls', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2**', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockSupabase })
+  );
+  await page.goto('/chat.html');
+  await expect(page.locator('#audioCallButton')).toBeVisible();
+  await expect(page.locator('#videoCallButton')).toBeVisible();
+  await expect(page.locator('#acceptCallButton')).toBeHidden();
+  await expect(page.locator('#endCallButton')).toBeHidden();
 });
