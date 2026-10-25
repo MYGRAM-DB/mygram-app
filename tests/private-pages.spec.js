@@ -2,6 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 const mockSupabase = `
 window.__mockCalls = [];
+window.__mockChannels = [];
 window.__mockTableData = {
   profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }],
   reels: [{ id: 'reel-test-uuid', user_id: 'other-user-uuid', video_url: 'https://example.test/reel.mp4', caption: 'A test reel', created_at: '2026-10-25T10:00:00.000Z' }],
@@ -39,6 +40,8 @@ window.supabase = {
         q.upsert = function(payload) { this._op = 'upsert'; window.__mockCalls.push({ table, op: 'upsert', payload }); return this; };
         return q;
       },
+      channel(name) { const channel = { name, handlers: [], on(event, filter, callback) { this.handlers.push({ event, filter }); return this; }, subscribe() { window.__mockChannels.push({ name, handlers: this.handlers }); return this; } }; return channel; },
+      removeChannel: async () => 'ok',
       storage: { from: () => ({
         upload: async () => ({ data: { path: 'mock' }, error: null }),
         getPublicUrl: () => ({ data: { publicUrl: 'https://example.test/mock.png' } })
@@ -84,6 +87,18 @@ test('authenticated services page exposes story, reel, live and messaging forms'
   await expect(page.locator('#liveForm')).toBeVisible();
   await expect(page.locator('#messageForm')).toBeVisible();
   expect(errors).toEqual([]);
+});
+
+test('Messenger subscribes to realtime incoming and outgoing direct messages', async ({ page }) => {
+  await openAuthenticatedPage(page, '/services.html');
+  await expect.poll(() => page.evaluate(() => window.__mockChannels.length)).toBe(1);
+  const channel = await page.evaluate(() => window.__mockChannels[0]);
+  expect(channel.name).toContain('mygram-direct-messages-test-user-uuid');
+  expect(channel.handlers).toHaveLength(2);
+  expect(channel.handlers.map(h => h.filter.table)).toEqual(['direct_messages', 'direct_messages']);
+  expect(channel.handlers.map(h => h.filter.filter)).toEqual([
+    'sender_id=eq.test-user-uuid', 'recipient_id=eq.test-user-uuid'
+  ]);
 });
 
 test('authenticated member can submit a post through the feed flow', async ({ page }) => {
