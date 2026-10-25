@@ -44,12 +44,30 @@
     }
     details.appendChild(actions);card.appendChild(details);return card;
   }
+  async function loadRecommendations() {
+    const box=$("recommendationsList");
+    if(!box)return;
+    box.replaceChildren();
+    const {data,error}=await client.rpc("recommend_mygram_profiles",{match_limit:12});
+    if(error){box.textContent="التوصيات غير متاحة حالياً. يمكنك ضبط البلد والاهتمامات من ملفك الشخصي.";return;}
+    if(!data?.length){box.textContent="ستظهر الاقتراحات عندما يشارك الأعضاء اهتماماتهم أو يفعّلون اقتراحات الموقع.";return;}
+    data.forEach(p=>{
+      const card=memberCard(p,"none");
+      const details=card.querySelector(".member-details");
+      const note=document.createElement("small");
+      note.className="muted recommendation-reason";
+      note.textContent=p.match_reason==="same_city"?"في مدينتك، بموافقة الطرفين":p.match_reason==="same_country"?"في بلدك، بموافقة الطرفين":(p.shared_interests?.length?("اهتمامات مشتركة: "+p.shared_interests.join("، ")):"اقتراح مناسب لك");
+      details.insertBefore(note,details.querySelector(".member-actions"));
+      box.appendChild(card);
+    });
+  }
   async function loadAllProfiles() {
     const {data,error}=await client.from("profiles").select("id,username,full_name,bio,avatar_url").neq("id",me.id).order("username").limit(200);
     if(error) throw error;
     profiles=data||[];
     await loadRequests();
     renderSearch();
+    await loadRecommendations();
   }
   async function loadRequests() {
     const {data,error}=await client.from("friend_requests").select("id,requester_id,receiver_id,status,created_at").or(`requester_id.eq.${me.id},receiver_id.eq.${me.id}`).order("created_at",{ascending:false}).limit(500);
