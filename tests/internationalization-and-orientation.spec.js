@@ -60,3 +60,15 @@ test('Spanish locale translates core navigation and uses left-to-right layout', 
   await picker.selectOption('hu');
   await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
 });
+
+test('known Arabic interface messages fall back to English rather than leaking Arabic into another locale', async ({ page }) => {
+  await page.goto('/login.html');
+  await page.evaluate(() => {
+    const p = document.createElement('p');
+    p.id = 'localeFallbackProbe';
+    p.textContent = 'تعذر تحميل التفاعلات:';
+    document.body.appendChild(p);
+  });
+  await page.locator('#mygramLanguage').selectOption('fr');
+  await expect(page.locator('#localeFallbackProbe')).toHaveText('Could not load reactions:');
+});
