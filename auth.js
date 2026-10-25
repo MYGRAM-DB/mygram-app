@@ -150,7 +150,7 @@
       finally{submitButton.disabled=false}
       return;
     }
-    if ((signup || recovery) && pass.length < 8) {
+    if ((mode === "signup" || recovery) && pass.length < 8) {
       setNotice(recovery ? "كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل." : "كلمة المرور يجب أن تكون 8 أحرف على الأقل.", "error");
       return;
     }
