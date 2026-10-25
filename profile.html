@@ -1,24 +1,141 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><link rel="icon" type="image/svg+xml" href="logo.svg"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#087cf0"><title>MYGRAM | الملف الشخصي</title><link rel="stylesheet" href="styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="config.js"></script><script defer src="country-data.js"></script><script defer src="language.js"></script><script defer src="auth-guard.js"></script><script defer src="profile.js"></script>
-<style>.profile-wrap{max-width:760px;margin:24px auto;padding:0 16px}.profile-card{padding:22px;margin-top:16px}.cover-preview{width:100%;max-height:210px;object-fit:cover;border-radius:14px;margin:10px 0}.avatar-preview{width:100px;height:100px;object-fit:cover;border-radius:50%;border:4px solid white;box-shadow:0 4px 18px #102a4d22}.profile-form label{display:block;font-weight:700;margin:14px 0 6px}.profile-form input,.profile-form textarea{width:100%;padding:12px;border:1px solid #dce5f0;border-radius:12px;font:inherit}.profile-form textarea{min-height:110px;resize:vertical}.profile-form select{width:100%;padding:12px;border:1px solid #dce5f0;border-radius:12px;background:white;font:inherit}.discovery-settings{margin-top:24px;padding:18px;border:1px solid #e3ebf6;border-radius:16px;background:#f8fbff}.discovery-settings h3{margin:0 0 6px}.discovery-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.discovery-consent{display:flex!important;flex-direction:row;align-items:flex-start;gap:10px!important;line-height:1.8}.discovery-consent input{width:auto!important;margin-top:6px}@media(max-width:520px){.discovery-grid{grid-template-columns:1fr}}.profile-form button{border:0;border-radius:11px;padding:11px 16px;cursor:pointer}.profile-form .primary-btn{background:#087cf0;color:white}.profile-form .secondary{background:#edf2f8;color:#334155}.profile-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.field-note{font-size:12px;color:#718096;margin-top:6px}</style>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#087cf0"><meta name="description" content="إدارة ملف MYGRAM والصورة الشخصية والاهتمامات.">
+  <link rel="icon" type="image/svg+xml" href="logo.svg"><title>MYGRAM | الملف الشخصي</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js"></script><script defer src="country-data.js"></script><script defer src="language.js"></script><script defer src="auth-guard.js"></script><script defer src="profile.js"></script><script defer src="profile-tabs.js"></script><script defer src="notifications.js"></script>
+  <style>
+    body.profile-page{min-height:100vh;background:radial-gradient(circle at 94% 2%,#deecff 0,transparent 27rem),#f4f7fc;color:#18283f}
+    .profile-topbar{padding:0 clamp(12px,4vw,34px)}
+    .profile-topbar .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:68px}
+    .profile-topnav{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+    .profile-topnav a{padding:8px 10px;border-radius:10px;text-decoration:none;color:#5e6e83;font-size:12px;font-weight:800}
+    .profile-topnav a:hover,.profile-topnav a[aria-current=page]{background:#eaf4ff;color:#087cf0}
+    .profile-wrap{width:min(920px,100%);margin:22px auto;padding:0 18px 56px}
+    .profile-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;overflow:hidden;padding:27px 30px;background:linear-gradient(120deg,#153b7c,#087cf0 65%,#7368ee);border-radius:23px;color:white;box-shadow:0 16px 34px #0b55a91f}
+    .profile-hero:after{content:"";position:absolute;inset-inline-end:-65px;top:-110px;width:250px;height:250px;border:1px solid #ffffff3b;border-radius:50%;box-shadow:0 0 0 25px #ffffff0b,0 0 0 52px #ffffff0b;pointer-events:none}
+    .profile-hero .eyebrow{color:#cde5ff;font-size:10px;font-weight:900;letter-spacing:1.4px}
+    .profile-hero h1{font-size:clamp(23px,3.5vw,31px);font-weight:950;margin:7px 0 4px}
+    .profile-hero p{margin:0;color:#e7f2ff;font-size:12px;line-height:1.8}
+    .profile-hero-symbol{z-index:1;display:grid;place-items:center;flex:0 0 72px;width:72px;height:72px;border-radius:22px;background:#ffffff18;border:1px solid #ffffff30}
+    .profile-hero-symbol img{width:53px;height:53px;object-fit:contain}
+    .profile-tabs-shell{margin-top:17px;padding:7px;border:1px solid #e1e9f4;border-radius:19px;background:#ffffffce;box-shadow:0 8px 24px #1d3a6108}
+    .profile-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    .profile-tab{position:relative;display:flex;align-items:center;gap:11px;min-width:0;min-height:67px;padding:11px 13px;border:1px solid transparent;border-radius:14px;background:transparent;color:#61738a;text-align:start;font:inherit;cursor:pointer;transition:background .15s,border-color .15s}
+    .profile-tab:hover{background:#f6faff}
+    .profile-tab[aria-selected=true]{border-color:#cde3ff;background:linear-gradient(135deg,#eaf4ff,#f8fbff);color:#153e74;box-shadow:0 4px 12px #087cf012}
+    .profile-tab[aria-selected=true]:after{content:"";position:absolute;bottom:0;inset-inline-start:14px;width:28px;height:3px;border-radius:3px 3px 0 0;background:#087cf0}
+    .profile-tab:focus-visible{outline:3px solid #087cf04a;outline-offset:2px}
+    .profile-tab-icon{flex:0 0 38px;width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#eef4fc;font-size:20px}
+    .profile-tab[data-profile-tab=basics] .profile-tab-icon{background:#eaf4ff;color:#087cf0}
+    .profile-tab[data-profile-tab=cover] .profile-tab-icon{background:#fff0f5;color:#da4989}
+    .profile-tab[data-profile-tab=discovery] .profile-tab-icon{background:#f0eaff;color:#7b54dd}
+    .profile-tab-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+    .profile-tab-copy strong{font-size:12px;line-height:1.35;font-weight:900}
+    .profile-tab-copy small{font-size:10px;color:#8997aa;line-height:1.4}
+    .profile-form{margin:0}
+    .profile-tab-panel{min-width:0;margin-top:14px;padding:clamp(17px,3vw,25px);border:1px solid #e4ebf5;border-radius:21px;background:white;box-shadow:0 10px 27px #193b6608;animation:profile-panel-in .2s ease both}
+    .profile-tab-panel[hidden]{display:none!important}
+    @keyframes profile-panel-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .profile-section-head{display:flex;align-items:center;gap:12px;padding-bottom:15px;margin-bottom:16px;border-bottom:1px solid #edf1f7}
+    .profile-section-icon{flex:0 0 43px;width:43px;height:43px;display:grid;place-items:center;border-radius:13px;background:#eaf4ff;color:#087cf0;font-size:21px}
+    .profile-section-head h2{margin:0;font-size:18px;font-weight:950;color:#1b2d46}
+    .profile-section-head p{margin:4px 0 0;font-size:11px;line-height:1.7;color:#8290a5}
+    .profile-cover-drop{display:grid;place-items:center;min-height:150px;padding:14px;border:1px dashed #b9d5f6;border-radius:17px;background:linear-gradient(130deg,#f5faff,#f9f7ff);text-align:center}
+    .profile-cover-drop>span{font-size:28px;margin-bottom:7px}
+    .cover-preview{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:14px;margin:12px 0 16px;background:#edf3fa}
+    .avatar-row{display:flex;align-items:center;gap:13px;margin-bottom:15px;padding:13px;border:1px solid #e7edf5;border-radius:15px;background:#fafcff}
+    .avatar-preview{width:72px;height:72px;object-fit:cover;border-radius:50%;border:3px solid white;box-shadow:0 3px 12px #102a4d1d;background:#eef4fc}
+    .avatar-hint{display:flex;flex-direction:column;gap:4px;min-width:0}.avatar-hint strong{font-size:12px;font-weight:900}.avatar-hint small{font-size:10px;color:#8290a5;line-height:1.6}
+    .profile-form label{display:block;font-size:12px;font-weight:850;color:#53657b;margin:14px 0 6px}
+    .profile-form input:not([type=checkbox]):not([type=file]),.profile-form textarea,.profile-form select{box-sizing:border-box;width:100%;min-height:44px;padding:11px 13px;border:1px solid #dce6f2;border-radius:12px;background:#fbfdff;color:#263953;font:13px inherit;outline:none;transition:border-color .15s,box-shadow .15s}
+    .profile-form textarea{min-height:120px;resize:vertical;line-height:1.8}
+    .profile-form input:focus,.profile-form textarea:focus,.profile-form select:focus{border-color:#7abaff;box-shadow:0 0 0 4px #087cf012;background:white}
+    .profile-form input[type=file]{max-width:100%;width:100%;min-height:42px;padding:9px;border:1px solid #e1e9f3;border-radius:12px;background:#fff;font:12px inherit}
+    .profile-form input[type=checkbox]{width:17px;height:17px;accent-color:#087cf0;margin-top:4px}
+    .profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 15px}
+    .profile-grid .full-width{grid-column:1/-1}
+    .field-note{font-size:11px;color:#8290a5;margin-top:6px;line-height:1.7}
+    .discovery-info{margin:0 0 18px;padding:12px 14px;border:1px solid #e2edfc;border-radius:13px;background:#f6faff;color:#637894;font-size:11px;line-height:1.9}
+    .discovery-consent{display:flex!important;align-items:flex-start;gap:9px!important;padding:12px;margin-top:18px;border:1px solid #e3edf9;border-radius:13px;background:#f8fbff;line-height:1.8}
+    .discovery-consent input{flex:0 0 auto}
+    .profile-actions{position:sticky;bottom:12px;z-index:10;display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:14px;padding:12px;border:1px solid #e2eaf5;border-radius:17px;background:#ffffffed;box-shadow:0 8px 27px #18395c14;backdrop-filter:blur(16px)}
+    .profile-actions button,.profile-actions a{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:9px 14px;border:0;border-radius:11px;text-decoration:none;font:850 11px inherit;cursor:pointer}
+    .profile-actions .primary-btn{background:linear-gradient(120deg,#168bff,#0068db);color:#fff;box-shadow:0 5px 13px #087cf022}
+    .profile-actions .secondary{background:#edf3fa;color:#445871}
+    .profile-actions .logout-item{margin-inline-start:auto;background:#fff0ef;color:#c53c4a}
+    .profile-form button:disabled{opacity:.55;cursor:wait}
+    .profile-footer{padding:14px;color:#8c99ac;font-size:10px;text-align:center}
+    @media(max-width:760px){.profile-topbar .topbar-inner{flex-wrap:wrap;padding-top:8px;padding-bottom:8px}.profile-topnav{order:3;width:100%;overflow-x:auto;flex-wrap:nowrap}.profile-topnav a{font-size:11px;white-space:nowrap;padding:7px 9px}.profile-wrap{padding:0 11px 42px;margin-top:14px}.profile-hero{padding:21px;border-radius:19px}.profile-hero h1{font-size:24px}.profile-hero p{font-size:11px}.profile-hero-symbol{flex-basis:55px;width:55px;height:55px;border-radius:17px}.profile-hero-symbol img{width:42px;height:42px}.profile-tabs-shell{padding:5px;border-radius:15px}.profile-tabs{gap:5px}.profile-tab{gap:7px;padding:8px;min-height:60px}.profile-tab-icon{flex-basis:32px;width:32px;height:32px;border-radius:10px;font-size:17px}.profile-tab-copy strong{font-size:10px}.profile-tab-copy small{font-size:9px}.profile-tab-panel{padding:15px;border-radius:17px}.profile-section-head h2{font-size:16px}.profile-grid{grid-template-columns:minmax(0,1fr)}.profile-grid .full-width{grid-column:auto}.profile-actions{bottom:7px;padding:8px;gap:6px}.profile-actions button,.profile-actions a{flex:1;min-width:0;padding:8px;font-size:10px}.profile-actions .logout-item{margin-inline-start:0}}
+    @media(prefers-reduced-motion:reduce){.profile-tab-panel{animation:none}}
+  </style>
 </head>
-<body><header class="topbar" style="padding:0 20px"><a class="brand" href="home.html"><span class="brand-symbol"><img src="logo.svg" alt="MYGRAM" class="brand-icon"></span><span>MY<span class="brand-blue">GRAM</span></span></a><nav><a href="home.html">الرئيسية</a> · <a href="people.html">الأصدقاء</a> · <a href="services.html">الخدمات</a></nav></header>
-<main class="profile-wrap"><section class="welcome-banner"><div><span class="eyebrow">YOUR PROFILE</span><h1>ملفك الشخصي</h1><p>عدّل اسمك واسم المستخدم والنبذة والصور. التغييرات تُحفظ في حسابك.</p></div><div class="banner-mark"><img src="logo.svg" alt="MYGRAM" class="brand-icon-large"></div></section>
-<section class="card profile-card"><h2>صورة الغلاف</h2><img id="coverPreview" class="cover-preview" alt="معاينة صورة الغلاف" hidden><label for="coverFile">اختيار صورة غلاف</label><input id="coverFile" type="file" accept="image/*"><button id="removeCoverButton" class="secondary" type="button" hidden>إزالة الغلاف</button></section>
-<section class="card profile-card"><h2>معلومات الحساب</h2><form id="profileForm" class="profile-form"><div><img id="avatarPreview" class="avatar-preview" alt="معاينة الصورة الشخصية" hidden></div><label for="avatarFile">الصورة الشخصية</label><input id="avatarFile" type="file" accept="image/*"><button id="removeAvatarButton" class="secondary" type="button" hidden>إزالة الصورة</button>
-<label for="fullName">الاسم الظاهر</label><input id="fullName" maxlength="80" autocomplete="name" required>
-<label for="username">اسم المستخدم</label><input id="username" maxlength="30" pattern="[A-Za-z0-9_]{3,30}" autocomplete="username" required><p id="usernameNotice" class="field-note" aria-live="polite"></p>
-<label for="bio">نبذة عنك</label><textarea id="bio" maxlength="500" placeholder="اكتب نبذة قصيرة عنك…"></textarea>
-<div class="discovery-settings">
-<h3>🌍 اللغة والموقع والاهتمامات</h3>
-<p class="field-note">هذه المعلومات اختيارية. استخدمها لتخصيص الاقتراحات، ويمكنك إيقاف الظهور في الاكتشاف بأي وقت.</p>
-<label for="preferredLanguage">لغة الواجهة المفضلة</label><select id="preferredLanguage"><option value="ar">العربية</option><option value="en">English</option><option value="fr">Français</option></select>
-<div class="discovery-grid">
-<div><label for="countryCode">بلد الإقامة</label><select id="countryCode"><option value="">اختر البلد</option></select></div>
-<div><label for="nationalityCode">الجنسية</label><select id="nationalityCode"><option value="">اختر الجنسية</option></select></div>
-<div><label for="region">المنطقة / الولاية</label><input id="region" maxlength="100" autocomplete="address-level1"></div>
-<div><label for="city">المدينة</label><input id="city" maxlength="100" autocomplete="address-level2"></div>
-</div>
-<label for="interests">اهتماماتك (افصل بينها بفواصل)</label><input id="interests" maxlength="600" placeholder="التقنية، الرياضة، الموسيقى، السفر">
-<label class="discovery-consent"><input id="discoveryEnabled" type="checkbox"> اسمح باستخدام البلد والمدينة والاهتمامات لاقتراح أصدقاء ومحتوى مناسب. لن نطلب موقع GPS الدقيق.</label>
-</div><div class="profile-actions"><button id="saveProfileButton" class="primary-btn" type="submit">حفظ التغييرات</button><a class="secondary" style="text-decoration:none" href="home.html">العودة للرئيسية</a><button id="logoutButton" class="secondary" type="button">تسجيل الخروج</button></div></form></section></main><div id="toast" class="toast" role="status" aria-live="polite"></div></body></html>
+<body class="profile-page">
+  <header class="topbar profile-topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="home.html"><span class="brand-symbol"><img src="logo.svg" alt="" class="brand-icon"></span><span>MY<span class="brand-blue">GRAM</span></span></a>
+      <nav class="profile-topnav" aria-label="التنقل الرئيسي"><a href="home.html">الرئيسية</a><a href="people.html">اكتشف الأصدقاء</a><a href="services.html">الخدمات</a><a href="communities.html">المجتمعات</a><a href="chat.html">MYGRAM Chat</a></nav>
+    </div>
+  </header>
+  <main class="profile-wrap">
+    <section class="profile-hero"><div><span class="eyebrow">YOUR PROFILE</span><h1>ملفك الشخصي</h1><p>رتّب معلوماتك وصورك واهتماماتك من أقسام مستقلة. كل شيء تحفظه يبقى مرتبطاً بحسابك.</p></div><div class="profile-hero-symbol" aria-hidden="true"><img src="logo.svg" alt=""></div></section>
+
+    <div class="profile-tabs-shell">
+      <div class="profile-tabs" role="tablist" aria-label="أقسام الملف الشخصي">
+        <button class="profile-tab" id="profileTabBasics" type="button" role="tab" data-profile-tab="basics" aria-controls="profilePanelBasics" aria-selected="true" tabindex="0"><span class="profile-tab-icon" aria-hidden="true">👤</span><span class="profile-tab-copy"><strong>معلوماتك</strong><small>الاسم والنبذة</small></span></button>
+        <button class="profile-tab" id="profileTabCover" type="button" role="tab" data-profile-tab="cover" aria-controls="profilePanelCover" aria-selected="false" tabindex="-1"><span class="profile-tab-icon" aria-hidden="true">🖼️</span><span class="profile-tab-copy"><strong>الصور</strong><small>الصورة والغلاف</small></span></button>
+        <button class="profile-tab" id="profileTabDiscovery" type="button" role="tab" data-profile-tab="discovery" aria-controls="profilePanelDiscovery" aria-selected="false" tabindex="-1"><span class="profile-tab-icon" aria-hidden="true">🌍</span><span class="profile-tab-copy"><strong>اللغة والاهتمامات</strong><small>التخصيص والاكتشاف</small></span></button>
+      </div>
+    </div>
+
+    <form id="profileForm" class="profile-form">
+      <section class="profile-tab-panel" id="profilePanelBasics" data-profile-panel="basics" role="tabpanel" aria-labelledby="profileTabBasics" tabindex="0">
+        <header class="profile-section-head"><span class="profile-section-icon" aria-hidden="true">👤</span><div><h2>معلومات الحساب</h2><p>اختر اسماً واضحاً واسم مستخدم فريداً يساعد الأصدقاء في العثور عليك.</p></div></header>
+        <div class="avatar-row"><img id="avatarPreview" class="avatar-preview" alt="معاينة الصورة الشخصية" hidden><div class="avatar-hint"><strong>صورتك الشخصية</strong><small>تظهر بجانب اسمك ومنشوراتك. يمكن تغييرها من تبويب الصور.</small></div></div>
+        <label for="fullName">الاسم الظاهر</label><input id="fullName" maxlength="80" autocomplete="name" required>
+        <label for="username">اسم المستخدم</label><input id="username" maxlength="30" pattern="[A-Za-z0-9_]{3,30}" autocomplete="username" required><p id="usernameNotice" class="field-note" aria-live="polite"></p>
+        <label for="bio">نبذة عنك</label><textarea id="bio" maxlength="500" placeholder="اكتب نبذة قصيرة عنك…"></textarea><p class="field-note">حتى 500 حرف. شارك ما تحب أن يعرفه الآخرون عنك فقط.</p>
+      </section>
+
+      <section class="profile-tab-panel" id="profilePanelCover" data-profile-panel="cover" role="tabpanel" aria-labelledby="profileTabCover" tabindex="0" hidden>
+        <header class="profile-section-head"><span class="profile-section-icon" aria-hidden="true">🖼️</span><div><h2>صور الملف الشخصي</h2><p>صورة صغيرة للتعريف بك وغلاف أوسع يمنح ملفك طابعك الخاص.</p></div></header>
+        <div class="profile-grid">
+          <div><label for="avatarFile">تغيير الصورة الشخصية</label><input id="avatarFile" type="file" accept="image/*"><p class="field-note">صورة حتى 5 ميغابايت.</p><button id="removeAvatarButton" class="secondary" type="button" hidden>إزالة الصورة الشخصية</button></div>
+          <div><label for="coverFile">اختيار صورة الغلاف</label><input id="coverFile" type="file" accept="image/*"><p class="field-note">صورة حتى 10 ميغابايت.</p><button id="removeCoverButton" class="secondary" type="button" hidden>إزالة الغلاف</button></div>
+        </div>
+        <div class="profile-cover-drop"><span aria-hidden="true">🌄</span><strong>معاينة الغلاف</strong><small class="field-note">اختر صورة لعرض معاينتها هنا قبل حفظ التغييرات.</small></div>
+        <img id="coverPreview" class="cover-preview" alt="معاينة صورة الغلاف" hidden>
+      </section>
+
+      <section class="profile-tab-panel" id="profilePanelDiscovery" data-profile-panel="discovery" role="tabpanel" aria-labelledby="profileTabDiscovery" tabindex="0" hidden>
+        <header class="profile-section-head"><span class="profile-section-icon" aria-hidden="true">🌍</span><div><h2>اللغة والموقع والاهتمامات</h2><p>خصص MYGRAM حسب تفضيلاتك، واستخدم الموقع التقريبي فقط عندما تختار السماح بذلك.</p></div></header>
+        <p class="discovery-info">هذه المعلومات اختيارية. تساعدنا على اقتراح أصدقاء ومحتوى أقرب لاهتماماتك. لن نطلب موقع GPS الدقيق، ويمكنك إيقاف استخدام هذه المعلومات للاكتشاف في أي وقت.</p>
+        <label for="preferredLanguage">لغة الواجهة المفضلة</label>
+        <select id="preferredLanguage">
+          <option value="ar">العربية</option><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option><option value="pt">Português</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="tr">Türkçe</option><option value="zh">中文</option><option value="ja">日本語</option><option value="ru">Русский</option><option value="hi">हिन्दी</option><option value="id">Bahasa Indonesia</option><option value="nl">Nederlands</option><option value="ko">한국어</option><option value="vi">Tiếng Việt</option><option value="pl">Polski</option><option value="bn">বাংলা</option><option value="ur">اردو</option><option value="th">ไทย</option><option value="sw">Kiswahili</option><option value="el">Ελληνικά</option><option value="sv">Svenska</option><option value="no">Norsk</option><option value="da">Dansk</option><option value="fi">Suomi</option><option value="fil">Filipino</option><option value="ms">Bahasa Melayu</option><option value="uk">Українська</option><option value="cs">Čeština</option><option value="ro">Română</option><option value="fa">فارسی</option><option value="he">עברית</option><option value="bg">Български</option><option value="hr">Hrvatski</option><option value="sr">Српски</option><option value="sk">Slovenčina</option><option value="sl">Slovenščina</option><option value="lt">Lietuvių</option><option value="lv">Latviešu</option><option value="et">Eesti</option><option value="hu">Magyar</option><option value="ca">Català</option><option value="eu">Euskara</option><option value="gl">Galego</option><option value="is">Íslenska</option><option value="mk">Македонски</option><option value="sq">Shqip</option><option value="bs">Bosanski</option><option value="ka">ქართული</option><option value="hy">Հայերեն</option><option value="az">Azərbaycanca</option><option value="ga">Gaeilge</option><option value="cy">Cymraeg</option><option value="ne">नेपाली</option><option value="ta">தமிழ்</option><option value="te">తెలుగు</option><option value="mr">मराठी</option><option value="am">አማርኛ</option><option value="si">සිංහල</option>
+        </select>
+        <div class="profile-grid">
+          <div><label for="countryCode">بلد الإقامة</label><select id="countryCode"><option value="">اختر البلد</option></select></div>
+          <div><label for="nationalityCode">الجنسية</label><select id="nationalityCode"><option value="">اختر الجنسية</option></select></div>
+          <div><label for="region">المنطقة / الولاية</label><input id="region" maxlength="100" autocomplete="address-level1" placeholder="المنطقة أو الولاية"></div>
+          <div><label for="city">المدينة</label><input id="city" maxlength="100" autocomplete="address-level2" placeholder="اسم المدينة"></div>
+          <div class="full-width"><label for="interests">اهتماماتك (افصل بينها بفواصل)</label><input id="interests" maxlength="600" placeholder="التقنية، الرياضة، الموسيقى، السفر"><p class="field-note">اختر اهتمامات عامة لتحسين الاقتراحات، ولا تضع معلومات حساسة.</p></div>
+        </div>
+        <label class="discovery-consent"><input id="discoveryEnabled" type="checkbox"><span>اسمح باستخدام البلد والمدينة والاهتمامات لاقتراح أصدقاء ومحتوى مناسب. لن نطلب موقع GPS الدقيق.</span></label>
+      </section>
+
+      <div class="profile-actions">
+        <button id="saveProfileButton" class="primary-btn" type="submit">💾 حفظ التغييرات</button>
+        <a class="secondary" href="home.html">⌂ الرئيسية</a>
+        <button id="logoutButton" class="logout-item" type="button">↪ تسجيل الخروج</button>
+      </div>
+    </form>
+    <footer class="profile-footer">© <span id="profileYear">2026</span> MYGRAM · ملفك، على طريقتك</footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>document.getElementById("profileYear").textContent=new Date().getFullYear();</script>
+</body>
+</html>
