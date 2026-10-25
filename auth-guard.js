@@ -9,6 +9,10 @@
   }
   const client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
   client.auth.getSession().then(({ data, error }) => {
-    if (error || !data?.session) location.replace(loginUrl);
+    if (error || !data?.session) {
+      location.replace(loginUrl);
+      return;
+    }
+    document.documentElement.classList.remove("auth-pending");
   }).catch(() => location.replace(loginUrl));
 })();
