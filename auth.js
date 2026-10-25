@@ -132,14 +132,14 @@
       try{
         if(mode==="phone"){
           const phone=e164Phone();
-          if(!/^\\+[1-9]\\d{7,14}$/.test(phone)) throw new Error("رقم الهاتف غير مكتمل. تحقق من رمز الدولة والرقم.");
+          if(!/^\+[1-9]\d{7,14}$/.test(phone)) throw new Error("رقم الهاتف غير مكتمل. تحقق من رمز الدولة والرقم.");
           pendingPhone=phone;
           const {error}=await client.auth.signInWithOtp({phone,options:{shouldCreateUser:true,data:{full_name:fullName.value.trim()}}});
           if(error)throw error;
           phoneOtpSent=true;setMode("phone-verify");setNotice("إذا كان الرقم صالحاً والإرسال متاحاً، سيصلك رمز تحقق برسالة SMS.","success");
         }else{
           const token=otpCode.value.trim();
-          if(!/^\\d{6}$/.test(token))throw new Error("أدخل رمز التحقق المكوّن من 6 أرقام.");
+          if(!/^\d{6}$/.test(token))throw new Error("أدخل رمز التحقق المكوّن من 6 أرقام.");
           const {data,error}=await client.auth.verifyOtp({phone:pendingPhone,token,type:"sms"});
           if(error)throw error;
           if(!data.session)throw new Error("تم التحقق، لكن لم تُنشأ جلسة. حاول تسجيل الدخول مجدداً.");
