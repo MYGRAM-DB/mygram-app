@@ -13,7 +13,7 @@ MYGRAM is a static HTML/CSS/JavaScript social platform deployed with GitHub Page
 - Direct Messenger with text, image/video/audio attachments, microphone voice recording, and Supabase Realtime subscriptions.
 - A separate MYGRAM Chat for private/group conversations, media and recorded voice notes, conversation-scoped Realtime updates, plus slower polling as a fallback.
 - Community creation, membership, and community posts, protected by row-level security.
-- 60 language choices with 47 translated core interface strings per locale; feature-specific labels still need broader localization review.
+- 60 language choices. Arabic and English have core dictionaries and French has a smaller native dictionary; other locales currently fall back to English to avoid Arabic fragments. Full per-screen translations and native review are still incomplete.
 - Database migrations and RLS policies for social content, private messages, reels, and communities.
 
 ## Deploy and configure
@@ -32,8 +32,9 @@ The following still require account/provider setup or real-user end-to-end verif
 
 - Phone OTP, because Supabase Phone Auth and an SMS provider must be enabled/configured in the project dashboard.
 - Production email deliverability, confirmation links, and password-recovery email delivery.
-- A real external live-streaming provider. The current live-session feature creates scheduling/session records; it is not a production live-video broadcast.
-- Full human review of translations across every page, and authoritative validation of all 205 calling codes against an up-to-date numbering-plan source.
+- LiveKit Cloud credentials (`LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`) and real-device tests before live sessions can broadcast actual audio/video. The authenticated `livekit-token` Edge Function is deployed, but provider secrets are account-specific.
+- Cloudflare TURN credentials (`CLOUDFLARE_TURN_KEY_ID`, `CLOUDFLARE_TURN_KEY`) for more reliable one-to-one WebRTC calls. The `turn-credentials` Edge Function is deployed; without these secrets calls fall back to STUN-only. Cloudflare currently lists a combined 1,000 GB/month Realtime free tier, then $0.05/GB egress.
+- Full human review of translations across every page. The 205 dialing-code entries have been cross-checked against Google libphonenumber territory metadata and the ITU-T E.164 numbering-plan standard; national prefixes remain territory-specific.
 - Production abuse controls such as blocking/reporting, moderation workflows, and a notification center.
 
 ## Troubleshooting
