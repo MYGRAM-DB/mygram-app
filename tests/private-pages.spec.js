@@ -23,6 +23,7 @@ window.supabase = {
         signOut: async () => ({ error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } })
       },
+      rpc: async () => ({ data: [], error: null }),
       from: (table) => {
         const q = Object.create(query); q._table = table;
         q._filters = [];
@@ -164,5 +165,13 @@ test('authenticated member can send a direct message to another member', async (
       call.payload.sender_id === 'test-user-uuid' && call.payload.recipient_id === 'other-user-uuid' &&
       call.payload.body === 'Direct message smoke test')
   )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('messenger exposes voice recording and media attachment controls', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await expect(page.locator('#messageAttachment')).toHaveAttribute('accept', 'image/*,video/*,audio/*');
+  await expect(page.locator('#recordVoiceButton')).toBeVisible();
+  await expect(page.locator('#voiceRecordStatus')).toHaveAttribute('role', 'status');
   expect(errors).toEqual([]);
 });
