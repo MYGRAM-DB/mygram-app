@@ -78,3 +78,15 @@ test('known Arabic interface messages fall back to English rather than leaking A
   await page.locator('#mygramLanguage').selectOption('ar');
   await expect(page.locator('#localeFallbackProbe')).toHaveText('إرسال');
 });
+
+test('language selection translates placeholders and localizes country names without losing the selected country', async ({ page }) => {
+  await page.goto('/login.html');
+  await page.locator('#phoneCountry').selectOption('NL');
+  await page.locator('#mygramLanguage').selectOption('en');
+  await expect(page.locator('#password')).toHaveAttribute('placeholder', 'Enter your password');
+  await expect(page.locator('#phoneCountry')).toHaveValue('NL');
+  await expect(page.locator('#phoneCountry option[value="NL"]')).toContainText('Netherlands');
+  await page.locator('#mygramLanguage').selectOption('ar');
+  await expect(page.locator('#password')).toHaveAttribute('placeholder', 'أدخل كلمة المرور');
+  await expect(page.locator('#phoneCountry option[value="NL"]')).toContainText('هولندا');
+});

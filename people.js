@@ -7,6 +7,7 @@
   const escapeText = v => String(v ?? "");
   let toastTimer;
   function toast(message, kind="") {
+    message=window.MYGRAM_TRANSLATE_TEXT?window.MYGRAM_TRANSLATE_TEXT(message):message;
     const el=$("toast"); el.textContent=message; el.className="toast show"+(kind?" "+kind:"");
     clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.className="toast",3500);
   }

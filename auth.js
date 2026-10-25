@@ -27,7 +27,7 @@
   document.getElementById("year").textContent = new Date().getFullYear();
 
   function setNotice(message, kind = "") {
-    notice.textContent = message;
+    notice.textContent = window.MYGRAM_TRANSLATE_TEXT ? window.MYGRAM_TRANSLATE_TEXT(message) : message;
     notice.className = "notice" + (kind ? " " + kind : "");
   }
   function setMode(nextMode) {
@@ -61,6 +61,7 @@
     password.minLength = signup || recovery ? 8 : 1;
     submitButton.textContent = recovery ? "حفظ كلمة المرور الجديدة" : phoneVerify ? "تأكيد الرمز" : phone ? (phoneOtpSent ? "إعادة إرسال الرمز" : "إرسال رمز SMS") : signup ? "إنشاء الحساب" : "تسجيل الدخول";
     setNotice("");
+    window.MYGRAM_APPLY_LANGUAGE?.();
   }
   // HIBP Pwned Passwords range API: only the first 5 SHA-1 hex characters leave the browser.
   async function checkCompromisedPassword(value) {
