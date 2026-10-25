@@ -9,16 +9,17 @@ test('dedicated login page exposes email and password authentication', async ({ 
   await expect(page.locator('#loginTab')).toBeVisible();
 });
 
-test('login page switches between login and signup with name field hidden by default', async ({ page }) => {
+test('login page defaults to signup and switches cleanly to existing-account login', async ({ page }) => {
   await page.goto('/login.html');
-  await expect(page.locator('#nameLabel')).toBeHidden();
-  await page.locator('#signupTab').click();
   await expect(page.locator('#nameLabel')).toBeVisible();
   await expect(page.locator('#submitButton')).toHaveText('إنشاء الحساب');
   await expect(page.locator('#password')).toHaveAttribute('autocomplete', 'new-password');
   await page.locator('#loginTab').click();
   await expect(page.locator('#nameLabel')).toBeHidden();
   await expect(page.locator('#submitButton')).toHaveText('تسجيل الدخول');
+  await expect(page.locator('#password')).toHaveAttribute('autocomplete', 'current-password');
+  await page.locator('#signupTab').click();
+  await expect(page.locator('#nameLabel')).toBeVisible();
 });
 
 test('root route opens the dedicated login page', async ({ page }) => {

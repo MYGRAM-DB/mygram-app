@@ -92,11 +92,11 @@ test('language selection translates placeholders and localizes country names wit
   await expect(page.locator('#phoneCountry option[value="NL"]')).toContainText('هولندا');
 });
 
-test('all 60 language options avoid Arabic fragments in the password field', async ({ page }) => {
+test('non-Arabic-script locales avoid Arabic-script fragments in the password field', async ({ page }) => {
   await page.goto('/login.html');
   const codes = await page.locator('#mygramLanguage option').evaluateAll(options => options.map(option => option.value));
   expect(codes).toHaveLength(60);
-  for (const code of codes.filter(code => code !== 'ar')) {
+  for (const code of codes.filter(code => !['ar', 'ur', 'fa'].includes(code))) {
     await page.locator('#mygramLanguage').selectOption(code);
     const placeholder = await page.locator('#password').getAttribute('placeholder');
     expect(placeholder, 'password placeholder for ' + code).not.toMatch(/[\u0600-\u06FF]/);

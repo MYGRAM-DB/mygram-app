@@ -22,7 +22,7 @@
   const submitButton = document.getElementById("submitButton");
   const resetPasswordButton = document.getElementById("resetPasswordButton");
   const notice = document.getElementById("authNotice");
-  let mode = "login";
+  let mode = (() => { try { return localStorage.getItem("mygram-account-known") === "1" ? "login" : "signup"; } catch { return "signup"; } })();
   let recoverySessionReady = false;
   document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -168,6 +168,7 @@
           const {data,error}=await client.auth.verifyOtp({phone:pendingPhone,token,type:"sms"});
           if(error)throw error;
           if(!data.session)throw new Error("تم التحقق، لكن لم تُنشأ جلسة. حاول تسجيل الدخول مجدداً.");
+          try { localStorage.setItem("mygram-account-known", "1"); } catch {}
           setNotice("تم التحقق من الهاتف بنجاح. جارٍ فتح MYGRAM...","success");
           window.location.replace(config.homeUrl);
         }
@@ -206,6 +207,7 @@
           options: { data: { full_name: name }, emailRedirectTo: new URL(config.homeUrl, location.href).href }
         });
         if (error) throw error;
+        try { localStorage.setItem("mygram-account-known", "1"); } catch {}
         if (data.session) {
           setNotice("تم إنشاء الحساب بنجاح. جارٍ فتح MYGRAM...", "success");
           setTimeout(() => window.location.replace(config.homeUrl), 700);
@@ -216,6 +218,7 @@
       } else {
         const { error } = await client.auth.signInWithPassword({ email: normalizedEmail, password: pass });
         if (error) throw error;
+        try { localStorage.setItem("mygram-account-known", "1"); } catch {}
         window.location.replace(config.homeUrl);
       }
     } catch (error) {
@@ -227,5 +230,6 @@
       if (mode !== "recovery") submitButton.textContent = mode === "signup" ? "إنشاء الحساب" : "تسجيل الدخول";
     }
   });
+  setMode(new URLSearchParams(location.search).get("reset") === "1" ? "login" : "signup");
   ensureSessionRedirect();
 })();
