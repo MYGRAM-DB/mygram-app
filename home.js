@@ -189,6 +189,7 @@
           result = await client.from("post_reactions").insert({ post_id: post.id, user_id: user.id, reaction: button.dataset.reaction });
         }
         if (result.error) throw result.error;
+        closeReactionPicker();
         await refreshLikes();
       } catch (e) { toast("تعذر حفظ التفاعل: " + e.message, "error"); }
       finally { button.disabled = false; }
