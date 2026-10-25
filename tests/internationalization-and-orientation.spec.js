@@ -81,6 +81,7 @@ test('known Arabic interface messages fall back to English rather than leaking A
 
 test('language selection translates placeholders and localizes country names without losing the selected country', async ({ page }) => {
   await page.goto('/login.html');
+  await page.locator('#phoneTab').click();
   await page.locator('#phoneCountry').selectOption('NL');
   await page.locator('#mygramLanguage').selectOption('en');
   await expect(page.locator('#password')).toHaveAttribute('placeholder', 'Enter your password');
