@@ -4,13 +4,18 @@ test('language picker is available on login and supports the currently implement
   await page.goto('/login.html');
   const picker = page.locator('#mygramLanguage');
   await expect(picker).toBeVisible();
-  await expect(picker.locator('option')).toHaveCount(51);
+  await expect(picker.locator('option')).toHaveCount(60);
   await picker.selectOption('en');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
   await picker.selectOption('ar');
   await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await picker.selectOption('si');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'si');
+  await expect(page.locator('#formTitle')).not.toHaveText('Welcome back 👋');
+  await picker.selectOption('hu');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
 });
 
 test('login remains usable in portrait and landscape mobile orientations', async ({ page }) => {
