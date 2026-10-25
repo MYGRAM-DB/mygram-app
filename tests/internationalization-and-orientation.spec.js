@@ -117,7 +117,7 @@ test('additional core locales translate the login action without English fallbac
     eu: 'Hasi saioa',
     gl: 'Iniciar sesión',
     is: 'Skrá inn',
-    mk: 'Најави се',
+    mk: 'Најава',
     sq: 'Hyr',
     bs: 'Prijava',
     ka: 'შესვლა',
