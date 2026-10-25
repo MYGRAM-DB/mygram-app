@@ -33,7 +33,7 @@ window.supabase = {
           window.__mockFunctionInvocations.push({ name, body });
           const translations = Object.fromEntries((body.items || []).map(item => [
             item.key,
-            window.__translationTestMode ? 'AI:' + item.text : item.text
+            window.__translationTestMode && body.targetLocale === 'es' ? 'AI:' + item.text : item.text
           ]));
           return { data: { translations, cached: false }, error: null };
         }
@@ -279,7 +279,7 @@ test('signed-in language fallback invokes translate-text and leaves user content
     const ui = document.createElement('p');
     ui.id = 'translationFallbackFixture';
     ui.textContent = 'Untranslated MYGRAM test label';
-    document.querySelector('main').appendChild(ui);
+    document.querySelector('main').prepend(ui);
     const userContent = document.createElement('p');
     userContent.id = 'translationUserFixture';
     userContent.className = 'post-body';
