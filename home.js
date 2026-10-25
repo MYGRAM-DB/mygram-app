@@ -15,6 +15,10 @@
   let toastTimer;
   let selectedMedia = null;
 
+  const reactionStyle = document.createElement("style");
+  reactionStyle.textContent = `.post-reaction-picker[hidden]{display:none!important}.post-reaction-picker{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin:8px 0;padding:8px 10px;background:#fff;border:1px solid #e8eef6;border-radius:18px;box-shadow:0 8px 24px #163d6b18;transform-origin:left center;animation:mygram-reactions-in .16s ease-out}.post-reaction-picker button{min-width:38px;transition:transform .15s}.post-reaction-picker button:hover,.post-reaction-picker button:focus-visible{transform:translateY(-3px) scale(1.08)}.reaction-trigger.is-liked{color:#087cf0;background:#eaf4ff}.reaction-trigger{touch-action:manipulation;user-select:none;-webkit-user-select:none}@keyframes mygram-reactions-in{from{opacity:0;transform:translateY(5px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}@media(prefers-reduced-motion:reduce){.post-reaction-picker{animation:none}}`;
+  document.head.appendChild(reactionStyle);
+
   $("year").textContent = new Date().getFullYear();
 
   function toast(message, kind = "") {
@@ -94,7 +98,8 @@
     foot.appendChild(badge);
     const actions = document.createElement("div");
     actions.className = "post-actions";
-    actions.innerHTML = `<div class="post-reaction-picker" role="group" aria-label="التفاعلات">
+    actions.innerHTML = `<button type="button" class="button ghost small reaction-trigger" data-reaction-trigger aria-label="اضغط مطولاً لعرض التفاعلات" aria-expanded="false">👍 <span>أعجبني</span> <b data-primary-reaction-count>0</b></button>
+      <div class="post-reaction-picker" role="group" aria-label="التفاعلات" hidden>
       <button type="button" class="button ghost small" data-reaction="like" aria-label="إعجاب 👍" aria-pressed="false">👍 <b data-reaction-count="like">0</b></button>
       <button type="button" class="button ghost small" data-reaction="love" aria-label="حب ❤️" aria-pressed="false">❤️ <b data-reaction-count="love">0</b></button>
       <button type="button" class="button ghost small" data-reaction="haha" aria-label="ضحك 😂" aria-pressed="false">😂 <b data-reaction-count="haha">0</b></button>
@@ -116,6 +121,38 @@
     card.append(head, body, foot, actions, comments);
 
     const reactionButtons = [...actions.querySelectorAll("[data-reaction]")];
+    const reactionPicker = actions.querySelector(".post-reaction-picker");
+    const reactionTrigger = actions.querySelector("[data-reaction-trigger]");
+    let longPressTimer = null;
+    let longPressFired = false;
+    const openReactionPicker = () => {
+      reactionPicker.hidden = false;
+      reactionTrigger.setAttribute("aria-expanded", "true");
+      reactionPicker.classList.add("reaction-picker-open");
+    };
+    const closeReactionPicker = () => {
+      reactionPicker.hidden = true;
+      reactionTrigger.setAttribute("aria-expanded", "false");
+      reactionPicker.classList.remove("reaction-picker-open");
+    };
+    reactionTrigger.addEventListener("pointerdown", () => {
+      longPressFired = false;
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(() => {
+        longPressFired = true;
+        openReactionPicker();
+      }, 450);
+    });
+    for (const eventName of ["pointerup", "pointercancel", "pointerleave"]) {
+      reactionTrigger.addEventListener(eventName, () => clearTimeout(longPressTimer));
+    }
+    reactionTrigger.addEventListener("contextmenu", event => event.preventDefault());
+    reactionTrigger.addEventListener("click", () => {
+      if (longPressFired) { longPressFired = false; return; }
+      if (!reactionPicker.hidden) { closeReactionPicker(); return; }
+      const likeButton = reactionButtons.find(button => button.dataset.reaction === "like");
+      if (likeButton) likeButton.click();
+    });
     async function refreshLikes() {
       const { data: rows, error } = await client.from("post_reactions").select("id,user_id,reaction").eq("post_id", post.id);
       if (error) { toast("تعذر تحميل التفاعلات: " + error.message, "error"); return; }
@@ -129,6 +166,14 @@
         button.setAttribute("aria-pressed", String(mine?.reaction === key));
         button.classList.toggle("is-liked", mine?.reaction === key);
       }
+      const primaryCount = reactionTrigger.querySelector("[data-primary-reaction-count]");
+      if (primaryCount) primaryCount.textContent = String(Object.values(counts).reduce((sum, count) => sum + count, 0));
+      const primary = mine?.reaction;
+      const labels = { like: ["👍", "أعجبني"], love: ["❤️", "أحببته"], haha: ["😂", "أضحكني"], care: ["🥰", "أهتم"], wow: ["😮", "أدهشني"], sad: ["😢", "أحزنني"], angry: ["😡", "أغضبني"], fire: ["🔥", "رائع"] };
+      const face = labels[primary] || labels.like;
+      reactionTrigger.querySelector("span").textContent = primary ? face[1] : "أعجبني";
+      reactionTrigger.firstChild.textContent = face[0] + " ";
+      reactionTrigger.classList.toggle("is-liked", Boolean(primary));
     }
     for (const button of reactionButtons) button.addEventListener("click", async () => {
       button.disabled = true;
