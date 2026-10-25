@@ -4,7 +4,7 @@ test('profile preferences expose all 60 languages and automatic detection contro
   const response = await request.get('/profile.html');
   expect(response.ok()).toBeTruthy();
   const html = await response.text();
-  const select = html.match(/<select id="preferredLanguage">([\\s\\S]*?)<\\/select>/);
+  const select = html.match(/<select id="preferredLanguage">([\s\S]*?)<\/select>/);
   expect(select).not.toBeNull();
   expect([...select[1].matchAll(/<option value="/g)]).toHaveLength(60);
   expect(html).toContain('id="autoDetectLanguage"');
