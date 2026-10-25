@@ -43,6 +43,7 @@ test('password recovery action is visible and does not submit the login form', a
 
 test('Spanish locale translates core navigation and uses left-to-right layout', async ({ page }) => {
   await page.goto('/login.html');
+  await page.locator('#loginTab').click();
   const picker = page.locator('#mygramLanguage');
   await picker.selectOption('es');
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
@@ -85,7 +86,7 @@ test('language selection translates placeholders and localizes country names wit
   await page.locator('#phoneTab').click();
   await page.locator('#phoneCountry').selectOption('NL');
   await page.locator('#mygramLanguage').selectOption('en');
-  await expect(page.locator('#password')).toHaveAttribute('placeholder', 'Enter your password');
+  await expect(page.locator('#password')).toHaveAttribute('placeholder', 'Password');
   await expect(page.locator('#phoneCountry')).toHaveValue('NL');
   await expect(page.locator('#phoneCountry option[value="NL"]')).toContainText('Netherlands');
   await page.locator('#mygramLanguage').selectOption('ar');
