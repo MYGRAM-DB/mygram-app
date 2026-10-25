@@ -21,6 +21,9 @@
   const passwordLabel = password.closest("label");
   const submitButton = document.getElementById("submitButton");
   const resetPasswordButton = document.getElementById("resetPasswordButton");
+  const googleSignInButton = document.getElementById("googleSignInButton");
+  const magicLinkButton = document.getElementById("magicLinkButton");
+  const socialAuthSection = document.getElementById("socialAuthSection");
   const notice = document.getElementById("authNotice");
   let mode = (() => { try { return localStorage.getItem("mygram-account-known") === "1" ? "login" : "signup"; } catch { return "signup"; } })();
   let recoverySessionReady = false;
@@ -50,6 +53,8 @@
     phoneTab.classList.toggle("active", phone);
     emailLabel.style.display = recovery || phone ? "none" : "";
     resetPasswordButton.hidden = recovery || signup || phone;
+    magicLinkButton.hidden = mode !== "login";
+    socialAuthSection.hidden = recovery || phone;
     fullName.required = signup && !recovery;
     email.required = !recovery && !phone;
     password.autocomplete = signup || recovery ? "new-password" : "current-password";
@@ -96,11 +101,61 @@
   function safeError(error) {
     const raw = String(error?.message || "");
     if (/كلمة المرور هذه ظهرت في تسريبات|تعذّر فحص كلمة المرور المسربة|لا يمكن إجراء فحص أمان كلمة المرور/.test(raw)) return raw;
+    if (/unsupported provider|provider.*not enabled|provider.*disabled|google.*not.*enabled/i.test(raw)) return "تسجيل الدخول عبر Google غير مفعّل بعد. يجب إعداد مزوّد Google في Supabase أولاً.";
+    if (/redirect.*not allowed|redirect_to.*not.*allowed/i.test(raw)) return "رابط العودة غير مسموح به في Supabase. أضف رابط MYGRAM إلى قائمة Redirect URLs.";
     if (/Invalid login credentials/i.test(raw)) return "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
     if (/Email not confirmed/i.test(raw)) return "يجب تأكيد البريد الإلكتروني أولاً.";
     if (/password should be at least|weak password|password is too short/i.test(raw)) return "كلمة المرور ضعيفة. اختر كلمة أطول وأكثر صعوبة في التخمين.";
     return "تعذّر إكمال العملية. تحقّق من البيانات والإعدادات وحاول مجدداً.";
   }
+
+
+  googleSignInButton.addEventListener("click", async () => {
+    googleSignInButton.disabled = true;
+    setNotice("جارٍ فتح تسجيل الدخول عبر Google...");
+    try {
+      const redirectTo = new URL("login.html?oauth=google", location.href).href;
+      const { error } = await client.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo, queryParams: { prompt: "select_account" } }
+      });
+      if (error) throw error;
+    } catch (error) {
+      console.error("MYGRAM Google sign-in failed:", error);
+      setNotice(safeError(error), "error");
+      googleSignInButton.disabled = false;
+    }
+  });
+
+  magicLinkButton.addEventListener("click", async () => {
+    const normalizedEmail = email.value.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setNotice("أدخل بريدك الإلكتروني أولاً لإرسال رابط الدخول.", "error");
+      email.focus();
+      return;
+    }
+    if (!email.checkValidity()) {
+      setNotice("أدخل عنوان بريد إلكتروني صالحاً.", "error");
+      email.focus();
+      return;
+    }
+    magicLinkButton.disabled = true;
+    setNotice("جارٍ إرسال رابط الدخول...");
+    try {
+      const emailRedirectTo = new URL("login.html?magic=1", location.href).href;
+      const { error } = await client.auth.signInWithOtp({
+        email: normalizedEmail,
+        options: { shouldCreateUser: false, emailRedirectTo }
+      });
+      if (error) throw error;
+      setNotice("إذا كان البريد مرتبطاً بحساب، ستصلك رسالة دخول.", "success");
+    } catch (error) {
+      console.error("MYGRAM magic-link sign-in failed:", error);
+      setNotice("تعذر إرسال الرابط. تحقق من إعدادات البريد في Supabase وحاول مجدداً.", "error");
+    } finally {
+      magicLinkButton.disabled = false;
+    }
+  });
 
   resetPasswordButton.addEventListener("click", async () => {
     const normalizedEmail = email.value.trim().toLowerCase();
@@ -148,6 +203,13 @@
 
   async function ensureSessionRedirect() {
     const params = new URLSearchParams(location.search);
+    const oauthError = params.get("error_description") || params.get("error");
+    if (oauthError) {
+      history.replaceState(null, "", new URL("login.html", location.href));
+      setMode("login");
+      setNotice(safeError({ message: oauthError }), "error");
+      return;
+    }
     if (params.get("reset") === "1") {
       const { data, error } = await client.auth.getSession();
       setMode("login");

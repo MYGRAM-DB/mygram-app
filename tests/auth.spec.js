@@ -7,6 +7,10 @@ test('dedicated login page exposes email and password authentication', async ({ 
   await expect(page.locator('#password')).toHaveAttribute('type', 'password');
   await expect(page.locator('#submitButton')).toBeVisible();
   await expect(page.locator('#loginTab')).toBeVisible();
+  await expect(page.locator('#googleSignInButton')).toBeVisible();
+  await expect(page.locator('#googleSignInButton')).toHaveAttribute('type', 'button');
+  await page.locator('#loginTab').click();
+  await expect(page.locator('#magicLinkButton')).toBeVisible();
 });
 
 test('login page defaults to signup and switches cleanly to existing-account login', async ({ page }) => {
@@ -20,6 +24,39 @@ test('login page defaults to signup and switches cleanly to existing-account log
   await expect(page.locator('#password')).toHaveAttribute('autocomplete', 'current-password');
   await page.locator('#signupTab').click();
   await expect(page.locator('#nameLabel')).toBeVisible();
+});
+
+
+test('email magic-link login never creates a new account', async ({ page }) => {
+  let otpBody = null;
+  await page.route('**/auth/v1/otp**', async route => {
+    otpBody = route.request().postDataJSON();
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{"message_id":"mock-magic-link"}' });
+  });
+  await page.goto('/login.html');
+  await page.locator('#loginTab').click();
+  await page.locator('#email').fill('existing-user@example.test');
+  await page.locator('#magicLinkButton').click();
+  await expect(page.locator('#authNotice')).toContainText('ستصلك رسالة دخول');
+  expect(otpBody).toBeTruthy();
+  expect(otpBody.email).toBe('existing-user@example.test');
+  expect(otpBody.create_user).toBe(false);
+});
+
+test('Google sign-in sends users through the Supabase OAuth callback', async ({ page }) => {
+  let authorizeUrl = '';
+  page.on('request', request => {
+    if (request.url().includes('/auth/v1/authorize')) authorizeUrl = request.url();
+  });
+  await page.route('**/auth/v1/authorize**', async route => {
+    await route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>Mock Google OAuth</title>' });
+  });
+  await page.goto('/login.html');
+  await page.locator('#googleSignInButton').click();
+  await expect.poll(() => authorizeUrl).not.toBe('');
+  const parsed = new URL(authorizeUrl);
+  expect(parsed.searchParams.get('provider')).toBe('google');
+  expect(parsed.searchParams.get('redirect_to')).toContain('/login.html?oauth=google');
 });
 
 test('root route opens the dedicated login page', async ({ page }) => {
