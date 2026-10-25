@@ -22,7 +22,7 @@
   const submitButton = document.getElementById("submitButton");
   const resetPasswordButton = document.getElementById("resetPasswordButton");
   const notice = document.getElementById("authNotice");
-  let mode = "login";
+  let mode = "signup";
   let recoverySessionReady = false;
   document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -200,5 +200,6 @@
       if (mode !== "recovery") submitButton.textContent = mode === "signup" ? "إنشاء الحساب" : "تسجيل الدخول";
     }
   });
+  setMode(new URLSearchParams(location.search).get("reset") === "1" ? "login" : "signup");
   ensureSessionRedirect();
 })();
