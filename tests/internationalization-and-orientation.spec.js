@@ -99,6 +99,6 @@ test('all 60 language options avoid Arabic fragments in the password field', asy
   for (const code of codes.filter(code => code !== 'ar')) {
     await page.locator('#mygramLanguage').selectOption(code);
     const placeholder = await page.locator('#password').getAttribute('placeholder');
-    expect(placeholder, 'password placeholder for ' + code).not.toMatch(/[\\u0600-\\u06FF]/);
+    expect(placeholder, 'password placeholder for ' + code).not.toMatch(/[\u0600-\u06FF]/);
   }
 });

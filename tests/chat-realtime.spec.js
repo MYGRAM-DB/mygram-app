@@ -72,5 +72,6 @@ test('one-to-one calls request short-lived TURN credentials for the active chat'
   await expect.poll(() => turnRequest !== null).toBe(true);
   expect(turnRequest.headers.authorization).toBe('Bearer mock-access-token');
   expect(turnRequest.body.chatId).toBe('chat-test-uuid');
+  await expect.poll(() => page.evaluate(() => Array.isArray(window.__iceServers))).toBe(true);
   expect(await page.evaluate(() => window.__iceServers[0].urls)).toContain('stun:stun.cloudflare.com:3478');
 });
