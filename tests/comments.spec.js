@@ -72,6 +72,11 @@ test('feed members can use all eight emoji reaction types', async ({ page }) => 
   await page.locator('#refreshButton').click();
   const card = page.locator('.post-card').first();
   await expect(card.locator('[data-reaction]')).toHaveCount(8);
+  const trigger = card.locator('[data-reaction-trigger]');
+  await trigger.dispatchEvent('pointerdown', { pointerType: 'mouse', button: 0, buttons: 1 });
+  await page.waitForTimeout(500);
+  await trigger.dispatchEvent('pointerup', { pointerType: 'mouse', button: 0, buttons: 0 });
+  await expect(card.locator('.post-reaction-picker')).toBeVisible();
   await card.locator('[data-reaction="fire"]').click();
   await expect.poll(async () => page.evaluate(() =>
     window.__mockCalls.some(call => call.table === 'post_reactions' && call.op === 'insert' &&

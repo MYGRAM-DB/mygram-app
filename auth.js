@@ -22,7 +22,7 @@
   const submitButton = document.getElementById("submitButton");
   const resetPasswordButton = document.getElementById("resetPasswordButton");
   const notice = document.getElementById("authNotice");
-  let mode = "login";
+  let mode = (() => { try { return localStorage.getItem("mygram-account-known") === "1" ? "login" : "signup"; } catch { return "signup"; } })();
   let recoverySessionReady = false;
   document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -62,6 +62,20 @@
     submitButton.textContent = recovery ? "حفظ كلمة المرور الجديدة" : phoneVerify ? "تأكيد الرمز" : phone ? (phoneOtpSent ? "إعادة إرسال الرمز" : "إرسال رمز SMS") : signup ? "إنشاء الحساب" : "تسجيل الدخول";
     setNotice("");
     window.MYGRAM_APPLY_LANGUAGE?.();
+    const translate = window.MYGRAM_TRANSLATE_TEXT || (value => value);
+    const titleSource = recovery ? "تعيين كلمة مرور جديدة" : phoneVerify ? "تحقق من رقم هاتفك" : phone ? "التسجيل برقم الهاتف" : signup ? "انضم إلى MYGRAM ✨" : "أهلاً بعودتك 👋";
+    const subtitleSource = recovery ? "اختر كلمة مرور جديدة لا تقل عن 8 أحرف." : phoneVerify ? "أدخل رمز SMS المكوّن من 6 أرقام." : phone ? "اختر رمز الدولة وأدخل رقمك لاستلام رمز التحقق." : signup ? "أنشئ حسابك وابدأ مشاركة أفكارك." : "سجّل الدخول للمتابعة إلى MYGRAM.";
+    const placeholderSource = signup || recovery ? "8 أحرف على الأقل" : "أدخل كلمة المرور";
+    const submitSource = recovery ? "حفظ كلمة المرور الجديدة" : phoneVerify ? "تأكيد الرمز" : phone ? (phoneOtpSent ? "إعادة إرسال الرمز" : "إرسال رمز SMS") : signup ? "إنشاء الحساب" : "تسجيل الدخول";
+    const titleElement = document.getElementById("formTitle");
+    const subtitleElement = document.getElementById("formSubtitle");
+    titleElement.dataset.i18n = titleSource;
+    subtitleElement.dataset.i18n = subtitleSource;
+    submitButton.dataset.i18n = submitSource;
+    titleElement.textContent = translate(titleSource);
+    subtitleElement.textContent = translate(subtitleSource);
+    password.placeholder = translate(placeholderSource);
+    submitButton.textContent = translate(submitSource);
   }
   // HIBP Pwned Passwords range API: only the first 5 SHA-1 hex characters leave the browser.
   async function checkCompromisedPassword(value) {
@@ -168,6 +182,7 @@
           const {data,error}=await client.auth.verifyOtp({phone:pendingPhone,token,type:"sms"});
           if(error)throw error;
           if(!data.session)throw new Error("تم التحقق، لكن لم تُنشأ جلسة. حاول تسجيل الدخول مجدداً.");
+          try { localStorage.setItem("mygram-account-known", "1"); } catch {}
           setNotice("تم التحقق من الهاتف بنجاح. جارٍ فتح MYGRAM...","success");
           window.location.replace(config.homeUrl);
         }
@@ -206,6 +221,7 @@
           options: { data: { full_name: name }, emailRedirectTo: new URL(config.homeUrl, location.href).href }
         });
         if (error) throw error;
+        try { localStorage.setItem("mygram-account-known", "1"); } catch {}
         if (data.session) {
           setNotice("تم إنشاء الحساب بنجاح. جارٍ فتح MYGRAM...", "success");
           setTimeout(() => window.location.replace(config.homeUrl), 700);
@@ -216,6 +232,7 @@
       } else {
         const { error } = await client.auth.signInWithPassword({ email: normalizedEmail, password: pass });
         if (error) throw error;
+        try { localStorage.setItem("mygram-account-known", "1"); } catch {}
         window.location.replace(config.homeUrl);
       }
     } catch (error) {
@@ -227,5 +244,6 @@
       if (mode !== "recovery") submitButton.textContent = mode === "signup" ? "إنشاء الحساب" : "تسجيل الدخول";
     }
   });
+  setMode(new URLSearchParams(location.search).get("reset") === "1" ? "login" : "signup");
   ensureSessionRedirect();
 })();
