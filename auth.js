@@ -80,6 +80,7 @@
 
   function safeError(error) {
     const raw = String(error?.message || "");
+    if (/كلمة المرور هذه ظهرت في تسريبات|تعذّر فحص كلمة المرور المسربة|لا يمكن إجراء فحص أمان كلمة المرور/.test(raw)) return raw;
     if (/Invalid login credentials/i.test(raw)) return "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
     if (/Email not confirmed/i.test(raw)) return "يجب تأكيد البريد الإلكتروني أولاً.";
     if (/password should be at least|weak password|password is too short/i.test(raw)) return "كلمة المرور ضعيفة. اختر كلمة أطول وأكثر صعوبة في التخمين.";
