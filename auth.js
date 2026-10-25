@@ -27,7 +27,7 @@
   document.getElementById("year").textContent = new Date().getFullYear();
 
   function setNotice(message, kind = "") {
-    notice.textContent = message;
+    notice.textContent = window.MYGRAM_TRANSLATE_TEXT ? window.MYGRAM_TRANSLATE_TEXT(message) : message;
     notice.className = "notice" + (kind ? " " + kind : "");
   }
   function setMode(nextMode) {
@@ -61,9 +61,27 @@
     password.minLength = signup || recovery ? 8 : 1;
     submitButton.textContent = recovery ? "حفظ كلمة المرور الجديدة" : phoneVerify ? "تأكيد الرمز" : phone ? (phoneOtpSent ? "إعادة إرسال الرمز" : "إرسال رمز SMS") : signup ? "إنشاء الحساب" : "تسجيل الدخول";
     setNotice("");
+    window.MYGRAM_APPLY_LANGUAGE?.();
   }
+  // HIBP Pwned Passwords range API: only the first 5 SHA-1 hex characters leave the browser.
+  async function checkCompromisedPassword(value) {
+    if (!window.crypto?.subtle) throw new Error("لا يمكن إجراء فحص أمان كلمة المرور في هذا المتصفح. حدّث المتصفح وحاول مجدداً.");
+    const bytes = new TextEncoder().encode(value);
+    const digest = await crypto.subtle.digest("SHA-1", bytes);
+    const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("").toUpperCase();
+    const response = await fetch("https://api.pwnedpasswords.com/range/" + hash.slice(0, 5), {
+      headers: { "Add-Padding": "true" }, cache: "no-store", credentials: "omit"
+    });
+    if (!response.ok) throw new Error("تعذّر فحص كلمة المرور المسربة حالياً. حاول مجدداً بعد قليل.");
+    const suffix = hash.slice(5);
+    const rows = (await response.text()).split(/\r?\n/);
+    const match = rows.find(row => row.slice(0, 35).toUpperCase() === suffix);
+    if (match && Number(match.split(":")[1]) > 0) throw new Error("كلمة المرور هذه ظهرت في تسريبات سابقة. اختر كلمة مرور مختلفة تماماً.");
+  }
+
   function safeError(error) {
     const raw = String(error?.message || "");
+    if (/كلمة المرور هذه ظهرت في تسريبات|تعذّر فحص كلمة المرور المسربة|لا يمكن إجراء فحص أمان كلمة المرور/.test(raw)) return raw;
     if (/Invalid login credentials/i.test(raw)) return "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
     if (/Email not confirmed/i.test(raw)) return "يجب تأكيد البريد الإلكتروني أولاً.";
     if (/password should be at least|weak password|password is too short/i.test(raw)) return "كلمة المرور ضعيفة. اختر كلمة أطول وأكثر صعوبة في التخمين.";
@@ -95,7 +113,14 @@
     if(raw.startsWith("+")) return "+"+raw.slice(1).replace(/\D/g,"");
     const country=window.MYGRAM_COUNTRIES?.find(x=>x.code===phoneCountry.value);
     const dial=(country?.dial||"").replace(/\D/g,"");
-    const national=raw.replace(/\D/g,"").replace(/^0+/,"");
+    let national=raw.replace(/\D/g,"").replace(/^0+/,"");
+    const prefix=String(country?.nationalPrefix||"").replace(/\D/g,"");
+    if(dial==="1"&&national.length===11&&national.startsWith("1"))national=national.slice(1);
+    if(prefix&&dial==="1"){
+      if(national.length===7)national=prefix+national;
+      else if(national.length===10){if(!national.startsWith(prefix))return "";}
+      else return "";
+    }else if(prefix&&!national.startsWith(prefix))national=prefix+national;
     return dial&&national?"+"+dial+national:"";
   }
 
@@ -163,6 +188,7 @@
     setNotice("");
     try {
       if (recovery) {
+        await checkCompromisedPassword(pass);
         const { error } = await client.auth.updateUser({ password: pass });
         if (error) throw error;
         await client.auth.signOut();
@@ -172,6 +198,7 @@
         password.value = "";
         setNotice("تم تحديث كلمة المرور. سجّل الدخول بكلمة المرور الجديدة.", "success");
       } else if (mode === "signup") {
+        await checkCompromisedPassword(pass);
         const name = fullName.value.trim();
         const { data, error } = await client.auth.signUp({
           email: normalizedEmail,

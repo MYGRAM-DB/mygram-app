@@ -60,3 +60,45 @@ test('Spanish locale translates core navigation and uses left-to-right layout', 
   await picker.selectOption('hu');
   await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
 });
+
+test('known Arabic interface messages fall back to English rather than leaking Arabic into another locale', async ({ page }) => {
+  await page.goto('/login.html');
+  await page.evaluate(() => {
+    const p = document.createElement('p');
+    p.id = 'localeFallbackProbe';
+    p.textContent = 'تعذر تحميل التفاعلات:';
+    document.body.appendChild(p);
+  });
+  await page.locator('#mygramLanguage').selectOption('fr');
+  await expect(page.locator('#localeFallbackProbe')).toHaveText('Could not load reactions:');
+  await page.locator('#mygramLanguage').selectOption('ar');
+  await page.evaluate(() => { document.querySelector('#localeFallbackProbe').textContent = 'إرسال'; });
+  await page.locator('#mygramLanguage').selectOption('fr');
+  await expect(page.locator('#localeFallbackProbe')).toHaveText('Send');
+  await page.locator('#mygramLanguage').selectOption('ar');
+  await expect(page.locator('#localeFallbackProbe')).toHaveText('إرسال');
+});
+
+test('language selection translates placeholders and localizes country names without losing the selected country', async ({ page }) => {
+  await page.goto('/login.html');
+  await page.locator('#phoneTab').click();
+  await page.locator('#phoneCountry').selectOption('NL');
+  await page.locator('#mygramLanguage').selectOption('en');
+  await expect(page.locator('#password')).toHaveAttribute('placeholder', 'Enter your password');
+  await expect(page.locator('#phoneCountry')).toHaveValue('NL');
+  await expect(page.locator('#phoneCountry option[value="NL"]')).toContainText('Netherlands');
+  await page.locator('#mygramLanguage').selectOption('ar');
+  await expect(page.locator('#password')).toHaveAttribute('placeholder', 'أدخل كلمة المرور');
+  await expect(page.locator('#phoneCountry option[value="NL"]')).toContainText('هولندا');
+});
+
+test('all 60 language options avoid Arabic fragments in the password field', async ({ page }) => {
+  await page.goto('/login.html');
+  const codes = await page.locator('#mygramLanguage option').evaluateAll(options => options.map(option => option.value));
+  expect(codes).toHaveLength(60);
+  for (const code of codes.filter(code => code !== 'ar')) {
+    await page.locator('#mygramLanguage').selectOption(code);
+    const placeholder = await page.locator('#password').getAttribute('placeholder');
+    expect(placeholder, 'password placeholder for ' + code).not.toMatch(/[\u0600-\u06FF]/);
+  }
+});
