@@ -57,8 +57,8 @@
     document.getElementById("formSubtitle").textContent = recovery
       ? "اختر كلمة مرور جديدة لا تقل عن 8 أحرف."
       : phoneVerify ? "أدخل رمز SMS المكوّن من 6 أرقام." : phone ? "اختر رمز الدولة وأدخل رقمك لاستلام رمز التحقق." : signup ? "أنشئ حسابك وابدأ مشاركة أفكارك." : "سجّل الدخول للمتابعة إلى MYGRAM.";
-    password.placeholder = recovery ? "8 أحرف على الأقل" : "6 أحرف على الأقل";
-    password.minLength = recovery ? 8 : 6;
+    password.placeholder = signup || recovery ? "8 أحرف على الأقل" : "أدخل كلمة المرور";
+    password.minLength = signup || recovery ? 8 : 1;
     submitButton.textContent = recovery ? "حفظ كلمة المرور الجديدة" : phoneVerify ? "تأكيد الرمز" : phone ? (phoneOtpSent ? "إعادة إرسال الرمز" : "إرسال رمز SMS") : signup ? "إنشاء الحساب" : "تسجيل الدخول";
     setNotice("");
   }
@@ -150,8 +150,8 @@
       finally{submitButton.disabled=false}
       return;
     }
-    if (pass.length < (recovery ? 8 : 6)) {
-      setNotice(recovery ? "كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل." : "كلمة المرور يجب أن تكون 6 أحرف على الأقل.", "error");
+    if ((mode === "signup" || recovery) && pass.length < 8) {
+      setNotice(recovery ? "كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل." : "كلمة المرور يجب أن تكون 8 أحرف على الأقل.", "error");
       return;
     }
     if (recovery && !recoverySessionReady) {

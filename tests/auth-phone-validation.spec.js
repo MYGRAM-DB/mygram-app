@@ -37,3 +37,14 @@ test('malformed phone numbers are rejected before an OTP request', async ({ page
   await expect(page.locator('#authNotice')).toContainText('رقم الهاتف غير مكتمل');
   expect(otpRequests).toBe(0);
 });
+
+test('password minimum follows Supabase policy for signup but does not block existing logins', async ({ page }) => {
+  await page.goto('/login.html');
+  const password = page.locator('#password');
+  await expect(password).toHaveAttribute('minlength', '1');
+  await page.locator('#signupTab').click();
+  await expect(password).toHaveAttribute('minlength', '8');
+  await expect(password).toHaveAttribute('placeholder', '8 أحرف على الأقل');
+  await page.locator('#loginTab').click();
+  await expect(password).toHaveAttribute('minlength', '1');
+});
