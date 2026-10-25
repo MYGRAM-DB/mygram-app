@@ -35,6 +35,7 @@ test('login remains usable in portrait and landscape mobile orientations', async
 
 test('password recovery action is visible and does not submit the login form', async ({ page }) => {
   await page.goto('/login.html');
+  await page.locator('#loginTab').click();
   const recovery = page.locator('#resetPasswordButton');
   await expect(recovery).toBeVisible();
   await expect(recovery).toHaveAttribute('type', 'button');
