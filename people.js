@@ -106,7 +106,7 @@
       } else {toast("يوجد طلب سابق بينكما.");await loadAllProfiles();return;}
     } else {
       const {error}=await client.from("friend_requests").insert({requester_id:me.id,receiver_id:receiverId});
-      if(error){toast("تعذر إرسال الطلب: "+error.message,"error");button.disabled=false;return;}
+      if(error){toast(error.code==="23505"?"يوجد طلب صداقة أو علاقة سابقة بينكما.":"تعذر إرسال الطلب: "+error.message,"error");button.disabled=false;return;}
     }
     toast("تم إرسال طلب الصداقة ❤️");await loadAllProfiles();
   }
