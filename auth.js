@@ -114,7 +114,7 @@
     googleSignInButton.disabled = true;
     setNotice("جارٍ فتح تسجيل الدخول عبر Google...");
     try {
-      const redirectTo = new URL("login.html?oauth=google", location.href).href;
+      const redirectTo = new URL("login.html", location.href).href;
       const { error } = await client.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo, queryParams: { prompt: "select_account" } }
@@ -142,7 +142,7 @@
     magicLinkButton.disabled = true;
     setNotice("جارٍ إرسال رابط الدخول...");
     try {
-      const emailRedirectTo = new URL("login.html?magic=1", location.href).href;
+      const emailRedirectTo = new URL("login.html", location.href).href;
       const { error } = await client.auth.signInWithOtp({
         email: normalizedEmail,
         options: { shouldCreateUser: false, emailRedirectTo }

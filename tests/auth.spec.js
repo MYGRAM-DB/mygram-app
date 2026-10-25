@@ -56,7 +56,7 @@ test('Google sign-in sends users through the Supabase OAuth callback', async ({ 
   await expect.poll(() => authorizeUrl).not.toBe('');
   const parsed = new URL(authorizeUrl);
   expect(parsed.searchParams.get('provider')).toBe('google');
-  expect(parsed.searchParams.get('redirect_to')).toContain('/login.html?oauth=google');
+  expect(parsed.searchParams.get('redirect_to')).toContain('/login.html');
 });
 
 test('root route opens the dedicated login page', async ({ page }) => {
