@@ -77,3 +77,6 @@ Supabase يدعم تسجيل الهاتف، لكن إرسال SMS يحتاج م�
 - [ ] مكالمة صوتية ومكالمة فيديو بين جهازين حقيقيين وعلى شبكتين مختلفتين.
 - [ ] اختبار شبكة تحتاج TURN، ثم إضافة خادم ترحيل قبل الادعاء بأن الاتصال يعمل على كل الشبكات.
 - [ ] مراجعة حدود الإرسال وCAPTCHA وRLS وسجلات المزودين قبل فتح التسجيل للجمهور.
+
+## Cloudflare TURN للمكالمات الفردية
+لتحسين الاتصال خلف الجدران النارية وNAT، يمكن لـ MYGRAM جلب بيانات TURN مؤقتة من Cloudflare عبر دالة Supabase المحمية `turn-credentials`. أنشئ TURN key في Cloudflare ثم أضف `CLOUDFLARE_TURN_KEY_ID` (معرّف المفتاح) و`CLOUDFLARE_TURN_KEY` (القيمة السرية للمفتاح) ضمن Supabase → Edge Functions → Secrets. لا تضع المفتاح في ملفات المتصفح. تعرض Cloudflare حالياً حصة Realtime مجانية مشتركة قدرها 1000 GB شهرياً، ثم 0.05 دولار لكل GB من البيانات الصادرة؛ راقب الاستهلاك والفوترة. راجع [دليل بيانات TURN](https://developers.cloudflare.com/realtime/turn/generate-credentials/) و[الأسعار](https://developers.cloudflare.com/realtime/sfu/platform/pricing/).
