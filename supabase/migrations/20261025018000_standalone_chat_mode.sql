@@ -29,6 +29,14 @@ create table if not exists public.chat_messages (
 );
 create index if not exists chat_messages_chat_created_idx on public.chat_messages(chat_id,created_at);
 
+create or replace function private.is_chat_creator(target_chat_id uuid)
+returns boolean language sql stable security definer set search_path=''
+as $function$
+  select exists(select 1 from public.chats c where c.id=target_chat_id and c.created_by=(select auth.uid()));
+$function$;
+revoke all on function private.is_chat_creator(uuid) from public, anon;
+grant execute on function private.is_chat_creator(uuid) to authenticated;
+
 create or replace function private.is_chat_member(target_chat_id uuid)
 returns boolean language sql stable security definer set search_path=''
 as $function$
@@ -50,9 +58,9 @@ create policy "Creators can update chat details" on public.chats for update to a
 drop policy if exists "Members can view chat participants" on public.chat_members;
 create policy "Members can view chat participants" on public.chat_members for select to authenticated using (private.is_chat_member(chat_id));
 drop policy if exists "Creators can add chat members" on public.chat_members;
-create policy "Creators can add chat members" on public.chat_members for insert to authenticated with check (exists(select 1 from public.chats c where c.id=chat_id and c.created_by=(select auth.uid())));
+create policy "Creators can add chat members" on public.chat_members for insert to authenticated with check (private.is_chat_creator(chat_id));
 drop policy if exists "Users can leave chats" on public.chat_members;
-create policy "Users can leave chats" on public.chat_members for delete to authenticated using (user_id=(select auth.uid()) or exists(select 1 from public.chats c where c.id=chat_id and c.created_by=(select auth.uid())));
+create policy "Users can leave chats" on public.chat_members for delete to authenticated using (user_id=(select auth.uid()) or private.is_chat_creator(chat_id));
 drop policy if exists "Members can read chat messages" on public.chat_messages;
 create policy "Members can read chat messages" on public.chat_messages for select to authenticated using (private.is_chat_member(chat_id));
 drop policy if exists "Members can send their own chat messages" on public.chat_messages;
