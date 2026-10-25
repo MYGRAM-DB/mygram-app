@@ -1,10 +1,114 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><link rel="icon" type="image/svg+xml" href="logo.svg"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#087cf0"><title>MYGRAM | اكتشف الأشخاص</title><link rel="stylesheet" href="styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="config.js"></script><script defer src="auth-guard.js"></script><script defer src="people.js"></script>
-<style>.people-wrap{max-width:980px;margin:24px auto;padding:0 16px}.people-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.people-panel{padding:20px}.member-card{display:flex;gap:12px;align-items:flex-start;padding:14px;margin:12px 0;border:1px solid #e7edf5;border-radius:14px;background:white}.member-card .user-avatar{flex:0 0 46px}.member-details{min-width:0;flex:1}.member-details p{margin:8px 0;overflow-wrap:anywhere}.member-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.people-wrap input{width:100%;padding:12px;border:1px solid #dbe4ef;border-radius:12px;margin:10px 0}.muted{color:#718096;font-size:13px}.people-wrap .button{padding:8px 12px;border-radius:10px;border:0;background:#087cf0;color:white;cursor:pointer}.people-wrap .button-secondary{background:#edf2f8;color:#334155}.people-wrap .user-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}@media(max-width:600px){.people-wrap{padding:0 10px}.people-panel{padding:14px}}</style><script defer src="language.js"></script>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#087cf0"><meta name="description" content="اكتشف الأصدقاء والاقتراحات وطلبات الصداقة في MYGRAM.">
+  <link rel="icon" type="image/svg+xml" href="logo.svg"><title>MYGRAM | اكتشف الأصدقاء</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js"></script><script defer src="auth-guard.js"></script><script defer src="people.js"></script><script defer src="language.js"></script><script defer src="people-tabs.js"></script><script defer src="notifications.js"></script>
+  <style>
+    body.people-page{min-height:100vh;background:radial-gradient(circle at 92% 3%,#deecff 0,transparent 26rem),#f4f7fc;color:#172b45}
+    .people-topbar{height:auto;min-height:68px;padding:8px clamp(12px,4vw,36px);display:flex;align-items:center;justify-content:space-between;gap:15px;background:#ffffffdc;border-bottom:1px solid #e3eaf5;backdrop-filter:blur(18px);position:sticky;top:0;z-index:30}
+    .people-topbar .brand{display:flex;align-items:center;gap:9px;text-decoration:none;font-size:20px;font-weight:950;color:#172b45;white-space:nowrap}
+    .people-brand-icon{width:39px;height:39px;display:grid;place-items:center;background:#eaf4ff;border-radius:13px;overflow:hidden}
+    .people-brand-icon img{width:100%;height:100%;object-fit:contain}
+    .people-topnav{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+    .people-topnav a{padding:8px 10px;border-radius:10px;color:#5f7087;text-decoration:none;font-size:12px;font-weight:800;white-space:nowrap}
+    .people-topnav a:hover,.people-topnav a[aria-current=page]{background:#eaf4ff;color:#087cf0}
+    .people-wrap{width:min(1030px,100%);margin:24px auto;padding:0 18px 54px}
+    .people-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:18px;overflow:hidden;padding:28px 30px;border-radius:24px;background:linear-gradient(120deg,#163a7c,#087cf0 62%,#7063e9);color:#fff;box-shadow:0 17px 36px #0b55a921}
+    .people-hero:after{content:"";position:absolute;inset-inline-end:-75px;top:-125px;width:260px;height:260px;border:1px solid #ffffff33;border-radius:50%;box-shadow:0 0 0 25px #ffffff0c,0 0 0 56px #ffffff0b}
+    .people-hero .eyebrow{color:#d9eaff;font-size:10px;font-weight:900;letter-spacing:1.7px}
+    .people-hero h1{position:relative;z-index:1;margin:7px 0 5px;font-size:clamp(24px,4vw,33px);font-weight:950}
+    .people-hero p{position:relative;z-index:1;max-width:600px;margin:0;font-size:12px;line-height:1.9;color:#e5f2ff}
+    .people-hero-mark{position:relative;z-index:1;flex:0 0 78px;width:78px;height:78px;display:grid;place-items:center;border:1px solid #ffffff3a;border-radius:24px;background:#ffffff17;font-size:35px}
+    .people-tabs-shell{margin-top:18px;padding:8px;border:1px solid #e2eaf5;border-radius:19px;background:#ffffffcb;box-shadow:0 8px 22px #173b6808}
+    .people-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+    .people-tab{position:relative;display:flex;align-items:center;gap:10px;min-width:0;min-height:70px;padding:11px 12px;border:1px solid transparent;border-radius:14px;background:transparent;color:#65768d;text-align:start;font:inherit;cursor:pointer;transition:background .15s,border-color .15s}
+    .people-tab:hover{background:#f7faff}
+    .people-tab[aria-selected=true]{border-color:#cde3ff;background:linear-gradient(135deg,#eaf4ff,#f7faff);color:#123e73;box-shadow:0 4px 12px #087cf012}
+    .people-tab[aria-selected=true]:after{content:"";position:absolute;bottom:0;inset-inline-start:14px;width:28px;height:3px;border-radius:3px 3px 0 0;background:#087cf0}
+    .people-tab:focus-visible{outline:3px solid #087cf04a;outline-offset:2px}
+    .people-tab-icon{flex:0 0 39px;width:39px;height:39px;display:grid;place-items:center;border-radius:12px;background:#eef4fc;font-size:20px}
+    .people-tab[data-people-tab=suggestions] .people-tab-icon{background:#f0eaff;color:#8052e8}
+    .people-tab[data-people-tab=search] .people-tab-icon{background:#e8f4ff;color:#087cf0}
+    .people-tab[data-people-tab=incoming] .people-tab-icon{background:#e8fbf4;color:#0b9e7a}
+    .people-tab[data-people-tab=outgoing] .people-tab-icon{background:#fff2e7;color:#d77a27}
+    .people-tab-text{min-width:0;display:flex;flex-direction:column;gap:3px}
+    .people-tab-text strong{font-size:12px;font-weight:900;line-height:1.35}
+    .people-tab-text small{font-size:10px;color:#8997aa;line-height:1.4}
+    .people-panel{min-width:0;margin-top:15px;padding:22px;border:1px solid #e4ebf5;border-radius:21px;background:#fff;box-shadow:0 10px 27px #193b6608;animation:people-panel-in .2s ease both}
+    .people-panel[hidden]{display:none!important}
+    @keyframes people-panel-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .people-panel-head{display:flex;align-items:center;gap:12px;margin-bottom:17px;padding-bottom:15px;border-bottom:1px solid #edf1f7}
+    .people-panel-icon{flex:0 0 43px;width:43px;height:43px;display:grid;place-items:center;border-radius:13px;background:#eaf4ff;color:#087cf0;font-size:21px}
+    .people-panel-head h2{margin:0;color:#172b45;font-size:18px;font-weight:950}
+    .people-panel-head p{margin:4px 0 0;color:#8492a7;font-size:11px;line-height:1.7}
+    .people-panel .muted{font-size:12px;line-height:1.8;color:#8492a7}
+    .people-wrap input{box-sizing:border-box;width:100%;min-height:45px;padding:11px 14px;border:1px solid #dce6f2;border-radius:12px;margin:8px 0 14px;background:#fbfdff;color:#253953;font:13px inherit;outline:none}
+    .people-wrap input:focus{border-color:#82baff;box-shadow:0 0 0 4px #087cf013;background:white}
+    .member-card{display:flex;align-items:flex-start;gap:12px;min-width:0;padding:13px;margin:10px 0;border:1px solid #e6edf5;border-radius:16px;background:#fff;box-shadow:0 4px 13px #14365b07;transition:border-color .15s,box-shadow .15s}
+    .member-card:hover{border-color:#d4e4f7;box-shadow:0 8px 20px #14365b0b}
+    .member-card .user-avatar{flex:0 0 43px;width:43px;height:43px}
+    .member-details{flex:1;min-width:0}
+    .member-details>strong{font-size:13px;font-weight:900;color:#223751;overflow-wrap:anywhere}
+    .member-details>.muted{font-size:10px;margin-top:3px}
+    .member-details p{margin:7px 0;overflow-wrap:anywhere;color:#66778e;font-size:12px;line-height:1.7}
+    .member-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+    .people-wrap .button{min-height:34px;padding:7px 11px;border:0;border-radius:10px;background:linear-gradient(120deg,#168bff,#0068db);color:white;font:800 11px inherit;cursor:pointer}
+    .people-wrap .button-secondary{background:#edf3fa;color:#455a75}
+    .people-wrap .user-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    #recommendationsList,#membersList,#incomingList,#outgoingList{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:9px;align-items:start}
+    #recommendationsList .member-card,#membersList .member-card,#incomingList .member-card,#outgoingList .member-card{margin:0}
+    #recommendationsList>.muted,#membersList>.muted,#incomingList>.muted,#outgoingList>.muted{grid-column:1/-1;margin:0;padding:25px 16px;border:1px dashed #d8e3f1;border-radius:15px;background:#fafcff;text-align:center}
+    .people-footer{padding:17px 4px;color:#8b99ac;font-size:10px;text-align:center}
+    @media(max-width:850px){.people-topbar{flex-wrap:wrap}.people-topnav{order:3;width:100%;overflow-x:auto;flex-wrap:nowrap}.people-topnav a{font-size:11px;padding:7px 9px}.people-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.people-wrap{padding-top:17px}}
+    @media(max-width:560px){.people-topbar{position:static;padding:9px 12px}.people-hero{padding:21px;border-radius:19px}.people-hero h1{font-size:24px}.people-hero p{font-size:11px}.people-hero-mark{flex-basis:54px;width:54px;height:54px;border-radius:16px;font-size:27px}.people-tabs-shell{padding:6px;border-radius:15px}.people-tab{min-height:61px;padding:8px;gap:7px}.people-tab-icon{flex-basis:33px;width:33px;height:33px;border-radius:10px;font-size:18px}.people-tab-text strong{font-size:11px}.people-tab-text small{font-size:9px}.people-panel{padding:15px;border-radius:17px}.people-panel-head h2{font-size:16px}.member-card{padding:11px}.member-card .user-avatar{flex-basis:39px;width:39px;height:39px}}
+    @media(prefers-reduced-motion:reduce){.people-panel{animation:none}}
+  </style>
 </head>
-<body><header class="topbar" style="padding:0 20px"><a class="brand" href="home.html"><span class="brand-symbol"><img src="logo.svg" alt="MYGRAM" class="brand-icon"></span><span>MY<span class="brand-blue">GRAM</span></span></a><nav><a href="home.html">الرئيسية</a> · <a href="profile.html">ملفي الشخصي</a> · <a href="communities.html">المجتمعات</a> · <a href="services.html">الخدمات</a></nav></header>
-<main class="people-wrap"><section class="welcome-banner"><div><span class="eyebrow">DISCOVER</span><h1>اكتشف مجتمع MYGRAM</h1><p>ابحث عن أشخاص، وأرسل طلبات الصداقة، وأدر الطلبات الواردة والصادرة.</p></div><div class="banner-mark"><img src="logo.svg" alt="MYGRAM" class="brand-icon-large"></div></section>
-<section class="card people-panel recommendation-panel" style="margin:16px 0"><h2>اقتراحات تناسبك</h2><p class="muted">اقتراحات حسب الاهتمامات، أو حسب المدينة والبلد عندما يوافق الطرفان على مشاركة الموقع التقريبي.</p><div id="recommendationsList" aria-live="polite"><p class="muted">جارٍ تجهيز الاقتراحات…</p></div></section>
-<section class="card people-panel" style="margin:16px 0"><h2>البحث عن الأعضاء</h2><label for="searchInput">الاسم أو اسم المستخدم</label><input id="searchInput" type="search" placeholder="ابحث بالاسم أو @username"><div id="membersList" aria-live="polite"><p class="muted">جارٍ تحميل الأعضاء…</p></div></section>
-<div class="people-grid"><section class="card people-panel"><h2>طلبات الصداقة الواردة</h2><div id="incomingList"><p class="muted">جارٍ التحميل…</p></div></section><section class="card people-panel"><h2>طلبات الصداقة الصادرة</h2><div id="outgoingList"><p class="muted">جارٍ التحميل…</p></div></section></div></main>
-<div id="toast" class="toast" role="status" aria-live="polite"></div></body></html>
+<body class="people-page">
+  <header class="people-topbar">
+    <a class="brand" href="home.html"><span class="people-brand-icon"><img src="logo.svg" alt=""></span><span>MY<span class="brand-blue">GRAM</span></span></a>
+    <nav class="people-topnav" aria-label="التنقل الرئيسي">
+      <a href="home.html">الرئيسية</a><a href="services.html">الخدمات</a><a href="communities.html">المجتمعات</a><a href="chat.html">MYGRAM Chat</a><a href="profile.html">ملفي الشخصي</a>
+    </nav>
+  </header>
+  <main class="people-wrap">
+    <section class="people-hero">
+      <div><span class="eyebrow">DISCOVER</span><h1>اكتشف مجتمع MYGRAM</h1><p>أصدقاء جدد، اهتمامات مشتركة، وطلبات صداقة في مكان واحد. خصوصيتك وإعدادات الاكتشاف تبقى بيدك.</p></div>
+      <div class="people-hero-mark" aria-hidden="true">🧭</div>
+    </section>
+    <div class="people-tabs-shell">
+      <div class="people-tabs" role="tablist" aria-label="أقسام اكتشاف الأصدقاء">
+        <button class="people-tab" type="button" role="tab" id="peopleTabSuggestions" data-people-tab="suggestions" aria-controls="peoplePanelSuggestions" aria-selected="true" tabindex="0"><span class="people-tab-icon" aria-hidden="true">✨</span><span class="people-tab-text"><strong>اقتراحات لك</strong><small>أشخاص قد تعرفهم</small></span></button>
+        <button class="people-tab" type="button" role="tab" id="peopleTabSearch" data-people-tab="search" aria-controls="peoplePanelSearch" aria-selected="false" tabindex="-1"><span class="people-tab-icon" aria-hidden="true">🔎</span><span class="people-tab-text"><strong>اكتشف الأعضاء</strong><small>ابحث بالاسم أو المعرف</small></span></button>
+        <button class="people-tab" type="button" role="tab" id="peopleTabIncoming" data-people-tab="incoming" aria-controls="peoplePanelIncoming" aria-selected="false" tabindex="-1"><span class="people-tab-icon" aria-hidden="true">👥</span><span class="people-tab-text"><strong>طلبات واردة</strong><small>من يريد إضافتك؟</small></span></button>
+        <button class="people-tab" type="button" role="tab" id="peopleTabOutgoing" data-people-tab="outgoing" aria-controls="peoplePanelOutgoing" aria-selected="false" tabindex="-1"><span class="people-tab-icon" aria-hidden="true">📨</span><span class="people-tab-text"><strong>طلبات مرسلة</strong><small>تابع طلباتك المعلّقة</small></span></button>
+      </div>
+    </div>
+
+    <section class="card people-panel" id="peoplePanelSuggestions" data-people-panel="suggestions" role="tabpanel" aria-labelledby="peopleTabSuggestions" tabindex="0">
+      <header class="people-panel-head"><span class="people-panel-icon" aria-hidden="true">✨</span><div><h2>اقتراحات تناسبك</h2><p>حسب الاهتمامات المشتركة أو المنطقة التقريبية بموافقة الطرفين.</p></div></header>
+      <div id="recommendationsList" aria-live="polite"><p class="muted">جارٍ تجهيز الاقتراحات…</p></div>
+    </section>
+    <section class="card people-panel" id="peoplePanelSearch" data-people-panel="search" role="tabpanel" aria-labelledby="peopleTabSearch" tabindex="0" hidden>
+      <header class="people-panel-head"><span class="people-panel-icon" aria-hidden="true">🔎</span><div><h2>البحث عن الأعضاء</h2><p>اكتب الاسم الظاهر أو اسم المستخدم للعثور على شخص.</p></div></header>
+      <label for="searchInput">الاسم أو اسم المستخدم</label><input id="searchInput" type="search" placeholder="ابحث بالاسم أو @username" autocomplete="off">
+      <div id="membersList" aria-live="polite"><p class="muted">جارٍ تحميل الأعضاء…</p></div>
+    </section>
+    <section class="card people-panel" id="peoplePanelIncoming" data-people-panel="incoming" role="tabpanel" aria-labelledby="peopleTabIncoming" tabindex="0" hidden>
+      <header class="people-panel-head"><span class="people-panel-icon" aria-hidden="true">👥</span><div><h2>طلبات الصداقة الواردة</h2><p>راجع الطلبات الجديدة واختر القبول أو الرفض.</p></div></header>
+      <div id="incomingList" aria-live="polite"><p class="muted">جارٍ التحميل…</p></div>
+    </section>
+    <section class="card people-panel" id="peoplePanelOutgoing" data-people-panel="outgoing" role="tabpanel" aria-labelledby="peopleTabOutgoing" tabindex="0" hidden>
+      <header class="people-panel-head"><span class="people-panel-icon" aria-hidden="true">📨</span><div><h2>طلبات الصداقة الصادرة</h2><p>تابع طلبات الصداقة التي أرسلتها.</p></div></header>
+      <div id="outgoingList" aria-live="polite"><p class="muted">جارٍ التحميل…</p></div>
+    </section>
+    <footer class="people-footer">© <span id="peopleYear">2026</span> MYGRAM · الصداقة تبدأ بخطوة 💙</footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>document.getElementById("peopleYear").textContent=new Date().getFullYear();</script>
+</body>
+</html>
