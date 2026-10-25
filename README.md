@@ -42,3 +42,13 @@ The following still require account/provider setup or real-user end-to-end verif
 - If an upload fails, verify the required migrations, Storage buckets, and bucket policies are present.
 - If a new account has no profile, inspect the profile-creation trigger and Supabase Auth logs.
 - If email links point to the wrong page, correct the Supabase Auth redirect allow-list and SMTP configuration.
+
+
+## Demo hardening and provider setup
+
+- The home page checks the Supabase session and redirects visitors without a valid session to `login.html`. The auth screen now opens on account creation by default; returning users can select the sign-in tab. A valid existing session is redirected to the home page.
+- Feed reaction choices are hidden by default and can be revealed by pressing and holding the reaction button; clicking it still applies the default Like action, and keyboard users can reveal choices with the standard control.
+- Email provider recommendation for the demo: **Brevo Free** is the larger of the compared free daily quotas at 300 sends/day, while Resend Free currently lists 3,000/month and 100/day. This is a provider recommendation only: no provider account, sender domain, SMTP credentials, or Supabase Auth email settings are configured by this repository change.
+- Before real confirmation and password-reset email delivery, create a provider account, verify a domain you control, configure SPF/DKIM (and preferably DMARC), then enter the SMTP settings in the Supabase Auth dashboard and test delivery. Never commit SMTP passwords or API keys to this repository or browser code.
+- SMS OTP is not free and unlimited across 205 countries from a reputable provider. Provider trial accounts have restrictions; real delivery depends on country support, sender rules, and paid credits. Configure Phone Auth and an SMS provider in Supabase, then test actual delivery per target country before promising availability.
+- Password screening should combine strong password length/rate limits with server-side leaked-password protection where available. A client-side privacy-preserving k-anonymity check can be an extra layer, but must never be presented as stronger than a server-enforced control or as a replacement for Supabase Auth protection.
