@@ -94,8 +94,16 @@
     foot.appendChild(badge);
     const actions = document.createElement("div");
     actions.className = "post-actions";
-    actions.innerHTML = `<button type="button" class="button ghost small" data-like>❤️ <span>إعجاب</span> <b data-like-count>…</b></button>
-      <button type="button" class="button ghost small" data-toggle-comments>💬 التعليقات</button>`;
+    actions.innerHTML = `<div class="post-reaction-picker" role="group" aria-label="التفاعلات">
+      <button type="button" class="button ghost small" data-reaction="like" aria-label="إعجاب 👍" aria-pressed="false">👍 <b data-reaction-count="like">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="love" aria-label="حب ❤️" aria-pressed="false">❤️ <b data-reaction-count="love">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="haha" aria-label="ضحك 😂" aria-pressed="false">😂 <b data-reaction-count="haha">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="care" aria-label="رعاية 🥰" aria-pressed="false">🥰 <b data-reaction-count="care">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="wow" aria-label="دهشة 😮" aria-pressed="false">😮 <b data-reaction-count="wow">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="sad" aria-label="حزن 😢" aria-pressed="false">😢 <b data-reaction-count="sad">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="angry" aria-label="غضب 😡" aria-pressed="false">😡 <b data-reaction-count="angry">0</b></button>
+      <button type="button" class="button ghost small" data-reaction="fire" aria-label="نار 🔥" aria-pressed="false">🔥 <b data-reaction-count="fire">0</b></button>
+      </div><button type="button" class="button ghost small" data-toggle-comments>💬 التعليقات</button>`;
     const comments = document.createElement("div");
     comments.className = "post-comments";
     comments.hidden = true;
@@ -107,27 +115,38 @@
     comments.append(commentList, commentForm);
     card.append(head, body, foot, actions, comments);
 
-    const likeButton = actions.querySelector("[data-like]");
-    const likeCount = actions.querySelector("[data-like-count]");
+    const reactionButtons = [...actions.querySelectorAll("[data-reaction]")];
     async function refreshLikes() {
-      const { count, error } = await client.from("post_reactions").select("id", { count: "exact", head: true }).eq("post_id", post.id);
-      if (!error) likeCount.textContent = String(count || 0);
-      const { data: mine } = await client.from("post_reactions").select("id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle();
-      likeButton.classList.toggle("is-liked", !!mine);
-      likeButton.querySelector("span").textContent = mine ? "أعجبك" : "إعجاب";
+      const { data: rows, error } = await client.from("post_reactions").select("id,user_id,reaction").eq("post_id", post.id);
+      if (error) { toast("تعذر تحميل التفاعلات: " + error.message, "error"); return; }
+      const counts = { like: 0, love: 0, haha: 0, care: 0, wow: 0, sad: 0, angry: 0, fire: 0 };
+      for (const row of rows || []) if (Object.prototype.hasOwnProperty.call(counts, row.reaction)) counts[row.reaction]++;
+      const mine = (rows || []).find(row => row.user_id === user.id);
+      for (const button of reactionButtons) {
+        const key = button.dataset.reaction;
+        const count = button.querySelector("[data-reaction-count]");
+        if (count) count.textContent = String(counts[key] || 0);
+        button.setAttribute("aria-pressed", String(mine?.reaction === key));
+        button.classList.toggle("is-liked", mine?.reaction === key);
+      }
     }
-    likeButton.addEventListener("click", async () => {
-      likeButton.disabled = true;
+    for (const button of reactionButtons) button.addEventListener("click", async () => {
+      button.disabled = true;
       try {
-        const { data: mine, error: readError } = await client.from("post_reactions").select("id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle();
+        const { data: mine, error: readError } = await client.from("post_reactions").select("id,reaction").eq("post_id", post.id).eq("user_id", user.id).maybeSingle();
         if (readError) throw readError;
-        const result = mine
-          ? await client.from("post_reactions").delete().eq("id", mine.id)
-          : await client.from("post_reactions").insert({ post_id: post.id, user_id: user.id, reaction: "like" });
+        let result;
+        if (mine?.reaction === button.dataset.reaction) {
+          result = await client.from("post_reactions").delete().eq("id", mine.id);
+        } else if (mine) {
+          result = await client.from("post_reactions").update({ reaction: button.dataset.reaction }).eq("id", mine.id);
+        } else {
+          result = await client.from("post_reactions").insert({ post_id: post.id, user_id: user.id, reaction: button.dataset.reaction });
+        }
         if (result.error) throw result.error;
         await refreshLikes();
-      } catch (e) { toast("تعذر حفظ الإعجاب: " + e.message, "error"); }
-      finally { likeButton.disabled = false; }
+      } catch (e) { toast("تعذر حفظ التفاعل: " + e.message, "error"); }
+      finally { button.disabled = false; }
     });
     async function refreshComments() {
       commentList.replaceChildren();
