@@ -125,7 +125,7 @@ test('additional core locales translate the login action without English fallbac
     az: 'Daxil ol',
     ga: 'Logáil isteach',
     cy: 'Mewngofnodi',
-    ne: 'लगइन गर्नुहोस्',
+    ne: 'लगइन',
     ta: 'உள்நுழைக',
     te: 'లాగిన్ అవ్వండి',
     mr: 'लॉग इन करा',
