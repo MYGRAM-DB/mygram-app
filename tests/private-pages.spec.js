@@ -12,7 +12,7 @@ window.supabase = {
     const result = { data: [], error: null, count: 0 };
     const query = {
       select() { return this; }, insert() { return this; }, update() { return this; },
-      delete() { window.__mockCalls.push({ table, op: 'delete' }); return this; }, upsert(payload) { window.__mockCalls.push({ table, op: 'upsert', payload }); return this; }, eq() { return this; },
+      delete() { return this; }, upsert() { return this; }, eq() { return this; },
       neq() { return this; }, in() { return this; }, or() { return this; }, gt() { return this; },
       order() { return this; }, limit() { return this; },
       maybeSingle() { return Promise.resolve({ data: null, error: null }); },
@@ -35,6 +35,7 @@ window.supabase = {
         q.insert = function(payload) { this._op = 'insert'; window.__mockCalls.push({ table, op: 'insert', payload }); return this; };
         q.update = function(payload) { this._op = 'update'; window.__mockCalls.push({ table, op: 'update', payload }); return this; };
         q.delete = function() { this._op = 'delete'; window.__mockCalls.push({ table, op: 'delete' }); return this; };
+        q.upsert = function(payload) { this._op = 'upsert'; window.__mockCalls.push({ table, op: 'upsert', payload }); return this; };
         return q;
       },
       storage: { from: () => ({
