@@ -4,7 +4,7 @@ test('language picker is available on login and supports the currently implement
   await page.goto('/login.html');
   const picker = page.locator('#mygramLanguage');
   await expect(picker).toBeVisible();
-  await expect(picker.locator('option')).toHaveCount(3);
+  await expect(picker.locator('option')).toHaveCount(11);
   await picker.selectOption('en');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
@@ -33,4 +33,15 @@ test('password recovery action is visible and does not submit the login form', a
   const recovery = page.locator('#resetPasswordButton');
   await expect(recovery).toBeVisible();
   await expect(recovery).toHaveAttribute('type', 'button');
+});
+
+test('Spanish locale translates core navigation and uses left-to-right layout', async ({ page }) => {
+  await page.goto('/login.html');
+  const picker = page.locator('#mygramLanguage');
+  await picker.selectOption('es');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+  await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+  await expect(page.locator('#formTitle')).toContainText('Iniciar sesión');
+  await picker.selectOption('zh');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'zh');
 });
