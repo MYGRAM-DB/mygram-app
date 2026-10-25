@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test('Supabase public client can reach the configured project without exposing private profiles', async ({ page }) => {
+test('anonymous Supabase client cannot read private profiles', async ({ page }) => {
   await page.goto('/login.html');
   await page.waitForFunction(() => Boolean(window.supabase && window.MYGRAM_CONFIG?.supabaseUrl && window.MYGRAM_CONFIG?.supabaseKey));
   const result = await page.evaluate(async () => {
@@ -12,6 +12,7 @@ test('Supabase public client can reach the configured project without exposing p
     const { data, error } = await client.from('profiles').select('id').limit(1);
     return { data, error: error ? { message: error.message, code: error.code } : null };
   });
-  expect(result.error).toBeNull();
-  expect(Array.isArray(result.data)).toBe(true);
+  expect(result.error).not.toBeNull();
+  expect(result.error.code).toBe('42501');
+  expect(result.data).toBeNull();
 });
