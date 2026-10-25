@@ -18,6 +18,7 @@ jobs:
   test:
     name: Browser and auth checks
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
