@@ -3,14 +3,16 @@ const { test, expect } = require('@playwright/test');
 const mockSupabase = `
 window.__mockCalls = [];
 window.__mockTableData = {
-  profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }]
+  profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }],
+  reels: [{ id: 'reel-test-uuid', user_id: 'other-user-uuid', video_url: 'https://example.test/reel.mp4', caption: 'A test reel', created_at: '2026-10-25T10:00:00.000Z' }],
+  reel_reactions: [], reel_comments: []
 };
 window.supabase = {
   createClient: () => {
     const result = { data: [], error: null, count: 0 };
     const query = {
       select() { return this; }, insert() { return this; }, update() { return this; },
-      delete() { return this; }, upsert() { return this; }, eq() { return this; },
+      delete() { window.__mockCalls.push({ table, op: 'delete' }); return this; }, upsert(payload) { window.__mockCalls.push({ table, op: 'upsert', payload }); return this; }, eq() { return this; },
       neq() { return this; }, in() { return this; }, or() { return this; }, gt() { return this; },
       order() { return this; }, limit() { return this; },
       maybeSingle() { return Promise.resolve({ data: null, error: null }); },
@@ -163,6 +165,30 @@ test('authenticated member can send a direct message to another member', async (
     window.__mockCalls.some(call => call.table === 'direct_messages' && call.op === 'insert' &&
       call.payload.sender_id === 'test-user-uuid' && call.payload.recipient_id === 'other-user-uuid' &&
       call.payload.body === 'Direct message smoke test')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can react to a reel with emoji', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  const reel = page.locator('#reelsList .reel-card').first();
+  await expect(reel).toBeVisible();
+  await reel.getByRole('button', { name: 'تفاعل ❤️' }).click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'reel_reactions' && call.op === 'upsert' &&
+      call.payload.reel_id === 'reel-test-uuid' && call.payload.reaction === 'love')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('authenticated member can comment on a reel', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  const form = page.locator('#reelsList .reel-card .reel-comment-form').first();
+  await form.locator('input').fill('Great reel!');
+  await form.getByRole('button', { name: 'إرسال' }).click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'reel_comments' && call.op === 'insert' &&
+      call.payload.reel_id === 'reel-test-uuid' && call.payload.content === 'Great reel!')
   )).toBe(true);
   expect(errors).toEqual([]);
 });
