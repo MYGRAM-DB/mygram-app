@@ -4,7 +4,7 @@ test('language picker is available on login and supports the currently implement
   await page.goto('/login.html');
   const picker = page.locator('#mygramLanguage');
   await expect(picker).toBeVisible();
-  await expect(picker.locator('option')).toHaveCount(31);
+  await expect(picker.locator('option')).toHaveCount(41);
   await picker.selectOption('en');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
@@ -49,4 +49,7 @@ test('Spanish locale translates core navigation and uses left-to-right layout', 
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
   await picker.selectOption('uk');
   await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
+  await picker.selectOption('fa');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fa');
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
 });
