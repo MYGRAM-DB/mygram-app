@@ -8,6 +8,7 @@ module.exports = defineConfig({
     ['html', { open: 'never' }]
   ],
   use: {
+    locale: 'ar',
     baseURL: 'http://127.0.0.1:4173/',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure'
