@@ -41,7 +41,7 @@ test('Spanish locale translates core navigation and uses left-to-right layout', 
   await picker.selectOption('es');
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
-  await expect(page.locator('#formTitle')).toContainText('Iniciar sesión');
+  await expect(page.locator('#formTitle')).toContainText('¡Qué bueno verte de nuevo!');
   await picker.selectOption('zh');
   await expect(page.locator('html')).toHaveAttribute('lang', 'zh');
   await picker.selectOption('ur');
