@@ -91,3 +91,7 @@ Current Telegram-inspired UI features include search, topics, pins, saved messag
 
 ### Provider setup checklist (Arabic)
 See \`docs/PROVIDER_SETUP_AR.md\` for the required Google OAuth, SMS/OTP, SMTP, Cloudflare TURN, LiveKit and meeting-AI setup steps, along with the pilot test checklist. Provider secrets must stay in the provider dashboards or Supabase Edge Function Secrets, never in client-side files.
+
+
+### Direct audio/video calls and provider setup
+Direct Messenger and WHATSMYGRAM now have separate one-to-one WebRTC voice/video call flows with private signaling tables. Calls require an existing direct conversation; TURN still needs provider credentials. Group calls in these spaces are not enabled. See docs/PROVIDER_SETUP_AR.md for the provider setup and pilot acceptance checklist.
