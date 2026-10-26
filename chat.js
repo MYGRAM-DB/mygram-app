@@ -73,6 +73,7 @@ async function loadMessages(){
  let query=db.from('chat_messages').select('id,chat_id,sender_id,body,attachment_url,attachment_type,duration_seconds,created_at,topic_id,reply_to_message_id').eq('chat_id',activeChat);const topicId=window.MYGRAM_MESSAGING_TOOLS?.getActiveTopicId();if(topicId)query=query.eq('topic_id',topicId);const {data,error}=await query.order('created_at',{ascending:true}).limit(200);
  if(error)throw error;
  if(!data?.length){box.innerHTML='<div class="chat-empty">ابدأ المحادثة برسالة لطيفة.</div>';return}
+ await window.MYGRAM_MESSAGING_TOOLS?.loadMessageReactions(data.map(m=>m.id));
  const messageMap=new Map(data.map(m=>[m.id,m]));
  for(const m of data){
   const bubble=document.createElement('article');bubble.className='chat-bubble'+(m.sender_id===me.id?' mine':'');
