@@ -77,3 +77,11 @@ body:has(.app-grid){background:var(--bg);color:var(--ink);font-family:"Cairo",sy
   #postsContainer .post-comments{padding:0 10px 12px}
   #postsContainer .comment-form{align-items:stretch}
 }
+
+
+/* Mobile scroll and hit-target reliability: sticky navigation plus long social feed. */
+@media(max-width:700px) {
+  html { scroll-behavior:auto !important; scroll-padding-top:78px; scroll-padding-bottom:78px; }
+  #composer, #feed { scroll-margin-top:78px; }
+  #refreshButton, #publishButton { position:relative; z-index:auto; scroll-margin-top:78px; scroll-margin-bottom:78px; pointer-events:auto; }
+}

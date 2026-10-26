@@ -22,6 +22,7 @@
   $("year").textContent = new Date().getFullYear();
 
   function toast(message, kind = "") {
+    if (kind === "error") window.MYGRAM_SOUNDS?.play("error");
     message=window.MYGRAM_TRANSLATE_TEXT?window.MYGRAM_TRANSLATE_TEXT(message):message;
     const el = $("toast");
     el.textContent = message;
@@ -376,6 +377,7 @@
       contentInput.value = "";
       $("charCount").textContent = "0";
       if (mediaInput) { selectedMedia=null; mediaInput.value=""; mediaPreview.replaceChildren(); mediaName.textContent="اختياري · صورة أو فيديو حتى 50 ميغابايت"; clearMedia.hidden=true; }
+      window.MYGRAM_SOUNDS?.play("success");
       toast("تم نشر منشورك بنجاح 💜", "success");
       await loadPosts();
     } catch (error) {

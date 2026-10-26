@@ -44,17 +44,34 @@ Deno.serve(async (req: Request) => {
     if (authError || !authData.user) return json(req, { error: "Invalid or expired session" }, 401);
 
     const body = await req.json().catch(() => ({}));
-    const chatId = String(body?.chatId || "");
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(chatId)) {
-      return json(req, { error: "A valid private chat is required" }, 400);
+    const product = body?.product === undefined ? "messenger" : String(body.product);
+    if (!["messenger", "whatsmygram", "direct"].includes(product)) {
+      return json(req, { error: "Unsupported call product" }, 400);
     }
-    const { data: membership, error: membershipError } = await supabase
-      .from("chat_members")
-      .select("chat_id")
-      .eq("chat_id", chatId)
-      .eq("user_id", authData.user.id)
-      .maybeSingle();
-    if (membershipError || !membership) return json(req, { error: "Chat membership required" }, 403);
+    const isUuid = (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+    if (product === "direct") {
+      const peerUserId = String(body?.peerUserId || "");
+      if (!isUuid(peerUserId) || peerUserId === authData.user.id) {
+        return json(req, { error: "A valid direct-message peer is required" }, 400);
+      }
+      const relationship = await supabase.from("direct_messages").select("id")
+        .or("and(sender_id.eq." + authData.user.id + ",recipient_id.eq." + peerUserId + "),and(sender_id.eq." + peerUserId + ",recipient_id.eq." + authData.user.id + ")")
+        .limit(1).maybeSingle();
+      if (relationship.error || !relationship.data) {
+        return json(req, { error: "Send or receive a direct message before calling this user" }, 403);
+      }
+    } else {
+      const chatId = String(body?.chatId || "");
+      if (!isUuid(chatId)) return json(req, { error: "A valid private chat is required" }, 400);
+      const membershipQuery = product === "whatsmygram"
+        ? supabase.from("whatsmygram_chat_members").select("chat_id")
+        : supabase.from("chat_members").select("chat_id");
+      const { data: membership, error: membershipError } = await membershipQuery
+        .eq("chat_id", chatId)
+        .eq("user_id", authData.user.id)
+        .maybeSingle();
+      if (membershipError || !membership) return json(req, { error: "Chat membership required" }, 403);
+    }
 
     const turnKeyId = Deno.env.get("CLOUDFLARE_TURN_KEY_ID");
     const turnKey = Deno.env.get("CLOUDFLARE_TURN_KEY");

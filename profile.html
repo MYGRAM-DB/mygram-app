@@ -6,7 +6,9 @@
   <link rel="icon" type="image/svg+xml" href="logo.svg"><title>MYGRAM | الملف الشخصي</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="config.js"></script><script defer src="country-data.js"></script><script defer src="language.js"></script><script defer src="auth-guard.js"></script><script defer src="profile.js"></script><script defer src="profile-tabs.js"></script><script defer src="notifications.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="presence.js"></script>
+  <script defer src="presence-heartbeat.js"></script><script defer src="country-data.js"></script><script defer src="language.js"></script><script defer src="auth-guard.js"></script><script defer src="profile.js"></script><script defer src="profile-tabs.js"></script><script defer src="audio-feedback.js"></script><script defer src="notifications.js"></script>
   <style>
     body.profile-page{min-height:100vh;background:radial-gradient(circle at 94% 2%,#deecff 0,transparent 27rem),#f4f7fc;color:#18283f}
     .profile-topbar{padding:0 clamp(12px,4vw,34px)}
@@ -71,13 +73,23 @@
     .profile-footer{padding:14px;color:#8c99ac;font-size:10px;text-align:center}
     @media(max-width:760px){.profile-topbar .topbar-inner{flex-wrap:wrap;padding-top:8px;padding-bottom:8px}.profile-topnav{order:3;width:100%;overflow-x:auto;flex-wrap:nowrap}.profile-topnav a{font-size:11px;white-space:nowrap;padding:7px 9px}.profile-wrap{padding:0 11px 42px;margin-top:14px}.profile-hero{padding:21px;border-radius:19px}.profile-hero h1{font-size:24px}.profile-hero p{font-size:11px}.profile-hero-symbol{flex-basis:55px;width:55px;height:55px;border-radius:17px}.profile-hero-symbol img{width:42px;height:42px}.profile-tabs-shell{padding:5px;border-radius:15px}.profile-tabs{gap:5px}.profile-tab{gap:7px;padding:8px;min-height:60px}.profile-tab-icon{flex-basis:32px;width:32px;height:32px;border-radius:10px;font-size:17px}.profile-tab-copy strong{font-size:10px}.profile-tab-copy small{font-size:9px}.profile-tab-panel{padding:15px;border-radius:17px}.profile-section-head h2{font-size:16px}.profile-grid{grid-template-columns:minmax(0,1fr)}.profile-grid .full-width{grid-column:auto}.profile-actions{bottom:7px;padding:8px;gap:6px}.profile-actions button,.profile-actions a{flex:1;min-width:0;padding:8px;font-size:10px}.profile-actions .logout-item{margin-inline-start:0}}
     @media(prefers-reduced-motion:reduce){.profile-tab-panel{animation:none}}
+    /* Mobile form stability: avoid smooth-scroll hit-test races with the sticky save bar. */
+    @media(max-width:760px){
+      html{scroll-behavior:auto!important;scroll-padding-top:80px;scroll-padding-bottom:24px}
+      body.profile-page{scroll-behavior:auto!important}
+      .profile-tabs-shell{position:static!important;transform:none!important}
+      .profile-tab-panel{animation:none!important;transform:none!important}
+      .profile-actions{position:static!important;inset:auto!important;transform:none!important;backdrop-filter:none!important}
+      #saveProfileButton{position:static!important;scroll-margin:0!important;pointer-events:auto!important}
+    }
   </style>
+  <link rel="stylesheet" href="brand.css">
 </head>
 <body class="profile-page">
   <header class="topbar profile-topbar">
     <div class="topbar-inner">
-      <a class="brand" href="home.html"><span class="brand-symbol"><img src="logo.svg" alt="" class="brand-icon"></span><span>MY<span class="brand-blue">GRAM</span></span></a>
-      <nav class="profile-topnav" aria-label="التنقل الرئيسي"><a href="home.html">الرئيسية</a><a href="people.html">اكتشف الأصدقاء</a><a href="services.html">الخدمات</a><a href="communities.html">المجتمعات</a><a href="chat.html">MYGRAM Chat</a></nav>
+      <a class="brand" href="home.html" aria-label="MYGRAM - الرئيسية"><img src="mygram-wordmark.svg" alt="MYGRAM" class="mygram-wordmark"></a>
+      <nav class="profile-topnav" aria-label="التنقل الرئيسي"><a href="home.html">الرئيسية</a><a href="people.html">اكتشف الأصدقاء</a><a href="services.html?tab=messages">MYGRAM Messenger</a><a href="chat.html">MYGRAM Chat</a><a href="whatsmygram.html">WHATSMYGRAM</a><a href="meetings.html">Meetings</a><a href="communities.html">المجتمعات</a></nav>
     </div>
   </header>
   <main class="profile-wrap">
