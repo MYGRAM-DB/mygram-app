@@ -1,5 +1,5 @@
 /* MYGRAM Visual Identity System
-   Wordmark, colors, and UI accents derived from the approved black/green/red brand mark.
+   Wordmark, colors and UI accents aligned with the MYGRAM cyan/indigo/purple brand board.
 */
 :root {
   --mygram-sky: #00D2FF;
@@ -347,3 +347,73 @@ button.primary:hover, a.primary:hover, .btn-primary:hover, .button-primary:hover
   background:#EEF2FF !important;
 }
 :focus-visible { outline-color:#818CF8 !important; }
+
+
+/* Final brand-book placements on the actual page components. */
+.home-page .welcome-banner {
+  background:linear-gradient(120deg,#111827 0%,#312E81 45%,#4F46E5 70%,#A855F7 100%) !important;
+  box-shadow:0 12px 30px #4F46E522 !important;
+}
+.home-page .welcome-banner:after {
+  border-color:#FFFFFF35 !important;
+  box-shadow:0 0 0 25px #FFFFFF0A,0 0 0 55px #FFFFFF0A !important;
+}
+.profile-page .profile-hero {
+  background:linear-gradient(120deg,#111827 0%,#312E81 45%,#4F46E5 72%,#A855F7 100%) !important;
+  box-shadow:0 16px 34px #4F46E51F !important;
+}
+.profile-page .profile-tab[aria-selected="true"] {
+  border-color:#C7D2FE !important;
+  background:linear-gradient(135deg,#EEF2FF,#FAF5FF) !important;
+  color:#3730A3 !important;
+}
+.profile-page .profile-tab[aria-selected="true"]:after {
+  background:linear-gradient(90deg,#00D2FF,#4F46E5,#A855F7) !important;
+}
+.profile-page .profile-section-icon {
+  background:#EEF2FF !important;
+  color:var(--mygram-indigo) !important;
+}
+.people-page .people-hero {
+  background:linear-gradient(120deg,#111827 0%,#312E81 48%,#4F46E5 74%,#A855F7 100%) !important;
+  border-color:#C7D2FE !important;
+}
+.people-page .people-tab[aria-selected="true"] {
+  background:#EEF2FF !important;
+  color:#3730A3 !important;
+  border-color:#C7D2FE !important;
+}
+.communities-page .topbar {
+  background:#111827 !important;
+  border-bottom-color:#28324A !important;
+  color:#F8FAFC !important;
+}
+.communities-page .community-hero, .communities-page .community-header {
+  background:linear-gradient(125deg,#111827 0%,#312E81 48%,#4F46E5 75%,#A855F7 100%) !important;
+}
+.whatsmygram-page {
+  --wa-green:#10B981;
+  --wa-bright:#00D2FF;
+  --wa-ink:#111827;
+  --wa-muted:#667085;
+  --wa-line:#E5E7EB;
+  --wa-bg:#F8FAFC;
+  --wa-surface:#FFFFFF;
+}
+.whatsmygram-page .wa-brand-row h1 { color:#4F46E5 !important; }
+.whatsmygram-page .wa-button.primary {
+  background:linear-gradient(120deg,#4F46E5,#A855F7) !important;
+  border-color:#4F46E5 !important;
+}
+.whatsmygram-page .wa-call-button:not(:disabled) { color:#047857 !important; }
+.chat-page .chat-entry[aria-current=true] {
+  border-color:#818CF8 !important;
+  background:#1E1B4B !important;
+}
+.chat-page .chat-bubble.mine {
+  background:#E0F2FE !important;
+  border-color:#BAE6FD !important;
+}
+.services-page .dm-call-media { background:#111827 !important; }
+.services-page .dm-call-toolbar { background:#F8FAFC !important; }
+.mygram-brand-stack small {color:#C4B5FD !important;}
