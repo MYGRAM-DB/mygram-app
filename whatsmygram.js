@@ -184,6 +184,10 @@
     for (const item of $('waChatList').querySelectorAll('[data-chat-id]')) item.setAttribute('aria-current', String(item.dataset.chatId === chatId));
     await renderPresence(peerIds.length === 1 ? peerIds[0] : null);
     await loadMessages();
+    window.dispatchEvent(new CustomEvent('mygram:whatsmygram-chat-opened', { detail: {
+      chatId, userId: me?.id, peerId: peerIds.length === 1 ? peerIds[0] : null,
+      isGroup: !!activeChatMeta.is_group || peerIds.length !== 1
+    }}));
     $('waBody').focus({ preventScroll: true });
   }
   async function loadMessages() {
@@ -382,5 +386,9 @@
     recordingStream?.getTracks().forEach(track => track.stop());
     if (inboxChannel && typeof db.removeChannel === 'function') db.removeChannel(inboxChannel).catch(() => {});
   });
+  window.MYGRAM_WHATSMYGRAM = {
+    openChat: (chatId, chatHint) => openChat(chatId, chatHint),
+    getContext: () => ({ me, activeChat, activeChatMeta, activeMembers })
+  };
   start().catch(error => toast('تعذر تشغيل WHATSMYGRAM: ' + error.message, true));
 })();
