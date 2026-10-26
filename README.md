@@ -60,9 +60,9 @@ The following still require account/provider setup or real-user end-to-end verif
 - SMS OTP is not free and unlimited across 205 countries from a reputable provider. Provider trial accounts have restrictions; real delivery depends on country support, sender rules, and paid credits. Configure Phone Auth and an SMS provider in Supabase, then test actual delivery per target country before promising availability.
 - Password screening should combine strong password length/rate limits with server-side leaked-password protection where available. A client-side privacy-preserving k-anonymity check can be an extra layer, but must never be presented as stronger than a server-enforced control or as a replacement for Supabase Auth protection.
 
-## Telegram-inspired messaging and MYGRAM Meetings (development branch)
+## Telegram-inspired messaging and MYGRAM Meetings (beta integration)
 
-The draft feature branch adds shared chat capabilities without merging the separate product surfaces into one confusing inbox:
+The beta changes have been merged into `main` without merging the separate product surfaces into one confusing inbox. The main-branch CI must pass before GitHub Pages is updated; check the [Actions page](https://github.com/MYGRAM-DB/mygram-app/actions) for the deployment result:
 
 - **Direct Messenger** remains the one-to-one private-message area.
 - **MYGRAM Chat** stays a standalone conversation/group chat.
@@ -84,7 +84,7 @@ The browser SpeechRecognition prototype uses the local attendee's microphone whe
 
 ### Scope and release status
 
-These changes are on the draft feature branch and are **not deployed to GitHub Pages** until the pull request is reviewed, tests pass, and the changes are merged to main. Additive meeting and chat-tool database migrations have been applied to the connected Supabase project. This does not mean the video/AI provider configuration or multi-account production acceptance tests are complete.
+The beta implementation is merged into `main`. GitHub Pages publishes the `main` branch only after the browser-test job passes; the current status is shown on the [Actions page](https://github.com/MYGRAM-DB/mygram-app/actions). Additive meeting and chat-tool database migrations have been applied to the connected Supabase project. This does not mean the video/AI provider configuration or multi-account production acceptance tests are complete.
 
 Current Telegram-inspired UI features include search, topics, pins, saved messages, polls, role foundations and separate chat/work-meeting experiences. Public channel discovery/subscriptions, bots/Mini Apps, full message scheduling/ephemeral-message controls, and a Secret Chats-style end-to-end-encrypted mode remain future work rather than features to promise as finished.
 
