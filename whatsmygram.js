@@ -108,6 +108,7 @@
     ]);
     if (chatsResult.error) throw chatsResult.error;
     if (membersResult.error) throw membersResult.error;
+    if (messagesResult.error) throw messagesResult.error;
     const chats = chatsResult.data || [], members = membersResult.data || [], messages = messagesResult.data || [];
     const peerIds = [...new Set(members.map(row => row.user_id).filter(id => id !== me.id))];
     const profilesResult = peerIds.length ? await db.from('profiles').select('id,username,full_name,avatar_url').in('id', peerIds) : { data: [], error: null };
@@ -144,8 +145,7 @@
       meta.appendChild(time);
       const unread = unreadByChat.get(chat.id) || 0;
       if (unread > 0 && activeChat !== chat.id) { const badge = document.createElement('span'); badge.className = 'wa-unread'; badge.textContent = unread > 99 ? '99+' : String(unread); meta.appendChild(badge); }
-      button.append(copy, meta); button.addEventListener('click', () => openChat(chat.id, chat).catch(error => toast('تعذر فتح المحادثة: ' + error.message, true)));
-      box.appendChild(button);
+      button.append(copy, meta); box.appendChild(button);
     }
     activeMembers = activeChat ? (membersByChat.get(activeChat) || activeMembers) : activeMembers;
     activeProfiles = profiles;
