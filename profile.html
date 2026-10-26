@@ -106,8 +106,16 @@
     <form id="profileForm" class="profile-form">
       <section class="profile-tab-panel" id="profilePanelBasics" data-profile-panel="basics" role="tabpanel" aria-labelledby="profileTabBasics" tabindex="0">
         <header class="profile-section-head"><span class="profile-section-icon" aria-hidden="true">👤</span><div><h2>معلومات الحساب</h2><p>اختر اسماً واضحاً واسم مستخدم فريداً يساعد الأصدقاء في العثور عليك.</p></div></header>
+        <div class="profile-grid">
+          <div><label for="firstName">الاسم الأول</label><input id="firstName" maxlength="60" autocomplete="given-name" required></div>
+          <div><label for="lastName">اسم العائلة</label><input id="lastName" maxlength="80" autocomplete="family-name" required></div>
+          <div><label for="dateOfBirth">تاريخ الميلاد</label><input id="dateOfBirth" type="date" autocomplete="bday" required><p class="field-note">تاريخ الميلاد خاص بك ولا يظهر علناً.</p></div>
+          <div><label for="gender">الجنس (اختياري)</label><select id="gender"><option value="">أفضل عدم الإجابة</option><option value="female">أنثى</option><option value="male">ذكر</option><option value="non_binary">غير ثنائي</option><option value="self_described">وصف آخر</option></select></div>
+          <div><label for="contactEmail">بريد للتواصل (اختياري)</label><input id="contactEmail" type="email" maxlength="254" autocomplete="email"></div>
+          <div><label for="contactPhone">رقم للتواصل (اختياري)</label><input id="contactPhone" type="tel" maxlength="24" autocomplete="tel" placeholder="+961..."><p class="field-note">إدخاله لا يعني أنه تم التحقق منه.</p></div>
+        </div>
         <div class="avatar-row"><img id="avatarPreview" class="avatar-preview" alt="معاينة الصورة الشخصية" hidden><div class="avatar-hint"><strong>صورتك الشخصية</strong><small>تظهر بجانب اسمك ومنشوراتك. يمكن تغييرها من تبويب الصور.</small></div></div>
-        <label for="fullName">الاسم الظاهر</label><input id="fullName" maxlength="80" autocomplete="name" required>
+        <label for="fullName">الاسم الظاهر على الملف (اختياري)</label><input id="fullName" maxlength="80" autocomplete="name">
         <label for="username">اسم المستخدم</label><input id="username" maxlength="30" pattern="[A-Za-z0-9_]{3,30}" autocomplete="username" required><p id="usernameNotice" class="field-note" aria-live="polite"></p>
         <label for="bio">نبذة عنك</label><textarea id="bio" maxlength="500" placeholder="اكتب نبذة قصيرة عنك…"></textarea><p class="field-note">حتى 500 حرف. شارك ما تحب أن يعرفه الآخرون عنك فقط.</p>
       </section>
