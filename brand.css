@@ -181,18 +181,18 @@ input[type="checkbox"], input[type="radio"], progress { accent-color:var(--mygra
 }
 
 /* Explicit application to MYGRAM's feed and composer components. */
-.home-page .welcome, body:has(#welcomeTitle) .welcome {
+.home-page .welcome, .home-page .welcome {
   background:linear-gradient(120deg,#111315 0%,#1D6E35 64%,#28A745 100%) !important;
   box-shadow:0 12px 30px #1F873822 !important;
 }
-body:has(#postForm) .heading-icon { background:var(--mygram-green-soft) !important; color:var(--mygram-green-dark) !important; }
-body:has(#postForm) #publishButton {
+.home-page .heading-icon { background:var(--mygram-green-soft) !important; color:var(--mygram-green-dark) !important; }
+.home-page #publishButton {
   color:#fff !important; background:var(--mygram-green) !important; border-color:var(--mygram-green-dark) !important;
 }
-body:has(#postForm) #publishButton:hover { background:var(--mygram-green-dark) !important; }
-body:has(#postForm) .button.ghost { color:#415047; border-color:#DDE6DE; background:#F8FAF8; }
-body:has(#postForm) .post-reaction-picker button[aria-pressed="true"] {
+.home-page #publishButton:hover { background:var(--mygram-green-dark) !important; }
+.home-page .button.ghost { color:#415047; border-color:#DDE6DE; background:#F8FAF8; }
+.home-page .post-reaction-picker button[aria-pressed="true"] {
   outline-color:var(--mygram-green) !important; background:var(--mygram-green-soft) !important;
 }
-body:has(#postForm) .reaction-trigger.is-liked { color:var(--mygram-green-dark) !important; background:var(--mygram-green-soft) !important; }
-body:has(#postForm) .nav-item.active { color:var(--mygram-green-dark) !important; background:var(--mygram-green-soft) !important; }
+.home-page .reaction-trigger.is-liked { color:var(--mygram-green-dark) !important; background:var(--mygram-green-soft) !important; }
+.home-page .nav-item.active { color:var(--mygram-green-dark) !important; background:var(--mygram-green-soft) !important; }
