@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 128" role="img" aria-labelledby="title desc">
+  <title id="title">MYGRAM</title>
+  <desc id="desc">MYGRAM signature wordmark for dark backgrounds</desc>
+  <defs>
+    <linearGradient id="mygram-ribbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF"/>
+      <stop offset="27%" stop-color="#2563EB"/>
+      <stop offset="53%" stop-color="#4F46E5"/>
+      <stop offset="76%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="mygram-word" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D2FF"/>
+      <stop offset="36%" stop-color="#4F46E5"/>
+      <stop offset="72%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <path d="M17 108V42C17 16 37 8 53 27L72 50C79 59 87 59 94 50L117 27C133 9 151 17 151 42V108"
+        fill="none" stroke="url(#mygram-ribbon)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="158" y="81" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="900" letter-spacing="-1.8">MY</text>
+  <text x="243" y="81" fill="url(#mygram-word)" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="900" letter-spacing="-1.8">GRAM</text>
+  <text x="161" y="106" fill="#D1D5DB" font-family="Arial, Helvetica, sans-serif" font-size="10.5" font-weight="700" letter-spacing="3.1">EVERYTHING YOU NEED IS HERE</text>
+</svg>
