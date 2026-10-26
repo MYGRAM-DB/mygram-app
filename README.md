@@ -59,3 +59,31 @@ The following still require account/provider setup or real-user end-to-end verif
 - Before real confirmation and password-reset email delivery, create a provider account, verify a domain you control, configure SPF/DKIM (and preferably DMARC), then enter the SMTP settings in the Supabase Auth dashboard and test delivery. Never commit SMTP passwords or API keys to this repository or browser code.
 - SMS OTP is not free and unlimited across 205 countries from a reputable provider. Provider trial accounts have restrictions; real delivery depends on country support, sender rules, and paid credits. Configure Phone Auth and an SMS provider in Supabase, then test actual delivery per target country before promising availability.
 - Password screening should combine strong password length/rate limits with server-side leaked-password protection where available. A client-side privacy-preserving k-anonymity check can be an extra layer, but must never be presented as stronger than a server-enforced control or as a replacement for Supabase Auth protection.
+
+## Telegram-inspired messaging and MYGRAM Meetings (development branch)
+
+The draft feature branch adds shared chat capabilities without merging the separate product surfaces into one confusing inbox:
+
+- **Direct Messenger** remains the one-to-one private-message area.
+- **MYGRAM Chat** stays a standalone conversation/group chat.
+- **WHATSMYGRAM** keeps its separate chat tables, attachments and interface.
+- **Shared chat tools** provide in-conversation search, group topics (thread filtering), moderator-controlled pinned messages, personal saved messages and polls/votes.
+- **Meetings** has a dedicated workspace with invite codes, attendance and role tracking, chair transfer with an audit trail, meeting text chat, opt-in transcript rows, per-attendee language preference, and individually scoped minutes.
+
+### Meetings service configuration
+
+The following Supabase Edge Function secrets are required before calling services become available:
+
+- LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET for video rooms and short-lived participant tokens.
+- SUPABASE_SERVICE_ROLE_KEY (or the configured Supabase secret-key equivalent) for the server-only minutes function.
+- MYGRAM_MEETING_AI_API_URL, MYGRAM_MEETING_AI_API_KEY, and MYGRAM_MEETING_AI_MODEL for an OpenAI-compatible AI endpoint. The currently deployed minutes function may also fall back to the corresponding MYGRAM_TRANSLATION_* secrets.
+
+Do not put any of these keys in client-side JavaScript or commit them to GitHub. Missing secrets deliberately produce a configuration error instead of pretending the feature works. Video and AI minutes still need end-to-end provider tests once secrets are configured.
+
+The browser SpeechRecognition prototype uses the local attendee's microphone when supported by their browser; it is not a server-side recording/diarization service for all remote participants. Minutes are stored per attendee and language. PDF export currently opens a Unicode HTML print view for the attendee to save as PDF; automatic email delivery and stored PDF attachments are not yet implemented.
+
+### Scope and release status
+
+These changes are on the draft feature branch and are **not deployed to GitHub Pages** until the pull request is reviewed, tests pass, and the changes are merged to main. Additive meeting and chat-tool database migrations have been applied to the connected Supabase project. This does not mean the video/AI provider configuration or multi-account production acceptance tests are complete.
+
+Current Telegram-inspired UI features include search, topics, pins, saved messages, polls, role foundations and separate chat/work-meeting experiences. Public channel discovery/subscriptions, bots/Mini Apps, full message scheduling/ephemeral-message controls, and a Secret Chats-style end-to-end-encrypted mode remain future work rather than features to promise as finished.
