@@ -81,11 +81,7 @@ body:has(.app-grid){background:var(--bg);color:var(--ink);font-family:"Cairo",sy
 
 /* Mobile scroll and hit-target reliability: sticky navigation plus long social feed. */
 @media(max-width:700px) {
-  html { scroll-behavior:auto !important; }
-  #composer, #feed { scroll-margin-top:76px; }
-  #composer { position:relative; z-index:1; }
-  #feed { position:relative; z-index:2; isolation:isolate; }
-  #feed .feed-title-row { position:relative; z-index:2; }
-  #refreshButton { position:relative; z-index:3; pointer-events:auto; }
-  #publishButton { position:relative; z-index:3; pointer-events:auto; }
+  html { scroll-behavior:auto !important; scroll-padding-top:78px; scroll-padding-bottom:78px; }
+  #composer, #feed { scroll-margin-top:78px; }
+  #refreshButton, #publishButton { position:relative; z-index:auto; scroll-margin-top:78px; scroll-margin-bottom:78px; pointer-events:auto; }
 }
