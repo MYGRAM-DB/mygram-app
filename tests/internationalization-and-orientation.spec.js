@@ -91,11 +91,11 @@ test('language selection translates placeholders and localizes country names wit
   await page.locator('#loginTab').click();
   await country.evaluate(el => { el.value = 'NL'; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#mygramLanguage').selectOption('en');
-  await expect(page.locator('#password')).toHaveAttribute('placeholder', 'Password');
+  await expect(page.locator('#password')).toHaveAttribute('placeholder', 'At least 8 characters');
   await expect(country.locator('option[value="NL"]')).toContainText('Netherlands');
   await expect(country).toHaveJSProperty('value', 'NL');
   await page.locator('#mygramLanguage').selectOption('ar');
-  await expect(page.locator('#password')).toHaveAttribute('placeholder', 'أدخل كلمة المرور');
+  await expect(page.locator('#password')).toHaveAttribute('placeholder', '8 أحرف على الأقل');
   await expect(country.locator('option[value="NL"]')).toContainText('هولندا');
   await expect(country).toHaveJSProperty('value', 'NL');
 });
