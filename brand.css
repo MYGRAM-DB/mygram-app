@@ -218,3 +218,31 @@ input[type="checkbox"], input[type="radio"], progress { accent-color:var(--mygra
 }
 
 .whatsmygram-page .wa-thread-actions [hidden] { display:none !important; }
+
+
+/* Prevent smooth-scroll hit-test races on profile forms on touch/mobile browsers.
+   Sticky save actions become normal flow controls on narrow screens. */
+@media(max-width:760px) {
+  html:has(body.profile-page) {
+    scroll-behavior:auto !important;
+    scroll-padding-top:82px;
+    scroll-padding-bottom:100px;
+  }
+  body.profile-page .profile-tab-panel {
+    animation:none !important;
+    transform:none !important;
+  }
+  body.profile-page .profile-actions {
+    position:relative !important;
+    bottom:auto !important;
+    z-index:auto !important;
+    backdrop-filter:none !important;
+  }
+  body.profile-page #saveProfileButton {
+    position:relative;
+    z-index:1;
+    pointer-events:auto;
+    scroll-margin-top:82px;
+    scroll-margin-bottom:100px;
+  }
+}
