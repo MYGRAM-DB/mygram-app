@@ -489,3 +489,14 @@ test('direct Messenger exposes shared search and saved-message tools in a privat
   await expect(page.getByPlaceholder('ابحث في رسائل هذه المحادثة…')).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+
+test('discover page searches people and renders safe result cards', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/discover.html');
+  await page.locator('#discoverQuery').fill('someone');
+  await page.locator('#discoverSubmit').click();
+  await expect(page.locator('#peopleResults')).toContainText('@someone');
+  await expect(page.locator('#peopleResults')).toContainText('Someone');
+  await expect(page.locator('#discoverStatus')).toContainText('1 أشخاص');
+  expect(errors).toEqual([]);
+});
