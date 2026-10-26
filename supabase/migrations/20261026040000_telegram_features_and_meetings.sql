@@ -47,6 +47,19 @@ as $$
   end;
 $$;
 
+create table if not exists public.messaging_moderators (
+  source text not null check (source in ('messenger','whatsmygram')),
+  space_id uuid not null,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  permissions text[] not null default array['pin','topics','polls','moderate']::text[],
+  added_by uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (source, space_id, user_id),
+  check (cardinality(permissions) between 1 and 8),
+  check (permissions <@ array['pin','topics','polls','moderate','post','invite','manage']::text[])
+);
+
+
 create or replace function private.can_manage_messaging_space(
   p_source text, p_space_id uuid, p_permission text, p_user_id uuid default auth.uid()
 )
@@ -69,17 +82,6 @@ revoke all on function private.can_manage_messaging_space(text, uuid, text, uuid
 grant execute on function private.is_messaging_member(text, uuid, uuid) to authenticated;
 grant execute on function private.can_manage_messaging_space(text, uuid, text, uuid) to authenticated;
 
-create table if not exists public.messaging_moderators (
-  source text not null check (source in ('messenger','whatsmygram')),
-  space_id uuid not null,
-  user_id uuid not null references auth.users(id) on delete cascade,
-  permissions text[] not null default array['pin','topics','polls','moderate']::text[],
-  added_by uuid not null references auth.users(id) on delete cascade,
-  created_at timestamptz not null default now(),
-  primary key (source, space_id, user_id),
-  check (cardinality(permissions) between 1 and 8),
-  check (permissions <@ array['pin','topics','polls','moderate','post','invite','manage']::text[])
-);
 
 alter table public.messaging_space_meta enable row level security;
 alter table public.messaging_moderators enable row level security;
