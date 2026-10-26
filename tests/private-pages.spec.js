@@ -412,6 +412,12 @@ test('standalone MYGRAM Chat shows peer identity and playable voice-note bubbles
       call.payload.reply_to_message_id === 'chat-voice-message-1' && call.payload.body === 'رد اختبار')
   )).toBe(true);
   await expect(page.locator('#mygramReplyIndicator')).toBeHidden();
+  await page.locator('#chatMessages .chat-bubble:not(.mine) button[aria-label="تفاعل 👍"]').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'messaging_message_reactions' && call.op === 'insert' &&
+      call.payload.source === 'messenger' && call.payload.message_id === 'chat-voice-message-1' &&
+      call.payload.emoji === '👍' && call.payload.user_id === 'test-user-uuid')
+  )).toBe(true);
   expect(errors).toEqual([]);
 });
 
