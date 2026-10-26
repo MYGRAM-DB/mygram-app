@@ -41,6 +41,17 @@ test('profile settings load country catalog and private discovery preferences fr
     await route.fulfill({ status: 204, body: '' });
   });
 
+  await page.route('**/rest/v1/profile_private_details**', async route => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{
+        user_id: userId, date_of_birth: '1992-10-07', gender: 'prefer_not_to_say', nationality_code: 'SY',
+        contact_email: null, contact_phone: null
+      }]) });
+      return;
+    }
+    await route.fulfill({ status: 204, body: '' });
+  });
+
   await page.route('**/rest/v1/user_preferences**', async route => {
     if (route.request().method() === 'GET') {
       await route.fulfill({
