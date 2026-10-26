@@ -205,9 +205,10 @@
       }
     } catch (error) { status('تعذر التعامل مع إشارة المكالمة: '+(error?.message||'خطأ غير معروف.'),true); }
   }
-  function syncContext(detail) {
+  async function syncContext(detail) {
     if (!detail || !detail.chatId || !me) return;
-    if (callId && activeChat !== detail.chatId) finishCall(true).catch(()=>{});
+    if (callId && activeChat === detail.chatId) return;
+    if (callId && activeChat !== detail.chatId) await finishCall(true);
     activeChat = detail.chatId;
     activePeerId = detail.peerId || null;
     isGroup = !!detail.isGroup;
@@ -220,7 +221,7 @@
     if (result.error) throw result.error;
     me = result.data?.session?.user;
     if (!me) return;
-    window.addEventListener('mygram:whatsmygram-chat-opened',event=>syncContext(event.detail));
+    window.addEventListener('mygram:whatsmygram-chat-opened',event=>syncContext(event.detail).catch(error=>status('تعذر تغيير سياق المكالمة: '+error.message,true)));
     $('waAudioCallButton').addEventListener('click',()=>beginCall('audio'));
     $('waVideoCallButton').addEventListener('click',()=>beginCall('video'));
     $('waAcceptCallButton').addEventListener('click',acceptCall);
