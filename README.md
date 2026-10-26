@@ -87,3 +87,7 @@ The browser SpeechRecognition prototype uses the local attendee's microphone whe
 These changes are on the draft feature branch and are **not deployed to GitHub Pages** until the pull request is reviewed, tests pass, and the changes are merged to main. Additive meeting and chat-tool database migrations have been applied to the connected Supabase project. This does not mean the video/AI provider configuration or multi-account production acceptance tests are complete.
 
 Current Telegram-inspired UI features include search, topics, pins, saved messages, polls, role foundations and separate chat/work-meeting experiences. Public channel discovery/subscriptions, bots/Mini Apps, full message scheduling/ephemeral-message controls, and a Secret Chats-style end-to-end-encrypted mode remain future work rather than features to promise as finished.
+
+
+### Provider setup checklist (Arabic)
+See \`docs/PROVIDER_SETUP_AR.md\` for the required Google OAuth, SMS/OTP, SMTP, Cloudflare TURN, LiveKit and meeting-AI setup steps, along with the pilot test checklist. Provider secrets must stay in the provider dashboards or Supabase Edge Function Secrets, never in client-side files.
