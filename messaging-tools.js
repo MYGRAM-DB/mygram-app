@@ -211,7 +211,11 @@
       const open=button(context.source==='direct'?'فتح المحادثة':'عرض',()=>{
         if(context.source==='direct'&&message){
           const peerId=message.sender_id===context.userId?message.recipient_id:message.sender_id;
-          if(peerId!==context.spaceId){const peer=peerProfiles.get(peerId);if(peer?.username){location.href='services.html?tab=messages&to='+encodeURIComponent(peer.username);return;}notice('تعذّر فتح المحادثة لأن اسم المستخدم غير متاح.',true);return;}
+          if(peerId!==context.spaceId){
+            const peer=peerProfiles.get(peerId);
+            if(peer?.username){location.href='services.html?tab=messages&to='+encodeURIComponent(peer.username);return;}
+            notice('تعذّر فتح المحادثة لأن اسم المستخدم غير متاح.',true);return;
+          }
         }
         jumpToMessage(saved.message_id);
       });
