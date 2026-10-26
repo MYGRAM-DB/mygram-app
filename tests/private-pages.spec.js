@@ -14,7 +14,7 @@ window.supabase = {
     const result = { data: [], error: null, count: 0 };
     const query = {
       select() { return this; }, insert() { return this; }, update() { return this; },
-      delete() { return this; }, upsert() { return this; }, eq() { return this; },
+      delete() { return this; }, upsert() { return this; }, eq() { return this; }, is() { return this; },
       neq() { return this; }, in() { return this; }, or() { return this; }, gt() { return this; },
       order() { return this; }, limit() { return this; },
       maybeSingle() { return Promise.resolve({ data: null, error: null }); },
@@ -49,13 +49,14 @@ window.supabase = {
         q.insert = function(payload) { this._op = 'insert'; window.__mockCalls.push({ table, op: 'insert', payload }); return this; };
         q.update = function(payload) { this._op = 'update'; window.__mockCalls.push({ table, op: 'update', payload }); return this; };
         q.delete = function() { this._op = 'delete'; window.__mockCalls.push({ table, op: 'delete' }); return this; };
-        q.upsert = function(payload) { this._op = 'upsert'; window.__mockCalls.push({ table, op: 'upsert', payload }); return this; };
+        q.upsert = function(payload) { this._op = 'upsert'; window.__mockCalls.push({ table, op: 'upsert', payload }); if (table === 'user_presence') { const rows = window.__mockTableData.user_presence || (window.__mockTableData.user_presence = []); const index = rows.findIndex(row => row.user_id === payload.user_id); if (index < 0) rows.push({ ...payload }); else Object.assign(rows[index], payload); } return this; };
         return q;
       },
       channel(name) { const channel = { name, handlers: [], on(event, filter, callback) { this.handlers.push({ event, filter }); return this; }, subscribe() { window.__mockChannels.push({ name, handlers: this.handlers }); return this; } }; return channel; },
       removeChannel: async () => 'ok',
       storage: { from: () => ({
         upload: async () => ({ data: { path: 'mock' }, error: null }),
+        createSignedUrl: async path => ({ data: { signedUrl: 'https://example.test/' + encodeURIComponent(path) }, error: null }),
         getPublicUrl: () => ({ data: { publicUrl: 'https://example.test/mock.png' } })
       }) }
     };
@@ -324,5 +325,66 @@ test('signed-in language fallback invokes translate-text and leaves user content
   expect(calls.some(call => call.body.targetLocale === 'es' && call.body.sourceLocale === 'auto' &&
     call.body.items.some(item => item.text === 'Untranslated MYGRAM test label'))).toBe(true);
   expect(calls.every(call => call.body.items.every(item => item.text !== 'Untranslated user post must stay original'))).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+
+test('direct Messenger shows the recipient avatar, live dot, voice bubble, and hide-status preference', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await page.evaluate(() => {
+    window.__mockTableData.profiles[0].avatar_url = 'https://example.test/avatar.png';
+    window.__mockTableData.user_presence = [
+      { user_id: 'test-user-uuid', show_online_status: true, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      { user_id: 'other-user-uuid', show_online_status: true, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+    ];
+    window.__mockTableData.direct_messages = [{
+      id: 'voice-message-1', sender_id: 'other-user-uuid', recipient_id: 'test-user-uuid',
+      body: '🎙️ رسالة صوتية', attachment_url: 'other-user-uuid/messages/voice.webm',
+      attachment_type: 'audio', duration_seconds: 7, created_at: '2026-10-26T00:00:00.000Z', read_at: null
+    }];
+  });
+  await selectServiceTab(page, 'messages');
+  await page.locator('#messageUsername').fill('someone');
+  await page.locator('#loadChat').click();
+  await expect(page.locator('#dmConversationHeader')).toBeVisible();
+  await expect(page.locator('#dmPeerName')).toHaveText('Someone');
+  await expect(page.locator('#dmPeerAvatar img')).toHaveAttribute('src', 'https://example.test/avatar.png');
+  await expect(page.locator('#dmPeerPresence')).toContainText('متصل الآن');
+  await expect(page.locator('#dmPeerPresence .presence-dot.is-online')).toBeVisible();
+  await expect(page.locator('.dm-message-bubble .voice-note-card audio')).toBeVisible();
+  await expect(page.locator('.dm-message-bubble .voice-note-copy small')).toHaveText('00:07');
+  const toggle = page.locator('#showPresenceToggle');
+  await expect(toggle).toBeChecked();
+  await toggle.uncheck();
+  await expect.poll(() => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'user_presence' && call.op === 'upsert' &&
+      call.payload.user_id === 'test-user-uuid' && call.payload.show_online_status === false && call.payload.last_seen_at === null)
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('standalone MYGRAM Chat shows peer identity and playable voice-note bubbles', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/chat.html');
+  await page.evaluate(() => {
+    window.__mockTableData.profiles[0].avatar_url = 'https://example.test/chat-avatar.png';
+    window.__mockTableData.user_presence = [
+      { user_id: 'test-user-uuid', show_online_status: true, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      { user_id: 'other-user-uuid', show_online_status: true, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+    ];
+    window.__mockTableData.chat_messages = [{
+      id: 'chat-voice-message-1', chat_id: 'chat-test-uuid', sender_id: 'other-user-uuid',
+      body: '🎙️ رسالة صوتية', attachment_url: 'other-user-uuid/chats/chat-test-uuid/voice.webm',
+      attachment_type: 'audio', duration_seconds: 11, created_at: '2026-10-26T00:00:00.000Z'
+    }];
+  });
+  await page.locator('#chatUsername').fill('someone');
+  await page.locator('#newChatForm button').click();
+  await expect(page.locator('#threadHead .thread-peer-name')).toHaveText('Someone');
+  await expect(page.locator('#threadHead .presence-avatar img')).toHaveAttribute('src', 'https://example.test/chat-avatar.png');
+  await expect(page.locator('#activePeerPresence')).toContainText('متصل الآن');
+  await expect(page.locator('#activePeerPresence .presence-dot.is-online')).toBeVisible();
+  await expect(page.locator('#chatMessages .chat-bubble .voice-note-card audio')).toBeVisible();
+  await expect(page.locator('#chatMessages .voice-note-copy small')).toHaveText('00:11');
+  await expect(page.locator('#showPresenceToggle')).toBeChecked();
   expect(errors).toEqual([]);
 });
