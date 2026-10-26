@@ -200,6 +200,7 @@
     const box = $('waMessages'); box.replaceChildren();
     const others = activeMembers.filter(member => member.user_id !== me.id);
     const allOthersRead = createdAt => others.length > 0 && others.every(member => member.last_read_at && new Date(member.last_read_at) >= new Date(createdAt));
+    await window.MYGRAM_MESSAGING_TOOLS?.loadMessageReactions((data || []).map(message => message.id));
     if (!data?.length) {
       const empty = document.createElement('div'); empty.className = 'wa-empty'; empty.innerHTML = '<span class="wa-empty-icon">🌿</span>ابدأ المحادثة برسالة لطيفة.<br>رسائلك الخاصة تبقى ضمن أعضاء هذه المحادثة.';
       box.appendChild(empty);
