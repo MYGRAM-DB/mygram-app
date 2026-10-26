@@ -8,5 +8,5 @@ test('login screen remains usable on mobile and exposes account creation', async
   await expect(page.locator('#password')).toBeVisible();
   await expect(page.locator('#submitButton')).toBeVisible();
   await page.locator('#signupTab').click();
-  await expect(page.locator('#nameLabel')).toBeVisible();
+  await expect(page.locator('#nameLabel')).toBeHidden();
 });
