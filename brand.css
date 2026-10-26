@@ -1,22 +1,30 @@
 /* MYGRAM Visual Identity System
-   Wordmark, colors, and UI accents derived from the approved black/green/red brand mark.
+   Wordmark, colors and UI accents aligned with the MYGRAM cyan/indigo/purple brand board.
 */
 :root {
-  --mygram-black: #111315;
-  --mygram-green: #28A745;
-  --mygram-green-dark: #1F8738;
-  --mygram-green-soft: #EAF6ED;
-  --mygram-red: #EF343B;
-  --mygram-red-dark: #C92730;
-  --mygram-red-soft: #FFF0F0;
-  --mygram-paper: #F7F8F6;
+  --mygram-sky: #00D2FF;
+  --mygram-indigo: #4F46E5;
+  --mygram-purple: #A855F7;
+  --mygram-emerald: #10B981;
+  --mygram-amber: #F59E0B;
+  --mygram-coral: #F43F5E;
+  --mygram-dark: #111827;
+  --mygram-light: #F8FAFC;
+  --mygram-black: #0B1020;
+  --mygram-green: var(--mygram-emerald);
+  --mygram-green-dark: #047857;
+  --mygram-green-soft: #D1FAE5;
+  --mygram-red: var(--mygram-coral);
+  --mygram-red-dark: #BE123C;
+  --mygram-red-soft: #FFE4E6;
+  --mygram-paper: var(--mygram-light);
   --mygram-white: #FFFFFF;
-  --mygram-text: #171A18;
-  --mygram-muted: #66706A;
-  --mygram-line: #E1E7E2;
-  --mygram-focus: #8CCB9B;
-  --blue: var(--mygram-green);
-  --blue2: var(--mygram-green-dark);
+  --mygram-text: #111827;
+  --mygram-muted: #667085;
+  --mygram-line: #E5E7EB;
+  --mygram-focus: #A5B4FC;
+  --blue: var(--mygram-indigo);
+  --blue2: #3730A3;
   --ink: var(--mygram-text);
   --muted: var(--mygram-muted);
   --line: var(--mygram-line);
@@ -32,8 +40,8 @@ a:hover { color: var(--mygram-green-dark); }
 .mygram-wordmark { display:block; width:auto; height:36px; max-width:188px; object-fit:contain; }
 .mygram-wordmark--small { height:29px; max-width:155px; }
 .mygram-brand-subline { display:block; margin-top:2px; color:var(--mygram-muted); font-size:9px; line-height:1.2; font-weight:800; letter-spacing:.13em; }
-.brand-blue, .brand-word > span { color:var(--mygram-green) !important; }
-.brand-mark, .brand-symbol, .people-brand-icon { background:var(--mygram-green-soft); border:1px solid #CFE8D4; box-shadow:none; }
+.brand-blue, .brand-word > span { color:var(--mygram-indigo) !important; }
+.brand-mark, .brand-symbol, .people-brand-icon { background:#EEF2FF; border:1px solid #C7D2FE; box-shadow:none; }
 .brand-icon, .brand-icon-large { filter:none !important; }
 .topbar .brand, .people-topbar .brand, .services-topbar .brand, .profile-topbar .brand { color:var(--mygram-black); }
 .topbar .brand:hover, .people-topbar .brand:hover, .services-topbar .brand:hover, .profile-topbar .brand:hover { color:var(--mygram-green-dark); }
@@ -269,3 +277,143 @@ input[type="checkbox"], input[type="radio"], progress { accent-color:var(--mygra
   .services-page .dm-call-toolbar #dmCallStatus {flex-basis:100%}
   .services-page .dm-call-media {grid-template-columns:1fr 1fr}
 }
+
+
+/* Brand-book fidelity: dark navy, cyan, indigo and purple are primary;
+   emerald, amber and coral remain status/action accents. */
+.brand-blue, .brand-word > span { color:var(--mygram-indigo) !important; }
+.brand-mark, .brand-symbol, .people-brand-icon {
+  background:linear-gradient(145deg,#E0F2FE,#EEF2FF 58%,#F3E8FF) !important;
+  border-color:#C7D2FE !important;
+}
+button.primary, a.primary, .btn-primary, .button-primary,
+.primary-btn, .publish-btn, .home-page #publishButton {
+  background:linear-gradient(120deg,var(--mygram-indigo),var(--mygram-purple)) !important;
+  border-color:var(--mygram-indigo) !important;
+  color:#fff !important;
+}
+button.primary:hover, a.primary:hover, .btn-primary:hover, .button-primary:hover,
+.primary-btn:hover, .publish-btn:hover, .home-page #publishButton:hover {
+  background:linear-gradient(120deg,#4338CA,#7E22CE) !important;
+}
+.services-page .services-hero {
+  background:linear-gradient(125deg,#111827 0%,#3730A3 55%,#A855F7 100%) !important;
+  box-shadow:0 20px 45px #4F46E522 !important;
+}
+.login-art {
+  background:linear-gradient(145deg,#030712 0%,#1E1B4B 52%,#4F46E5 78%,#A855F7 100%) !important;
+}
+.home-page .welcome, body.home-page .welcome {
+  background:linear-gradient(120deg,#111827 0%,#312E81 48%,#4F46E5 73%,#A855F7 100%) !important;
+  box-shadow:0 12px 30px #4F46E522 !important;
+}
+.meetings-page {
+  background:linear-gradient(145deg,#EEF2FF 0,#F8FAFC 290px,#FAF5FF 100%) !important;
+}
+.meet-hero {
+  background:linear-gradient(125deg,#111827 0%,#312E81 48%,#4F46E5 74%,#A855F7 100%) !important;
+  box-shadow:0 18px 44px #4F46E520 !important;
+}
+.meet-btn.primary {
+  background:linear-gradient(120deg,var(--mygram-indigo),var(--mygram-purple)) !important;
+  border-color:var(--mygram-indigo) !important;
+}
+.meet-btn.success, .meet-state, .meet-avatar {
+  background:var(--mygram-green-soft) !important;
+  color:var(--mygram-green-dark) !important;
+}
+.services-page .brand-symbol, .profile-hero-symbol, .people-hero-mark {
+  background:linear-gradient(145deg,#E0F2FE,#EEF2FF 62%,#F3E8FF) !important;
+  border-color:#C7D2FE !important;
+}
+.services-page .brand-symbol img, .profile-hero-symbol img, .people-hero-mark img {
+  filter:none !important;
+}
+.home-page .heading-icon {
+  background:#EEF2FF !important;
+  color:var(--mygram-indigo) !important;
+}
+.home-page .reaction-trigger.is-liked {
+  color:var(--mygram-indigo) !important;
+  background:#EEF2FF !important;
+}
+.home-page .post-reaction-picker button[aria-pressed="true"] {
+  background:#EEF2FF !important;
+  outline-color:var(--mygram-indigo) !important;
+}
+.topbar nav a[aria-current="page"], .topnav a[aria-current="page"],
+.services-topnav a[aria-current="page"], .profile-topnav a[aria-current="page"] {
+  color:var(--mygram-indigo) !important;
+  background:#EEF2FF !important;
+}
+:focus-visible { outline-color:#818CF8 !important; }
+
+
+/* Final brand-book placements on the actual page components. */
+.home-page .welcome-banner {
+  background:linear-gradient(120deg,#111827 0%,#312E81 45%,#4F46E5 70%,#A855F7 100%) !important;
+  box-shadow:0 12px 30px #4F46E522 !important;
+}
+.home-page .welcome-banner:after {
+  border-color:#FFFFFF35 !important;
+  box-shadow:0 0 0 25px #FFFFFF0A,0 0 0 55px #FFFFFF0A !important;
+}
+.profile-page .profile-hero {
+  background:linear-gradient(120deg,#111827 0%,#312E81 45%,#4F46E5 72%,#A855F7 100%) !important;
+  box-shadow:0 16px 34px #4F46E51F !important;
+}
+.profile-page .profile-tab[aria-selected="true"] {
+  border-color:#C7D2FE !important;
+  background:linear-gradient(135deg,#EEF2FF,#FAF5FF) !important;
+  color:#3730A3 !important;
+}
+.profile-page .profile-tab[aria-selected="true"]:after {
+  background:linear-gradient(90deg,#00D2FF,#4F46E5,#A855F7) !important;
+}
+.profile-page .profile-section-icon {
+  background:#EEF2FF !important;
+  color:var(--mygram-indigo) !important;
+}
+.people-page .people-hero {
+  background:linear-gradient(120deg,#111827 0%,#312E81 48%,#4F46E5 74%,#A855F7 100%) !important;
+  border-color:#C7D2FE !important;
+}
+.people-page .people-tab[aria-selected="true"] {
+  background:#EEF2FF !important;
+  color:#3730A3 !important;
+  border-color:#C7D2FE !important;
+}
+.communities-page .topbar {
+  background:#111827 !important;
+  border-bottom-color:#28324A !important;
+  color:#F8FAFC !important;
+}
+.communities-page .community-hero, .communities-page .community-header {
+  background:linear-gradient(125deg,#111827 0%,#312E81 48%,#4F46E5 75%,#A855F7 100%) !important;
+}
+.whatsmygram-page {
+  --wa-green:#10B981;
+  --wa-bright:#00D2FF;
+  --wa-ink:#111827;
+  --wa-muted:#667085;
+  --wa-line:#E5E7EB;
+  --wa-bg:#F8FAFC;
+  --wa-surface:#FFFFFF;
+}
+.whatsmygram-page .wa-brand-row h1 { color:#4F46E5 !important; }
+.whatsmygram-page .wa-button.primary {
+  background:linear-gradient(120deg,#4F46E5,#A855F7) !important;
+  border-color:#4F46E5 !important;
+}
+.whatsmygram-page .wa-call-button:not(:disabled) { color:#047857 !important; }
+.chat-page .chat-entry[aria-current=true] {
+  border-color:#818CF8 !important;
+  background:#1E1B4B !important;
+}
+.chat-page .chat-bubble.mine {
+  background:#E0F2FE !important;
+  border-color:#BAE6FD !important;
+}
+.services-page .dm-call-media { background:#111827 !important; }
+.services-page .dm-call-toolbar { background:#F8FAFC !important; }
+.mygram-brand-stack small {color:#C4B5FD !important;}
