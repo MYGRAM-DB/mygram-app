@@ -190,7 +190,7 @@
     if (!activeChat) return;
     const chatId = activeChat;
     let query = db.from('whatsmygram_messages')
-      .select('id,chat_id,sender_id,body,attachment_url,attachment_type,duration_seconds,created_at,topic_id')
+      .select('id,chat_id,sender_id,body,attachment_url,attachment_type,duration_seconds,created_at,topic_id,reply_to_message_id')
       .eq('chat_id', chatId);
     const topicId = window.MYGRAM_MESSAGING_TOOLS?.getActiveTopicId();
     if (topicId) query = query.eq('topic_id', topicId);
@@ -204,9 +204,11 @@
       const empty = document.createElement('div'); empty.className = 'wa-empty'; empty.innerHTML = '<span class="wa-empty-icon">🌿</span>ابدأ المحادثة برسالة لطيفة.<br>رسائلك الخاصة تبقى ضمن أعضاء هذه المحادثة.';
       box.appendChild(empty);
     }
+    const messageMap = new Map((data || []).map(message => [message.id,message]));
     for (const message of data || []) {
       const bubble = document.createElement('article');
       bubble.className = 'wa-bubble' + (message.sender_id === me.id ? ' mine' : '');
+      if (message.reply_to_message_id) { const parent = messageMap.get(message.reply_to_message_id); const quote = document.createElement('blockquote'); quote.className = 'mygram-message-quote'; quote.textContent = '↩ ' + (parent ? (parent.body || 'رسالة مرفقة') : 'رد على رسالة'); bubble.appendChild(quote); }
       const audioPlaceholder = message.attachment_type === 'audio' && /رسالة صوتية/.test(message.body || '');
       if (message.body && !audioPlaceholder) { const text = document.createElement('p'); text.className = 'wa-bubble-text'; text.textContent = message.body; bubble.appendChild(text); }
       if (message.attachment_url && message.attachment_type) {
@@ -337,9 +339,11 @@
         body: body || (attachment_type === 'audio' ? '🎙️ رسالة صوتية' : attachment_type === 'video' ? '🎬 فيديو مرفق' : '🖼️ صورة مرفقة'),
         attachment_url, attachment_type,
         duration_seconds: attachment_type === 'audio' && file === recordedVoiceFile ? recordedVoiceDurationSeconds : null,
-        topic_id: window.MYGRAM_MESSAGING_TOOLS?.getActiveTopicId() || null
+        topic_id: window.MYGRAM_MESSAGING_TOOLS?.getActiveTopicId() || null,
+        reply_to_message_id: window.MYGRAM_MESSAGING_TOOLS?.getReplyToMessageId() || null
       });
       if (error) throw error;
+      window.MYGRAM_MESSAGING_TOOLS?.clearReplyTarget();
       $('waBody').value = ''; $('waFile').value = ''; $('waComposeStatus').textContent = '';
       recordedVoiceFile = null; recordedVoiceDurationSeconds = null;
       await loadMessages(); await loadChatList();
