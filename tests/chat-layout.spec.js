@@ -20,7 +20,7 @@ test('Messenger shows the conversation list beside the active thread on desktop'
   const threadBox = await thread.boundingBox();
   expect(sideBox).not.toBeNull();
   expect(threadBox).not.toBeNull();
-  expect(sideBox.x + sideBox.width).toBeLessThanOrEqual(threadBox.x + 2);
+  expect(threadBox.x + threadBox.width).toBeLessThanOrEqual(sideBox.x + 2);
 });
 
 test('Messenger stacks its panels and uses a dark-first surface on mobile', async ({ page }) => {
