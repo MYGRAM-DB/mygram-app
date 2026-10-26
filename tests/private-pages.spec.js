@@ -159,6 +159,9 @@ test('authenticated member can submit a post through the feed flow', async ({ pa
 
 test('authenticated member can save profile changes through the editor', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/profile.html');
+  await page.locator('#firstName').fill('Test');
+  await page.locator('#lastName').fill('Member');
+  await page.locator('#dateOfBirth').fill('1992-10-07');
   await page.locator('#fullName').fill('Test Member');
   await page.locator('#username').fill('test_member_95');
   await page.locator('#bio').fill('Profile save regression test');
