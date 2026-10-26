@@ -1,22 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
-<title id="title">MYGRAM</title><desc id="desc">Animated gradient social camera with orbiting connection dots</desc>
-<defs>
- <linearGradient id="bg" x1="8" y1="6" x2="120" y2="124" gradientUnits="userSpaceOnUse"><stop stop-color="#ff4fb8"/><stop offset=".48" stop-color="#7857ff"/><stop offset="1" stop-color="#11c8f4"/></linearGradient>
- <linearGradient id="lens" x1="36" y1="30" x2="91" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset="1" stop-color="#d9f7ff"/></linearGradient>
- <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>
-<style>
- @keyframes orbit{to{transform:rotate(360deg)}} @keyframes pulse{0%,100%{opacity:.7;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
- .orbit{transform-origin:64px 64px;animation:orbit 12s linear infinite}.spark{transform-origin:center;animation:pulse 2.4s ease-in-out infinite}
- @media(prefers-reduced-motion:reduce){.orbit,.spark{animation:none}}
-</style>
-<rect x="9" y="9" width="110" height="110" rx="34" fill="url(#bg)"/>
-<rect x="17" y="17" width="94" height="94" rx="29" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".42" stroke-width="1.5"/>
-<g class="orbit" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2"><ellipse cx="64" cy="64" rx="53" ry="22" transform="rotate(-42 64 64)"/></g>
-<g fill="#fff" filter="url(#glow)"><circle class="spark" cx="24" cy="45" r="4"/><circle class="spark" cx="100" cy="86" r="4" style="animation-delay:-.8s"/><circle class="spark" cx="88" cy="23" r="3" style="animation-delay:-1.4s"/></g>
-<rect x="31" y="37" width="66" height="54" rx="17" fill="url(#lens)" stroke="#fff" stroke-width="2.5"/>
-<path d="M43 37 48 29h18l6 8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="64" cy="64" r="18" fill="url(#bg)"/><circle cx="64" cy="64" r="11.5" fill="none" stroke="#fff" stroke-width="3"/><circle cx="64" cy="64" r="5" fill="#fff"/>
-<circle cx="84" cy="47" r="4.5" fill="#ffca68"/>
-<path d="M29 98c15 10 54 12 71-3" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2.5" stroke-linecap="round"/>
+  <title id="title">MYGRAM</title>
+  <desc id="desc">Official MYGRAM mark using a black outline with green and red chevrons</desc>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="7.5">
+    <path d="M52 14H28L11 31V85L28 102H52" stroke="#111315"/>
+    <path d="M35 28L62 49L87 28" stroke="#28A745"/>
+    <path d="M35 80L62 59L87 80" stroke="#EF343B"/>
+  </g>
 </svg>
