@@ -216,3 +216,5 @@ input[type="checkbox"], input[type="radio"], progress { accent-color:var(--mygra
   .whatsmygram-page .wa-thread-actions .wa-button {padding:7px 8px;font-size:10px}
   .whatsmygram-page .wa-call-media {grid-template-columns:1fr 1fr}
 }
+
+.whatsmygram-page .wa-thread-actions [hidden] { display:none !important; }
