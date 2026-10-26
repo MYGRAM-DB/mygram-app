@@ -14,8 +14,8 @@ window.supabase = {
     const result = { data: [], error: null, count: 0 };
     const query = {
       select() { return this; }, insert() { return this; }, update() { return this; },
-      delete() { return this; }, upsert() { return this; }, eq() { return this; },
-      neq() { return this; }, in() { return this; }, or() { return this; }, gt() { return this; },
+      delete() { return this; }, upsert() { return this; }, eq() { return this; }, is() { return this; },
+      neq() { return this; }, in() { return this; }, or() { return this; }, ilike() { return this; }, gt() { return this; },
       order() { return this; }, limit() { return this; },
       maybeSingle() { return Promise.resolve({ data: null, error: null }); },
       single() { return Promise.resolve({ data: null, error: null }); },
@@ -46,16 +46,25 @@ window.supabase = {
         q.eq = function(column, value) { this._filters.push([column, value]); return this; };
         q.maybeSingle = function() { const rows = window.__mockTableData?.[table] || []; const found = rows.find(row => this._filters.every(([column, value]) => row[column] === value)); return Promise.resolve({ data: found || null, error: null }); };
         q.single = function() { if (table === 'chats' && this._op === 'insert') return Promise.resolve({ data: { id: 'chat-test-uuid' }, error: null }); return Promise.resolve({ data: null, error: null }); };
-        q.insert = function(payload) { this._op = 'insert'; window.__mockCalls.push({ table, op: 'insert', payload }); return this; };
+        q.insert = function(payload) {
+          this._op = 'insert';
+          window.__mockCalls.push({ table, op: 'insert', payload });
+          if (table === 'direct_messages') {
+            const rows = window.__mockTableData.direct_messages || (window.__mockTableData.direct_messages = []);
+            rows.push({ id: 'direct-message-test-' + (rows.length + 1), ...payload, created_at: new Date().toISOString(), read_at: null });
+          }
+          return this;
+        };
         q.update = function(payload) { this._op = 'update'; window.__mockCalls.push({ table, op: 'update', payload }); return this; };
         q.delete = function() { this._op = 'delete'; window.__mockCalls.push({ table, op: 'delete' }); return this; };
-        q.upsert = function(payload) { this._op = 'upsert'; window.__mockCalls.push({ table, op: 'upsert', payload }); return this; };
+        q.upsert = function(payload) { this._op = 'upsert'; window.__mockCalls.push({ table, op: 'upsert', payload }); if (table === 'user_presence') { const rows = window.__mockTableData.user_presence || (window.__mockTableData.user_presence = []); const index = rows.findIndex(row => row.user_id === payload.user_id); if (index < 0) rows.push({ ...payload }); else Object.assign(rows[index], payload); } return this; };
         return q;
       },
       channel(name) { const channel = { name, handlers: [], on(event, filter, callback) { this.handlers.push({ event, filter }); return this; }, subscribe() { window.__mockChannels.push({ name, handlers: this.handlers }); return this; } }; return channel; },
       removeChannel: async () => 'ok',
       storage: { from: () => ({
         upload: async () => ({ data: { path: 'mock' }, error: null }),
+        createSignedUrl: async path => ({ data: { signedUrl: 'https://example.test/' + encodeURIComponent(path) }, error: null }),
         getPublicUrl: () => ({ data: { publicUrl: 'https://example.test/mock.png' } })
       }) }
     };
@@ -217,6 +226,10 @@ test('authenticated member can send a direct message to another member', async (
   await page.locator('#messageUsername').fill('someone');
   await page.locator('#loadChat').click();
   await expect(page.locator('#chatBox')).toContainText('ابدأ المحادثة');
+  await expect(page.locator('#dmCallToolbar')).toBeVisible();
+  await expect(page.locator('#dmAudioCallButton')).toBeDisabled();
+  await expect(page.locator('#dmVideoCallButton')).toBeDisabled();
+  await expect.poll(() => page.evaluate(() => window.__mockChannels.some(channel => channel.name === 'direct-call-signals-test-user-uuid'))).toBe(true);
   await page.locator('#messageBody').fill('Direct message smoke test');
   await page.locator('#messageForm button[type="submit"]').click();
   await expect.poll(async () => page.evaluate(() =>
@@ -224,6 +237,8 @@ test('authenticated member can send a direct message to another member', async (
       call.payload.sender_id === 'test-user-uuid' && call.payload.recipient_id === 'other-user-uuid' &&
       call.payload.body === 'Direct message smoke test')
   )).toBe(true);
+  await expect(page.locator('#dmAudioCallButton')).toBeEnabled();
+  await expect(page.locator('#dmVideoCallButton')).toBeEnabled();
   expect(errors).toEqual([]);
 });
 
@@ -324,5 +339,136 @@ test('signed-in language fallback invokes translate-text and leaves user content
   expect(calls.some(call => call.body.targetLocale === 'es' && call.body.sourceLocale === 'auto' &&
     call.body.items.some(item => item.text === 'Untranslated MYGRAM test label'))).toBe(true);
   expect(calls.every(call => call.body.items.every(item => item.text !== 'Untranslated user post must stay original'))).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+
+test('direct Messenger shows the recipient avatar, live dot, voice bubble, and hide-status preference', async ({ page }) => {
+  const transparentPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/nWQAAAAASUVORK5CYII=', 'base64');
+  await page.route('https://example.test/avatar.png', route => route.fulfill({ status: 200, contentType: 'image/png', body: transparentPng }));
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await page.evaluate(() => {
+    window.__mockTableData.profiles[0].avatar_url = 'https://example.test/avatar.png';
+    window.__mockTableData.user_presence = [
+      { user_id: 'test-user-uuid', show_online_status: true, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      { user_id: 'other-user-uuid', show_online_status: true, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+    ];
+    window.__mockTableData.direct_messages = [{
+      id: 'voice-message-1', sender_id: 'other-user-uuid', recipient_id: 'test-user-uuid',
+      body: '🎙️ رسالة صوتية', attachment_url: 'other-user-uuid/messages/voice.webm',
+      attachment_type: 'audio', duration_seconds: 7, created_at: '2026-10-26T00:00:00.000Z', read_at: null
+    }];
+  });
+  await selectServiceTab(page, 'messages');
+  await page.locator('#messageUsername').fill('someone');
+  await page.locator('#loadChat').click();
+  await expect(page.locator('#dmConversationHeader')).toBeVisible();
+  await expect(page.locator('#dmPeerName')).toHaveText('Someone');
+  await expect(page.locator('#dmPeerAvatar img')).toHaveAttribute('src', 'https://example.test/avatar.png');
+  await expect(page.locator('#dmPeerPresence')).toContainText('متصل الآن');
+  await expect(page.locator('#dmPeerPresence .presence-dot.is-online')).toBeVisible();
+  await expect(page.locator('.dm-message-bubble .voice-note-card audio')).toBeVisible();
+  await expect(page.locator('.dm-message-bubble .voice-note-copy small')).toHaveText('00:07');
+  const toggle = page.locator('#showPresenceToggle');
+  await expect(toggle).toBeChecked();
+  await toggle.uncheck();
+  await expect.poll(() => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'user_presence' && call.op === 'upsert' &&
+      call.payload.user_id === 'test-user-uuid' && call.payload.show_online_status === false && call.payload.last_seen_at === null)
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('standalone MYGRAM Chat shows peer identity and playable voice-note bubbles', async ({ page }) => {
+  const transparentPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/nWQAAAAASUVORK5CYII=', 'base64');
+  await page.route('https://example.test/chat-avatar.png', route => route.fulfill({ status: 200, contentType: 'image/png', body: transparentPng }));
+  const errors = await openAuthenticatedPage(page, '/chat.html');
+  await page.evaluate(() => {
+    window.__mockTableData.profiles[0].avatar_url = 'https://example.test/chat-avatar.png';
+    window.__mockTableData.user_presence = [
+      { user_id: 'test-user-uuid', show_online_status: true, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      { user_id: 'other-user-uuid', show_online_status: true, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+    ];
+    window.__mockTableData.chat_messages = [{
+      id: 'chat-voice-message-1', chat_id: 'chat-test-uuid', sender_id: 'other-user-uuid',
+      body: '🎙️ رسالة صوتية', attachment_url: 'other-user-uuid/chats/chat-test-uuid/voice.webm',
+      attachment_type: 'audio', duration_seconds: 11, created_at: '2026-10-26T00:00:00.000Z'
+    }, {
+      id: 'chat-text-message-2', chat_id: 'chat-test-uuid', sender_id: 'test-user-uuid',
+      body: 'رسالة مني', attachment_url: null, attachment_type: null, duration_seconds: null,
+      created_at: '2026-10-26T00:00:01.000Z'
+    }];
+  });
+  await page.locator('#chatUsername').fill('someone');
+  await page.locator('#newChatForm button').click();
+  await expect(page.locator('#threadHead .thread-peer-name')).toHaveText('Someone');
+  await expect(page.locator('#threadHead .presence-avatar img')).toHaveAttribute('src', 'https://example.test/chat-avatar.png');
+  await expect(page.locator('#activePeerPresence')).toContainText('متصل الآن');
+  await expect(page.locator('#activePeerPresence .presence-dot.is-online')).toBeVisible();
+  await expect(page.locator('#chatMessages .chat-bubble .voice-note-card audio')).toBeVisible();
+  await expect(page.locator('#chatMessages .voice-note-copy small')).toHaveText('00:11');
+  const incomingBubble = await page.locator('#chatMessages .chat-bubble:not(.mine)').boundingBox();
+  const outgoingBubble = await page.locator('#chatMessages .chat-bubble.mine').boundingBox();
+  expect(incomingBubble).not.toBeNull();
+  expect(outgoingBubble).not.toBeNull();
+  expect(outgoingBubble.x).toBeGreaterThan(incomingBubble.x);
+  await expect(page.locator('#showPresenceToggle')).toBeChecked();
+  await expect(page.locator('#mygramMessagingTools')).toBeVisible();
+  await page.locator('#mygramMessagingTools [data-kind="topics"]').click();
+  await expect(page.getByPlaceholder('اسم الموضوع الجديد')).toBeVisible();
+  await page.locator('#chatMessages .chat-bubble:not(.mine) button[aria-label="الرد على الرسالة"]').click();
+  await expect(page.locator('#mygramReplyIndicator')).toBeVisible();
+  await expect(page.locator('#mygramReplyText')).toContainText('رسالة صوتية');
+  await page.locator('#chatBody').fill('رد اختبار');
+  await page.locator('#chatCompose button[type="submit"]').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'chat_messages' && call.op === 'insert' &&
+      call.payload.reply_to_message_id === 'chat-voice-message-1' && call.payload.body === 'رد اختبار')
+  )).toBe(true);
+  await expect(page.locator('#mygramReplyIndicator')).toBeHidden();
+  await page.locator('#chatMessages .chat-bubble:not(.mine) button[aria-label="تفاعل 👍"]').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'messaging_message_reactions' && call.op === 'insert' &&
+      call.payload.source === 'messenger' && call.payload.message_id === 'chat-voice-message-1' &&
+      call.payload.emoji === '👍' && call.payload.user_id === 'test-user-uuid')
+  )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+
+test('signed-in MYGRAM Meetings page exposes scheduling, invitations and meeting controls', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/npm/livekit-client@2.23.0/**', routeHandler =>
+    routeHandler.fulfill({ status: 200, contentType: 'application/javascript', body: 'window.LivekitClient = window.LivekitClient || {};' })
+  );
+  const errors = await openAuthenticatedPage(page, '/meetings.html');
+  await expect(page.getByRole('heading', { name: 'اجتماعات MYGRAM' })).toBeVisible();
+  await expect(page.locator('#createMeetingForm')).toBeVisible();
+  await expect(page.locator('#joinMeetingForm')).toBeVisible();
+  await expect(page.locator('#meetingList')).toContainText('ابدأ اجتماعك الأول');
+  await expect(page.locator('.meet-capacity strong')).toHaveText('31');
+  expect(errors).toEqual([]);
+});
+
+test('WHATSMYGRAM page loads its own audio/video calling controls', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/whatsmygram.html');
+  await expect(page.locator('body')).toContainText('WHATSMYGRAM');
+  await expect(page.locator('a[href="meetings.html"]')).toBeVisible();
+  await expect(page.locator('#waAudioCallButton')).toBeAttached();
+  await expect(page.locator('#waVideoCallButton')).toBeAttached();
+  await expect(page.locator('#waCallMedia')).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
+test('direct Messenger exposes shared search and saved-message tools in a private thread', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await selectServiceTab(page, 'messages');
+  await page.locator('#messageUsername').fill('someone');
+  await page.locator('#loadChat').click();
+  await expect(page.locator('#mygramMessagingTools')).toBeVisible();
+  await expect(page.locator('#mygramMessagingTools [data-kind="search"]')).toBeVisible();
+  await expect(page.locator('#mygramMessagingTools [data-kind="bookmarks"]')).toBeVisible();
+  await expect(page.locator('#mygramMessagingTools [data-kind="topics"]')).toBeHidden();
+  await page.locator('#mygramMessagingTools [data-kind="search"]').click();
+  await expect(page.getByPlaceholder('ابحث في رسائل هذه المحادثة…')).toBeVisible();
   expect(errors).toEqual([]);
 });
