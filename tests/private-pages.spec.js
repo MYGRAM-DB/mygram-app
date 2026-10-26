@@ -330,6 +330,8 @@ test('signed-in language fallback invokes translate-text and leaves user content
 
 
 test('direct Messenger shows the recipient avatar, live dot, voice bubble, and hide-status preference', async ({ page }) => {
+  const transparentPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/nWQAAAAASUVORK5CYII=', 'base64');
+  await page.route('https://example.test/avatar.png', route => route.fulfill({ status: 200, contentType: 'image/png', body: transparentPng }));
   const errors = await openAuthenticatedPage(page, '/services.html');
   await page.evaluate(() => {
     window.__mockTableData.profiles[0].avatar_url = 'https://example.test/avatar.png';
@@ -364,6 +366,8 @@ test('direct Messenger shows the recipient avatar, live dot, voice bubble, and h
 });
 
 test('standalone MYGRAM Chat shows peer identity and playable voice-note bubbles', async ({ page }) => {
+  const transparentPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/nWQAAAAASUVORK5CYII=', 'base64');
+  await page.route('https://example.test/chat-avatar.png', route => route.fulfill({ status: 200, contentType: 'image/png', body: transparentPng }));
   const errors = await openAuthenticatedPage(page, '/chat.html');
   await page.evaluate(() => {
     window.__mockTableData.profiles[0].avatar_url = 'https://example.test/chat-avatar.png';
