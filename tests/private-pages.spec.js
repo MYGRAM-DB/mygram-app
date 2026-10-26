@@ -46,7 +46,15 @@ window.supabase = {
         q.eq = function(column, value) { this._filters.push([column, value]); return this; };
         q.maybeSingle = function() { const rows = window.__mockTableData?.[table] || []; const found = rows.find(row => this._filters.every(([column, value]) => row[column] === value)); return Promise.resolve({ data: found || null, error: null }); };
         q.single = function() { if (table === 'chats' && this._op === 'insert') return Promise.resolve({ data: { id: 'chat-test-uuid' }, error: null }); return Promise.resolve({ data: null, error: null }); };
-        q.insert = function(payload) { this._op = 'insert'; window.__mockCalls.push({ table, op: 'insert', payload }); return this; };
+        q.insert = function(payload) {
+          this._op = 'insert';
+          window.__mockCalls.push({ table, op: 'insert', payload });
+          if (table === 'direct_messages') {
+            const rows = window.__mockTableData.direct_messages || (window.__mockTableData.direct_messages = []);
+            rows.push({ id: 'direct-message-test-' + (rows.length + 1), ...payload, created_at: new Date().toISOString(), read_at: null });
+          }
+          return this;
+        };
         q.update = function(payload) { this._op = 'update'; window.__mockCalls.push({ table, op: 'update', payload }); return this; };
         q.delete = function() { this._op = 'delete'; window.__mockCalls.push({ table, op: 'delete' }); return this; };
         q.upsert = function(payload) { this._op = 'upsert'; window.__mockCalls.push({ table, op: 'upsert', payload }); if (table === 'user_presence') { const rows = window.__mockTableData.user_presence || (window.__mockTableData.user_presence = []); const index = rows.findIndex(row => row.user_id === payload.user_id); if (index < 0) rows.push({ ...payload }); else Object.assign(rows[index], payload); } return this; };
@@ -218,6 +226,10 @@ test('authenticated member can send a direct message to another member', async (
   await page.locator('#messageUsername').fill('someone');
   await page.locator('#loadChat').click();
   await expect(page.locator('#chatBox')).toContainText('ابدأ المحادثة');
+  await expect(page.locator('#dmCallToolbar')).toBeVisible();
+  await expect(page.locator('#dmAudioCallButton')).toBeDisabled();
+  await expect(page.locator('#dmVideoCallButton')).toBeDisabled();
+  await expect.poll(() => page.evaluate(() => window.__mockChannels.some(channel => channel.name === 'direct-call-signals-test-user-uuid'))).toBe(true);
   await page.locator('#messageBody').fill('Direct message smoke test');
   await page.locator('#messageForm button[type="submit"]').click();
   await expect.poll(async () => page.evaluate(() =>
@@ -225,6 +237,8 @@ test('authenticated member can send a direct message to another member', async (
       call.payload.sender_id === 'test-user-uuid' && call.payload.recipient_id === 'other-user-uuid' &&
       call.payload.body === 'Direct message smoke test')
   )).toBe(true);
+  await expect(page.locator('#dmAudioCallButton')).toBeEnabled();
+  await expect(page.locator('#dmVideoCallButton')).toBeEnabled();
   expect(errors).toEqual([]);
 });
 
