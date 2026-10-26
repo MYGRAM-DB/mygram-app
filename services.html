@@ -15,6 +15,7 @@
   <script defer src="audio-feedback.js"></script>
   <script defer src="messaging-tools.js"></script>
   <script defer src="services.js"></script>
+  <script defer src="direct-calls.js"></script>
   <script defer src="language.js"></script>
   <script defer src="services-tabs.js"></script>
   <style>
@@ -227,6 +228,19 @@
         <div class="message-recipient"><label for="memberSearch">ابحث عن مستلم</label><input id="memberSearch" placeholder="ابحث بالاسم أو اسم المستخدم"><div id="membersResults" class="service-list"></div></div>
         <form id="directChatPicker" class="direct-chat-picker" onsubmit="return false"><label for="messageUsername">اسم مستخدم المستلم</label><div class="recipient-row"><input id="messageUsername" placeholder="username"><button id="loadChat" type="button">فتح المحادثة</button></div></form>
         <div id="dmConversationHeader" class="dm-conversation-header" hidden><span id="dmPeerAvatar" class="presence-avatar dm-peer-avatar">👤</span><div class="dm-peer-copy"><strong id="dmPeerName"></strong><small id="dmPeerHandle"></small><span id="dmPeerPresence" class="presence-status" role="status" aria-live="polite"></span></div></div>
+        <div id="dmCallToolbar" class="dm-call-toolbar" hidden>
+          <button id="dmAudioCallButton" type="button" class="button ghost" disabled aria-label="بدء مكالمة صوتية">📞 مكالمة صوتية</button>
+          <button id="dmVideoCallButton" type="button" class="button ghost" disabled aria-label="بدء مكالمة فيديو">🎥 مكالمة فيديو</button>
+          <button id="dmAcceptCallButton" type="button" class="button primary" hidden>قبول المكالمة</button>
+          <button id="dmRejectCallButton" type="button" class="button ghost" hidden>رفض</button>
+          <button id="dmEndCallButton" type="button" class="button danger" hidden>إنهاء المكالمة</button>
+          <span id="dmCallStatus" role="status" aria-live="polite"></span>
+        </div>
+        <div id="dmCallMedia" class="dm-call-media" hidden>
+          <video id="dmLocalCallVideo" autoplay muted playsinline aria-label="صورتك أثناء المكالمة"></video>
+          <video id="dmRemoteCallVideo" autoplay playsinline aria-label="صورة الطرف الآخر"></video>
+          <audio id="dmRemoteCallAudio" autoplay></audio>
+        </div>
         <div id="chatBox" class="chat-messages service-list"></div>
         <form id="messageForm">
           <label for="messageBody">رسالتك</label><textarea id="messageBody" maxlength="10000" placeholder="اكتب رسالة أو أرفق وسائط…"></textarea>
