@@ -88,12 +88,15 @@ test('language selection translates placeholders and localizes country names wit
   // Country data must still localize correctly without exposing an unusable registration path.
   const country = page.locator('#phoneCountry');
   await expect(page.locator('#phoneTab')).toBeHidden();
+  await country.evaluate(el => { el.value = 'NL'; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#mygramLanguage').selectOption('en');
   await expect(page.locator('#password')).toHaveAttribute('placeholder', 'Password');
   await expect(country.locator('option[value="NL"]')).toContainText('Netherlands');
+  await expect(country).toHaveJSProperty('value', 'NL');
   await page.locator('#mygramLanguage').selectOption('ar');
   await expect(page.locator('#password')).toHaveAttribute('placeholder', 'أدخل كلمة المرور');
   await expect(country.locator('option[value="NL"]')).toContainText('هولندا');
+  await expect(country).toHaveJSProperty('value', 'NL');
 });
 
 test('non-Arabic-script locales avoid Arabic-script fragments in the password field', async ({ page }) => {
