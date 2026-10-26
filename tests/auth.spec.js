@@ -1,4 +1,6 @@
 const { test, expect } = require('@playwright/test');
+const fs = require('fs');
+const path = require('path');
 
 test('dedicated login page exposes email and password authentication', async ({ page }) => {
   await page.goto('/login.html');
@@ -107,4 +109,16 @@ test('password breach check uses k-anonymity and blocks known compromised passwo
   await page.locator('#authForm').evaluate(form => form.requestSubmit());
   await expect(page.locator('#authNotice')).toContainText('ظهرت في تسريبات');
   expect(authOtpOrSignupCalls).toBe(0);
+});
+
+test('post-signup profile setup includes private onboarding details and persistence', async () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'profile.html'), 'utf8');
+  const script = fs.readFileSync(path.join(__dirname, '..', 'profile.js'), 'utf8');
+  for (const id of ['firstName', 'lastName', 'dateOfBirth', 'gender', 'contactEmail', 'contactPhone']) {
+    expect(html).toContain(`id="${id}"`);
+  }
+  expect(html).toContain('تاريخ الميلاد خاص بك ولا يظهر علناً');
+  expect(script).toContain("from('profile_private_details').upsert");
+  expect(script).toContain('profile_completed:true');
+  expect(script).toContain('dateOfBirth>new Date().toISOString().slice(0,10)');
 });
