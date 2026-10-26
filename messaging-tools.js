@@ -60,7 +60,7 @@
       {kind:'bookmarks',label:'⭐ المحفوظات'},
       {kind:'polls',label:'📊 استطلاع'}
     ];
-    specs.forEach(spec=>{const b=button(spec.label,()=>openPanel(spec.kind),false);b.dataset.kind=spec.kind;toolbar.appendChild(b);});
+    specs.forEach(spec=>{const b=button(spec.label,()=>openPanel(spec.kind),false);b.dataset.kind=spec.kind;b.hidden=context.source==='direct'&&!['search','bookmarks'].includes(spec.kind);toolbar.appendChild(b);});
     panelBody = document.createElement('div'); panelBody.className = 'mygram-tools-body'; panelBody.hidden = true;
     panel.append(toolbar,panelBody); composer.parentNode.insertBefore(panel,composer);
   }
@@ -175,13 +175,27 @@
     if(!(result.data||[]).length){empty(box,'لا توجد رسائل محفوظة. اضغط «حفظ» أسفل أي رسالة.');return;}
     const messages=await db.from(tableForSource(context.source)).select(context.source==='direct'?'id,sender_id,recipient_id,body,attachment_type,created_at':'id,body,attachment_type,created_at').in('id',result.data.map(x=>x.message_id));
     const map=new Map((messages.data||[]).map(m=>[m.id,m]));
+    let peerProfiles=new Map();
+    if(context.source==='direct'){
+      const peers=[...new Set((messages.data||[]).map(m=>m.sender_id===context.userId?m.recipient_id:m.sender_id).filter(id=>id!==context.userId))];
+      if(peers.length){const prof=await db.from('profiles').select('id,username,full_name').in('id',peers);peerProfiles=new Map((prof.data||[]).map(p=>[p.id,p]));}
+    }
     result.data.forEach(saved=>{
       const item=document.createElement('article');item.className='mygram-tools-item';
-      const p=document.createElement('p');p.textContent=map.has(saved.message_id)?messageText(map.get(saved.message_id)):(saved.label||'رسالة محفوظة');
-      const meta=document.createElement('small');meta.className='mygram-tools-muted';meta.textContent=new Date(saved.created_at).toLocaleString();
-      const row=document.createElement('div');row.className='mygram-tools-row';
       const message=map.get(saved.message_id);
-      const open=button(context.source==='direct'?'عرض الرسالة':'عرض',()=>jumpToMessage(saved.message_id));
+      const p=document.createElement('p');p.textContent=message?messageText(message):(saved.label||'رسالة محفوظة');
+      const meta=document.createElement('small');meta.className='mygram-tools-muted';
+      let metaText=new Date(saved.created_at).toLocaleString();
+      if(context.source==='direct'&&message){const peerId=message.sender_id===context.userId?message.recipient_id:message.sender_id;const peer=peerProfiles.get(peerId);metaText+=' · '+(peer?.full_name||peer?.username||'محادثة خاصة');}
+      meta.textContent=metaText;
+      const row=document.createElement('div');row.className='mygram-tools-row';
+      const open=button(context.source==='direct'?'فتح المحادثة':'عرض',()=>{
+        if(context.source==='direct'&&message){
+          const peerId=message.sender_id===context.userId?message.recipient_id:message.sender_id;
+          if(peerId!==context.spaceId){const peer=peerProfiles.get(peerId);if(peer?.username){location.href='services.html?tab=messages&to='+encodeURIComponent(peer.username);return;}notice('تعذّر فتح المحادثة لأن اسم المستخدم غير متاح.',true);return;}
+        }
+        jumpToMessage(saved.message_id);
+      });
       row.append(open,button('إزالة من المحفوظات',async()=>{
         const del=await db.from('messaging_bookmarks').delete().eq('user_id',context.userId).eq('source',context.source).eq('message_id',saved.message_id);
         if(del.error)notice('تعذر حذف الحفظ: '+del.error.message,true);else{notice('تمت إزالة الرسالة من المحفوظات.');renderBookmarks();}
