@@ -6,7 +6,9 @@
   <link rel="icon" type="image/svg+xml" href="logo.svg"><title>MYGRAM | اكتشف الأصدقاء</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="config.js"></script><script defer src="auth-guard.js"></script><script defer src="people.js"></script><script defer src="language.js"></script><script defer src="people-tabs.js"></script><script defer src="notifications.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="presence.js"></script>
+  <script defer src="presence-heartbeat.js"></script><script defer src="auth-guard.js"></script><script defer src="people.js"></script><script defer src="language.js"></script><script defer src="people-tabs.js"></script><script defer src="audio-feedback.js"></script><script defer src="notifications.js"></script>
   <style>
     body.people-page{min-height:100vh;background:radial-gradient(circle at 92% 3%,#deecff 0,transparent 26rem),#f4f7fc;color:#172b45}
     .people-topbar{height:auto;min-height:68px;padding:8px clamp(12px,4vw,36px);display:flex;align-items:center;justify-content:space-between;gap:15px;background:#ffffffdc;border-bottom:1px solid #e3eaf5;backdrop-filter:blur(18px);position:sticky;top:0;z-index:30}
@@ -67,12 +69,13 @@
     @media(max-width:560px){.people-topbar{position:static;padding:9px 12px}.people-hero{padding:21px;border-radius:19px}.people-hero h1{font-size:24px}.people-hero p{font-size:11px}.people-hero-mark{flex-basis:54px;width:54px;height:54px;border-radius:16px;font-size:27px}.people-tabs-shell{padding:6px;border-radius:15px}.people-tab{min-height:61px;padding:8px;gap:7px}.people-tab-icon{flex-basis:33px;width:33px;height:33px;border-radius:10px;font-size:18px}.people-tab-text strong{font-size:11px}.people-tab-text small{font-size:9px}.people-panel{padding:15px;border-radius:17px}.people-panel-head h2{font-size:16px}.member-card{padding:11px}.member-card .user-avatar{flex-basis:39px;width:39px;height:39px}}
     @media(prefers-reduced-motion:reduce){.people-panel{animation:none}}
   </style>
+  <link rel="stylesheet" href="brand.css">
 </head>
 <body class="people-page">
   <header class="people-topbar">
-    <a class="brand" href="home.html"><span class="people-brand-icon"><img src="logo.svg" alt=""></span><span>MY<span class="brand-blue">GRAM</span></span></a>
+    <a class="brand" href="home.html" aria-label="MYGRAM - الرئيسية"><img src="mygram-wordmark.svg" alt="MYGRAM" class="mygram-wordmark"></a>
     <nav class="people-topnav" aria-label="التنقل الرئيسي">
-      <a href="home.html">الرئيسية</a><a href="services.html">الخدمات</a><a href="communities.html">المجتمعات</a><a href="chat.html">MYGRAM Chat</a><a href="profile.html">ملفي الشخصي</a>
+      <a href="home.html">الرئيسية</a><a href="services.html?tab=messages">MYGRAM Messenger</a><a href="chat.html">MYGRAM Chat</a><a href="whatsmygram.html">WHATSMYGRAM</a><a href="meetings.html">Meetings</a><a href="communities.html">المجتمعات</a><a href="profile.html">ملفي الشخصي</a>
     </nav>
   </header>
   <main class="people-wrap">
