@@ -11,7 +11,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="config.js"></script>
   <script defer src="auth-guard.js"></script>
+  <script defer src="presence.js"></script>
+  <script defer src="audio-feedback.js"></script>
+  <script defer src="messaging-tools.js"></script>
   <script defer src="services.js"></script>
+  <script defer src="direct-calls.js"></script>
   <script defer src="language.js"></script>
   <script defer src="services-tabs.js"></script>
   <style>
@@ -107,21 +111,52 @@
     @media(max-width:900px){.services-topnav{gap:2px}.services-topnav a{padding:8px 7px}.services-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.services-wrap{padding-top:22px}}
     @media(max-width:600px){.services-topbar{position:static;align-items:flex-start;flex-wrap:wrap;padding:10px 13px}.services-topbar .brand{font-size:18px}.services-topnav{width:100%;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.services-topnav a{font-size:11px}.services-wrap{padding:16px 11px 36px}.services-hero{min-height:150px;padding:23px;border-radius:21px}.services-hero h1{font-size:27px}.services-hero p{font-size:12px}.services-hero-logo{width:70px;height:70px;border-radius:20px}.services-hero-logo img{width:54px;height:54px}.services-tabs-shell{padding:6px;margin-top:15px;border-radius:17px}.services-tabs{gap:5px}.service-tab{min-height:68px;padding:9px;gap:8px;border-radius:12px}.service-tab-icon{flex-basis:36px;width:36px;height:36px;border-radius:11px;font-size:20px}.service-tab-copy strong{font-size:12px}.service-tab-copy small{font-size:10px}.service-panel{padding:16px;border-radius:19px}.service-panel-head{gap:10px;padding-bottom:15px;margin-bottom:15px}.service-panel-icon{flex-basis:43px;width:43px;height:43px;border-radius:13px;font-size:22px}.service-panel-head h2{font-size:19px}.service-panel-head p{font-size:11px}.service-panel-badge{display:none}.service-card form{padding:13px;gap:9px;border-radius:15px}.service-list{grid-template-columns:minmax(0,1fr)}.chat-messages .item{max-width:100%}.services-footer{font-size:10px}}
     @media(prefers-reduced-motion:reduce){.service-panel{animation:none}.service-tab{transition:none}}
-  </style>
+  
+/* Direct Messenger identity, privacy controls and rounded message bubbles */
+.services-page .presence-preferences{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:12px 0;padding:10px 12px;border:1px solid #dbe6f4;border-radius:13px;background:#f7faff}
+.services-page .presence-preferences label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:750;color:#405671}
+.services-page .presence-preferences input{width:16px;height:16px;accent-color:#16a765}
+.services-page #presenceSettingStatus{font-size:11px;color:#a45a12}
+.services-page .dm-conversation-header[hidden]{display:none!important}
+.services-page .dm-conversation-header{display:flex;align-items:center;gap:12px;margin:14px 0 10px;padding:13px 15px;border:1px solid #dbe6f3;border-radius:16px;background:linear-gradient(130deg,#f8fbff,#eef6ff)}
+.services-page .dm-peer-copy{display:flex;min-width:0;flex-direction:column;gap:4px}
+.services-page .dm-peer-copy strong{font-size:15px;font-weight:900;color:#183452;overflow-wrap:anywhere}
+.services-page .dm-peer-copy small{font-size:11px;color:#6c8098;direction:ltr;text-align:start}
+.services-page .presence-avatar{display:grid;flex:0 0 auto;place-items:center;width:48px;height:48px;border-radius:50%;overflow:hidden;background:#d9e9fb;color:#20598b;font-weight:850;font-size:17px}
+.services-page .presence-avatar img{width:100%;height:100%;object-fit:cover}
+.services-page .presence-status{display:flex;align-items:center;gap:6px;min-height:16px;font-size:12px;color:#637990}
+.services-page .presence-dot{display:inline-block;flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:#8391a4}
+.services-page .presence-dot.is-online{background:#20b56d;box-shadow:0 0 0 3px #20b56d20}
+.services-page .presence-dot.is-offline{background:#8797aa}
+.services-page #chatBox.chat-messages{display:flex;flex-direction:column;gap:10px;min-height:120px;max-height:54vh;overflow-y:auto;padding:14px;border:1px solid #e1eaf5;border-radius:16px;background:#f7faff}
+.services-page .dm-message-bubble{display:flex;flex-direction:column;gap:8px;align-self:end;max-width:min(82%,620px);padding:11px 13px;border:1px solid #d8e5f5;border-radius:17px 17px 5px 17px;background:#fff;color:#253b57;box-shadow:0 4px 12px #1a46720a;overflow-wrap:anywhere}
+.services-page .dm-message-bubble.mine{align-self:start;border-color:#c7e7d9;border-radius:17px 17px 17px 5px;background:#e8f8f0;color:#174b35}
+.services-page .dm-message-body{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
+.services-page .dm-message-time{align-self:flex-end;color:#74869c;font-size:10px}
+.services-page .voice-note-card{display:grid;grid-template-columns:34px minmax(100px,1fr);align-items:center;gap:5px 10px;min-width:min(280px,70vw);padding:11px;border:1px solid #c5e1d7;border-radius:14px;background:#f7fffb}
+.services-page .voice-note-icon{grid-row:span 2;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#d5f3e5;color:#14754d;font-size:17px}
+.services-page .voice-note-copy{display:flex;flex-direction:column;gap:3px}
+.services-page .voice-note-copy strong{font-size:12px}
+.services-page .voice-note-copy small{font-size:11px;color:#718a80}
+.services-page .voice-note-card audio{grid-column:1/-1;width:100%;max-width:100%;height:36px}
+.services-page .dm-message-bubble img,.services-page .dm-message-bubble video{display:block;max-width:min(100%,450px);max-height:300px;border-radius:12px}
+.services-page .dm-message-bubble audio{max-width:100%}
+@media(max-width:700px){.services-page .dm-message-bubble{max-width:94%}.services-page #chatBox.chat-messages{max-height:50vh;padding:9px}.services-page .dm-peer-avatar{width:42px;height:42px}.services-page .voice-note-card{min-width:min(245px,72vw)}}
+</style>
   <script defer src="notifications.js"></script>
+  <link rel="stylesheet" href="brand.css">
 </head>
 <body class="services-page">
   <header class="services-topbar">
-    <a class="brand" href="home.html" aria-label="MYGRAM - الرئيسية">
-      <span class="brand-symbol"><img src="logo.svg" alt="" class="brand-icon"></span>
-      <span>MY<span class="brand-blue">GRAM</span></span>
-    </a>
+    <a class="brand" href="home.html" aria-label="MYGRAM - الرئيسية"><img src="mygram-wordmark.svg" alt="MYGRAM" class="mygram-wordmark"></a>
     <nav class="services-topnav" aria-label="التنقل الرئيسي">
       <a href="home.html">الرئيسية</a>
       <a href="people.html">الأصدقاء</a>
       <a href="profile.html">ملفي الشخصي</a>
       <a href="communities.html">المجتمعات</a>
       <a href="chat.html">MYGRAM Chat</a>
+      <a href="whatsmygram.html">WHATSMYGRAM</a>
+      <a href="meetings.html">Meetings</a>
     </nav>
     <label class="language-switch" title="Language / اللغة"><span aria-hidden="true">🌐</span><select id="mygramLanguage" aria-label="Language">
       <option value="ar">العربية</option><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option><option value="pt">Português</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="tr">Türkçe</option><option value="zh">中文</option><option value="ja">日本語</option><option value="ru">Русский</option><option value="hi">हिन्दी</option><option value="id">Bahasa Indonesia</option><option value="nl">Nederlands</option><option value="ko">한국어</option><option value="vi">Tiếng Việt</option><option value="pl">Polski</option><option value="bn">বাংলা</option><option value="ur">اردو</option><option value="th">ไทย</option><option value="sw">Kiswahili</option><option value="el">Ελληνικά</option><option value="sv">Svenska</option><option value="no">Norsk</option><option value="da">Dansk</option><option value="fi">Suomi</option><option value="fil">Filipino</option><option value="ms">Bahasa Melayu</option><option value="uk">Українська</option><option value="cs">Čeština</option><option value="ro">Română</option><option value="fa">فارسی</option><option value="he">עברית</option><option value="bg">Български</option><option value="hr">Hrvatski</option><option value="sr">Српски</option><option value="sk">Slovenčina</option><option value="sl">Slovenščina</option><option value="lt">Lietuvių</option><option value="lv">Latviešu</option><option value="et">Eesti</option><option value="hu">Magyar</option><option value="ca">Català</option><option value="eu">Euskara</option><option value="gl">Galego</option><option value="is">Íslenska</option><option value="mk">Македонски</option><option value="sq">Shqip</option><option value="bs">Bosanski</option><option value="ka">ქართული</option><option value="hy">Հայերեն</option><option value="az">Azərbaycanca</option><option value="ga">Gaeilge</option><option value="cy">Cymraeg</option><option value="ne">नेपाली</option><option value="ta">தமிழ்</option><option value="te">తెలుగు</option><option value="mr">मराठी</option><option value="am">አማርኛ</option><option value="si">සිංහල</option>
@@ -189,8 +224,23 @@
 
       <section id="messagesPanel" class="card service-card service-panel" data-service-panel="messages" role="tabpanel" aria-labelledby="serviceTabMessages" tabindex="0" hidden>
         <header class="service-panel-head"><span class="service-panel-icon" aria-hidden="true">✉</span><div><h2>الرسائل المباشرة</h2><p>ابدأ محادثة خاصة، وأرسل نصوصاً وصوراً ومقاطع صوتية.</p></div><span class="service-panel-badge">خاص</span></header>
+        <div class="presence-preferences"><label for="showPresenceToggle"><input id="showPresenceToggle" type="checkbox" checked><span>إظهار حالتي للآخرين</span></label><small id="presenceSettingStatus" role="status" aria-live="polite"></small></div>
         <div class="message-recipient"><label for="memberSearch">ابحث عن مستلم</label><input id="memberSearch" placeholder="ابحث بالاسم أو اسم المستخدم"><div id="membersResults" class="service-list"></div></div>
         <form id="directChatPicker" class="direct-chat-picker" onsubmit="return false"><label for="messageUsername">اسم مستخدم المستلم</label><div class="recipient-row"><input id="messageUsername" placeholder="username"><button id="loadChat" type="button">فتح المحادثة</button></div></form>
+        <div id="dmConversationHeader" class="dm-conversation-header" hidden><span id="dmPeerAvatar" class="presence-avatar dm-peer-avatar">👤</span><div class="dm-peer-copy"><strong id="dmPeerName"></strong><small id="dmPeerHandle"></small><span id="dmPeerPresence" class="presence-status" role="status" aria-live="polite"></span></div></div>
+        <div id="dmCallToolbar" class="dm-call-toolbar" hidden>
+          <button id="dmAudioCallButton" type="button" class="button ghost" disabled aria-label="بدء مكالمة صوتية">📞 مكالمة صوتية</button>
+          <button id="dmVideoCallButton" type="button" class="button ghost" disabled aria-label="بدء مكالمة فيديو">🎥 مكالمة فيديو</button>
+          <button id="dmAcceptCallButton" type="button" class="button primary" hidden>قبول المكالمة</button>
+          <button id="dmRejectCallButton" type="button" class="button ghost" hidden>رفض</button>
+          <button id="dmEndCallButton" type="button" class="button danger" hidden>إنهاء المكالمة</button>
+          <span id="dmCallStatus" role="status" aria-live="polite"></span>
+        </div>
+        <div id="dmCallMedia" class="dm-call-media" hidden>
+          <video id="dmLocalCallVideo" autoplay muted playsinline aria-label="صورتك أثناء المكالمة"></video>
+          <video id="dmRemoteCallVideo" autoplay playsinline aria-label="صورة الطرف الآخر"></video>
+          <audio id="dmRemoteCallAudio" autoplay></audio>
+        </div>
         <div id="chatBox" class="chat-messages service-list"></div>
         <form id="messageForm">
           <label for="messageBody">رسالتك</label><textarea id="messageBody" maxlength="10000" placeholder="اكتب رسالة أو أرفق وسائط…"></textarea>
