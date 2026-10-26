@@ -234,7 +234,7 @@
         loadMeetingChat().catch(() => {});
       })
       .on('postgres_changes', {event:'INSERT',schema:'public',table:'meeting_transcripts',filter:'meeting_id=eq.' + id}, () => { if(activeMeeting && activeMeeting.id===id)loadTranscript().catch(()=>{}); })
-      .on('INSERT', {event:'INSERT',schema:'public',table:'meeting_minutes',filter:'meeting_id=eq.' + id}, payload => {
+      .on('postgres_changes', {event:'INSERT',schema:'public',table:'meeting_minutes',filter:'meeting_id=eq.' + id}, payload => {
         if (payload.new && payload.new.recipient_id === me.id) { if(window.MYGRAM_SOUNDS)window.MYGRAM_SOUNDS.play('notification'); loadMinutes().catch(()=>{}); }
       }).subscribe();
   }
