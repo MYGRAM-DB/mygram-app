@@ -14,7 +14,8 @@
   <script defer src="presence-heartbeat.js"></script>
   <script defer src="audio-feedback.js"></script>
   <script defer src="home.js"></script>
-<style>.media-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}.media-picker label{cursor:pointer}.media-preview img,.media-preview video{display:block;max-width:100%;max-height:360px;border-radius:14px;margin-top:10px}.media-preview{position:relative;width:max-content;max-width:100%}.media-preview .attachment-remove{position:absolute;top:14px;right:8px;width:32px;height:32px;border:0;border-radius:50%;background:#e11d48;color:#fff;font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #0003;cursor:pointer}.media-picker{align-items:flex-start}.post-media{width:100%;max-height:520px;object-fit:contain;border-radius:14px;margin-top:12px;background:#f1f5f9}.post-body:empty{display:none}.post-reaction-picker{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.post-reaction-picker button[aria-pressed="true"]{outline:2px solid #087cf0;background:#eaf4ff}.post-reaction-picker b{font-size:12px}</style><script defer src="language.js"></script>
+<style>.media-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}.media-picker label{cursor:pointer}.media-preview img,.media-preview video{display:block;max-width:100%;max-height:360px;border-radius:14px;margin-top:10px}.media-preview{position:relative;width:max-content;max-width:100%}.media-preview .attachment-remove{position:absolute;top:14px;right:8px;width:32px;height:32px;border:0;border-radius:50%;background:#e11d48;color:#fff;font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #0003;cursor:pointer}.media-picker{align-items:flex-start}.post-media{width:100%;max-height:520px;object-fit:contain;border-radius:14px;margin-top:12px;background:#f1f5f9}.post-body:empty{display:none}.post-reaction-picker{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.post-reaction-picker button[aria-pressed="true"]{outline:2px solid #087cf0;background:#eaf4ff}.post-reaction-picker b{font-size:12px}.spaces-bar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:0 0 18px}.space-card{display:flex;align-items:center;gap:11px;min-width:0;padding:13px 14px;border:1px solid #e4ebf5;border-radius:17px;background:#fff;color:#203650;text-decoration:none;box-shadow:0 4px 15px #183d6507;transition:transform .16s,border-color .16s,box-shadow .16s}.space-card:hover{transform:translateY(-2px);border-color:#c4d8ef;box-shadow:0 11px 25px #183d6510}.space-icon{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border-radius:13px;background:#eff5ff;color:#3c75ad;font-size:21px}.space-card>span:nth-child(2){display:flex;flex-direction:column;gap:4px;min-width:0}.space-card strong{font-size:12px;font-weight:900;overflow-wrap:anywhere}.space-card small{font-size:10px;color:#8390a5;line-height:1.5}.space-arrow{margin-inline-start:auto;color:#a4b3c5}.messenger-space .space-icon{background:#eaf3ff;color:#277be0}.whats-space .space-icon{background:#e6f8ef;color:#07825e}.media-space .space-icon{background:#f5edff;color:#8a56c7}.feed-space .space-icon{background:#fff1e8;color:#c16a34}@media(max-width:560px){.spaces-bar{grid-template-columns:minmax(0,1fr);gap:8px}.space-card{padding:11px 12px}.space-icon{width:36px;height:36px;flex-basis:36px}}@media(prefers-reduced-motion:reduce){.space-card{transition:none}}
+</style><script defer src="language.js"></script>
   <script defer src="notifications.js"></script>
 </head>
 <body>
@@ -35,7 +36,10 @@
       <a class="nav-item active" href="#home"><span>⌂</span> الرئيسية</a>
       <a class="nav-item" href="#composer"><span class="nav-svg">＋</span> إنشاء منشور</a>
       <a class="nav-item" href="people.html"><span class="nav-svg">♙</span> الأصدقاء</a>
-      <a class="nav-item" href="services.html"><span>✦</span> الحالات والمحادثات</a>
+      <a class="nav-item" href="services.html?tab=messages"><span>✉</span> Messenger</a>
+      <a class="nav-item" href="whatsmygram.html"><span>◉</span> WHATSMYGRAM</a>
+      <a class="nav-item" href="services.html?tab=stories"><span>✦</span> الحالات والريلز والبث</a>
+      <a class="nav-item" href="communities.html"><span>♧</span> المجتمعات</a>
       <a class="nav-item" href="profile.html"><span class="nav-svg">◎</span> الملف الشخصي</a>
       <a class="nav-item" href="#feed"><span>▤</span> أحدث المنشورات</a>
       <div class="side-callout">
@@ -54,6 +58,13 @@
           <p>كل فكرة تستحق أن تُشارك.</p>
         </div>
         <div class="welcome-symbol" aria-hidden="true">✦</div>
+      </section>
+
+      <section class="spaces-bar" aria-label="مساحات MYGRAM">
+        <a class="space-card feed-space" href="#feed"><span class="space-icon">▤</span><span><strong>المجتمع والمنشورات</strong><small>اكتشف وشارك وتفاعل</small></span><span class="space-arrow">←</span></a>
+        <a class="space-card messenger-space" href="services.html?tab=messages"><span class="space-icon">✉</span><span><strong>MYGRAM Messenger</strong><small>محادثاتك ورسائلك الخاصة</small></span><span class="space-arrow">←</span></a>
+        <a class="space-card whats-space" href="whatsmygram.html"><span class="space-icon">◉</span><span><strong>WHATSMYGRAM</strong><small>محادثات فردية وجماعية مستقلة</small></span><span class="space-arrow">←</span></a>
+        <a class="space-card media-space" href="services.html?tab=stories"><span class="space-icon">✦</span><span><strong>القصص والريلز</strong><small>لحظات قصيرة ومحتوى متجدد</small></span><span class="space-arrow">←</span></a>
       </section>
 
       <section class="panel composer" id="composer">
@@ -94,8 +105,8 @@
 
   <nav class="mobile-nav" aria-label="التنقل">
     <a class="active" href="home.html" aria-label="الرئيسية"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8M5.5 9.5V21h13V9.5M9.5 21v-7h5v7"/></svg></span><small>الرئيسية</small></a>
-    <a href="services.html" aria-label="الحالات والمحادثات"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></span><small>الخدمات</small></a>
-    <a href="people.html" aria-label="الأصدقاء"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20v-1.3a6.5 6.5 0 0 1 13 0V20M16 5a3.5 3.5 0 0 1 0 6.8M18 14a5 5 0 0 1 3.5 4.8V20"/></svg></span><small>الأصدقاء</small></a>
+    <a href="services.html?tab=messages" aria-label="Messenger"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></span><small>Messenger</small></a>
+    <a href="whatsmygram.html" aria-label="WHATSMYGRAM"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a8.5 8.5 0 0 0-7.3 12.8L3.5 21l5.4-1.4A8.5 8.5 0 1 0 12 3Z"/><path d="M8.5 8.5c.5 3 2.5 5 5.5 6"/></svg></span><small>WHATSMYGRAM</small></a>
     <a class="nav-create" href="home.html#composer" aria-label="إنشاء منشور"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg></span><small>نشر</small></a>
     <a href="home.html#feed" aria-label="المنشورات"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><small>المنشورات</small></a>
     <a href="profile.html" aria-label="الملف الشخصي"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg></span><small>الملف الشخصي</small></a>
