@@ -1,9 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 128" role="img" aria-labelledby="title desc">
   <title id="title">MYGRAM</title>
-  <desc id="desc">Official MYGRAM mark using a black outline with green and red chevrons</desc>
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="7.5">
-    <path d="M52 14H28L11 31V85L28 102H52" stroke="#111315"/>
-    <path d="M35 28L62 49L87 28" stroke="#28A745"/>
-    <path d="M35 80L62 59L87 80" stroke="#EF343B"/>
-  </g>
+  <desc id="desc">MYGRAM ribbon M using sky blue, indigo, purple and emerald</desc>
+  <defs>
+    <linearGradient id="mygram-ribbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF"/>
+      <stop offset="27%" stop-color="#2563EB"/>
+      <stop offset="53%" stop-color="#4F46E5"/>
+      <stop offset="76%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="mygram-highlight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".18"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity=".02"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity=".25"/>
+    </linearGradient>
+  </defs>
+  <path d="M24 88V48C24 28 44 22 58 38L84 67C92 76 101 76 109 67L136 38C150 22 169 28 169 48V88"
+        fill="none" stroke="url(#mygram-ribbon)" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M24 88V48C24 28 44 22 58 38L84 67C92 76 101 76 109 67L136 38C150 22 169 28 169 48V88"
+        fill="none" stroke="url(#mygram-highlight)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
