@@ -5,7 +5,7 @@
   const db = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
   const $ = id => document.getElementById(id);
   let context = { source:null, spaceId:null, userId:null, chatType:'group' };
-  let activeTopicId = null, panel = null, panelBody = null, currentPanel = null, topics = [];
+  let activeTopicId = null, replyTarget = null, panel = null, panelBody = null, currentPanel = null, topics = [];
   const tableForSource = source => source === 'direct' ? 'direct_messages' : source === 'whatsmygram' ? 'whatsmygram_messages' : 'chat_messages';
   const messageText = m => m && m.body ? String(m.body) : (m && m.attachment_type ? '['+m.attachment_type+']' : 'رسالة');
   function notice(message, kind) {
@@ -35,6 +35,9 @@
       '.mygram-tools-item{padding:9px;border:1px solid #e2e8f0;border-radius:10px;background:#fbfcff;overflow-wrap:anywhere}',
       '.mygram-tools-item p{margin:0 0 5px;line-height:1.65}.mygram-tools-muted{color:#7a879a;font-size:10px}',
       '.mygram-message-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.mygram-message-actions button{border:1px solid #d5deeb;border-radius:7px;background:#fff;padding:4px 7px;font-size:10px;color:#435572;cursor:pointer}',
+      '.mygram-message-quote{display:block;margin:5px 0;padding:6px 9px;border-inline-start:3px solid #6b83c5;background:#f4f7ff;border-radius:5px;font-size:11px;color:#536481;white-space:pre-wrap}',
+      '.mygram-reply-indicator{display:flex;align-items:center;gap:8px;padding:7px 10px;margin-bottom:8px;background:#eef3ff;border:1px solid #cfdaf7;border-radius:9px;color:#2f477e;font-size:11px}',
+      '.mygram-reply-indicator[hidden]{display:none!important}.mygram-reply-indicator span{flex:1;overflow-wrap:anywhere}',
       '.mygram-poll-option{display:flex;align-items:center;gap:7px;width:100%;text-align:start;margin-top:5px}.mygram-poll-option span:first-child{flex:1}.mygram-poll-bar{height:5px;background:#d9e4ff;border-radius:99px;overflow:hidden;margin-top:4px}.mygram-poll-bar i{display:block;height:100%;background:#476ac3}',
       '@media(max-width:520px){.mygram-tools{padding:8px}.mygram-tools-btn{padding:7px 8px}.mygram-tools-list{max-height:210px}}'
     ].join('');
@@ -63,6 +66,18 @@
     specs.forEach(spec=>{const b=button(spec.label,()=>openPanel(spec.kind),false);b.dataset.kind=spec.kind;b.hidden=context.source==='direct'&&!['search','bookmarks'].includes(spec.kind);toolbar.appendChild(b);});
     panelBody = document.createElement('div'); panelBody.className = 'mygram-tools-body'; panelBody.hidden = true;
     panel.append(toolbar,panelBody); composer.parentNode.insertBefore(panel,composer);
+    if(context.source!=='direct'){
+      let replyBar=$('mygramReplyIndicator');
+      if(!replyBar){
+        replyBar=document.createElement('div');replyBar.id='mygramReplyIndicator';replyBar.className='mygram-reply-indicator';replyBar.hidden=true;
+        const replyText=document.createElement('span');replyText.id='mygramReplyText';
+        const cancel=button('إلغاء الرد',clearReplyTarget);cancel.className='mygram-tools-btn';
+        replyBar.append(replyText,cancel);
+      }
+      const inputId=context.source==='whatsmygram'?'waBody':'chatBody';
+      const messageInput=$(inputId);
+      if(messageInput && messageInput.parentNode===composer && replyBar.parentNode!==composer) composer.insertBefore(replyBar,messageInput);
+    }
   }
   function rootStatus() {
     const item = document.createElement('p'); item.className='mygram-tools-muted'; item.setAttribute('role','status'); item.setAttribute('aria-live','polite'); return item;
@@ -281,8 +296,25 @@
     const actions=document.createElement('div');actions.className='mygram-message-actions';
     const save=button('☆ حفظ',()=>toggleBookmark(message));save.setAttribute('aria-label','حفظ الرسالة');save.className='';
     actions.appendChild(save);
-    if(context.source!=='direct'){const pin=button('📌 تثبيت',()=>togglePin(message));pin.className='';actions.appendChild(pin);}
+    if(context.source!=='direct'){
+      const reply=button('↩ رد',()=>setReplyTarget(message));reply.setAttribute('aria-label','الرد على الرسالة');reply.className='';actions.appendChild(reply);
+      const pin=button('📌 تثبيت',()=>togglePin(message));pin.className='';actions.appendChild(pin);
+    }
     bubble.appendChild(actions);
+  }
+  function setReplyTarget(message) {
+    if(context.source==='direct' || !message || !message.id)return;
+    replyTarget={id:message.id,text:messageText(message).slice(0,180)};
+    const bar=$('mygramReplyIndicator'); const span=$('mygramReplyText');
+    if(bar)bar.hidden=false;
+    if(span)span.textContent='رد على: '+(replyTarget.text||'رسالة مرفقة');
+    const body=$(context.source==='whatsmygram'?'waBody':'chatBody');
+    if(body)body.focus();
+  }
+  function clearReplyTarget() {
+    replyTarget=null;
+    const bar=$('mygramReplyIndicator');if(bar)bar.hidden=true;
+    const span=$('mygramReplyText');if(span)span.textContent='';
   }
   function jumpToMessage(id) {
     const el=[...document.querySelectorAll('[data-message-id]')].find(node=>node.dataset.messageId===id);
@@ -292,13 +324,14 @@
   function setContext(next) {
     context = Object.assign({},context,next||{});
     if(panel && panel.isConnected){panel.remove();panel=null;panelBody=null;}
-    activeTopicId = null;
+    activeTopicId = null;clearReplyTarget();
+    const replyBar=$('mygramReplyIndicator');if(replyBar)replyBar.remove();
     ensurePanel();
     if (panel && panelBody) { panelBody.hidden = true; panelBody.replaceChildren(); }
     return Promise.resolve();
   }
   window.MYGRAM_MESSAGING_TOOLS = {
-    setContext, getActiveTopicId:()=>activeTopicId, decorateMessageBubble,
+    setContext, getActiveTopicId:()=>activeTopicId, getReplyToMessageId:()=>replyTarget&&replyTarget.id, clearReplyTarget, decorateMessageBubble,
     getContext:()=>Object.assign({},context), openPanel
   };
   window.addEventListener('mygram:topic-changed', event => {
