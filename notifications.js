@@ -229,7 +229,7 @@
     if (typeof db.channel === "function") {
       try {
         db.channel("mygram-notifications-" + currentUser.id)
-          .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: "recipient_id=eq." + currentUser.id }, () => refresh())
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: "recipient_id=eq." + currentUser.id }, payload => { if (payload?.new?.actor_id !== currentUser.id) window.MYGRAM_SOUNDS?.play("notification"); refresh(); })
           .subscribe();
       } catch {}
     }
