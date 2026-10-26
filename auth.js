@@ -40,7 +40,8 @@
     const phone = mode === "phone" || mode === "phone-verify";
     const phoneVerify = mode === "phone-verify";
     tabs.style.display = recovery ? "none" : "";
-    nameLabel.classList.toggle("hidden", (!signup && mode !== "phone") || recovery || phoneVerify);
+    nameLabel.classList.add("hidden");
+    nameLabel.hidden = true;
     phoneCountryLabel.classList.toggle("hidden", !phone || phoneVerify || recovery);
     phoneLabel.classList.toggle("hidden", !phone || phoneVerify || recovery);
     otpLabel.classList.toggle("hidden", !phoneVerify);
@@ -55,7 +56,7 @@
     resetPasswordButton.hidden = recovery || signup || phone;
     magicLinkButton.hidden = mode !== "login";
     socialAuthSection.hidden = recovery || phone;
-    fullName.required = signup && !recovery;
+    fullName.required = false;
     email.required = !recovery && !phone;
     password.autocomplete = signup || recovery ? "new-password" : "current-password";
     document.getElementById("formTitle").textContent = recovery ? "تعيين كلمة مرور جديدة" : phoneVerify ? "تحقق من رقم هاتفك" : phone ? "التسجيل برقم الهاتف" : signup ? "انضم إلى MYGRAM ✨" : "أهلاً بعودتك 👋";
@@ -276,20 +277,19 @@
         setNotice("تم تحديث كلمة المرور. سجّل الدخول بكلمة المرور الجديدة.", "success");
       } else if (mode === "signup") {
         await checkCompromisedPassword(pass);
-        const name = fullName.value.trim();
         const { data, error } = await client.auth.signUp({
           email: normalizedEmail,
           password: pass,
-          options: { data: { full_name: name }, emailRedirectTo: new URL(config.homeUrl, location.href).href }
+          options: { data: {}, emailRedirectTo: new URL("profile.html?setup=1", location.href).href }
         });
         if (error) throw error;
         try { localStorage.setItem("mygram-account-known", "1"); } catch {}
         if (data.session) {
           setNotice("تم إنشاء الحساب بنجاح. جارٍ فتح MYGRAM...", "success");
-          setTimeout(() => window.location.replace(config.homeUrl), 700);
+          setTimeout(() => window.location.replace(new URL("profile.html?setup=1", location.href).href), 700);
         } else {
           setMode("login");
-          setNotice("إذا كان التسجيل متاحاً، ستصلك رسالة تأكيد إلى بريدك الإلكتروني.", "success");
+          setNotice("إذا كان التسجيل متاحاً، ستصلك رسالة تأكيد إلى بريدك الإلكتروني. بعد التأكيد أكمل ملفك الشخصي.", "success");
         }
       } else {
         const { error } = await client.auth.signInWithPassword({ email: normalizedEmail, password: pass });
