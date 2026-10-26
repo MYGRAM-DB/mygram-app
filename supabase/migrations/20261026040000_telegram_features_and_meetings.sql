@@ -521,28 +521,6 @@ $$;
 revoke all on function public.join_meeting(text,text) from public, anon;
 grant execute on function public.join_meeting(text,text) to authenticated;
 
-create or replace function public.transfer_meeting_chair(p_meeting_id uuid, p_new_chair_id uuid, p_note text default '')
-returns void language plpgsql security definer
-set search_path = pg_catalog, public, auth, private
-as $$
-declare v_uid uuid := auth.uid(); v_old_chair uuid;
-begin
-  if v_uid is null then raise exception 'Sign in required.'; end if;
-  select chair_user_id into v_old_chair from public.meetings where id=p_meeting_id and status <> 'ended' for update;
-  if not found then raise exception 'Meeting not found or already ended.'; end if;
-  if v_uid <> v_old_chair and not exists (
-    select 1 from public.meetings where id=p_meeting_id and created_by=v_uid
-  ) then raise exception 'Only the current chair or meeting host can transfer the chair.'; end if;
-  if p_new_chair_id = v_old_chair then return; end if;
-  if not exists (select 1 from public.meeting_participants where meeting_id=p_meeting_id and user_id=p_new_chair_id and left_at is null) then
-    raise exception 'The new chair must be an active participant.'; end if;
-  update public.meetings set chair_user_id=p_new_chair_id, updated_at=now() where id=p_meeting_id;
-  update public.meeting_participants set role=case when user_id=p_new_chair_id then 'chair' when user_id=v_old_chair then case when user_id=created_by then 'host' else 'participant' end else role end
-  where meeting_id=p_meeting_id;
-  insert into public.meeting_chair_transfers(meeting_id,previous_chair_id,next_chair_id,transferred_by,note)
-  values (p_meeting_id,v_old_chair,p_new_chair_id,v_uid,left(coalesce(p_note,''),1000));
-end;
-$$;
 -- Correct role promotion/demotion without referring to meeting columns from a participant row.
 create or replace function public.transfer_meeting_chair(p_meeting_id uuid, p_new_chair_id uuid, p_note text default '')
 returns void language plpgsql security definer
@@ -590,7 +568,7 @@ using (private.is_meeting_member(meeting_id) or exists (select 1 from public.mee
 drop policy if exists meeting_participants_update_self on public.meeting_participants;
 create policy meeting_participants_update_self on public.meeting_participants for update to authenticated
 using (user_id=(select auth.uid()) and private.is_meeting_member(meeting_id))
-with check (user_id=(select auth.uid()) and private.is_meeting_member(meeting_id));
+with check (user_id=(select auth.uid()));
 -- Participants are added only by the creator trigger or the validated join_meeting RPC.
 
 drop policy if exists meeting_messages_read_members on public.meeting_messages;
@@ -622,7 +600,8 @@ create policy meeting_chair_transfers_read_members on public.meeting_chair_trans
 using (private.is_meeting_member(meeting_id));
 
 grant select, insert on public.meetings to authenticated;
-grant select, update on public.meeting_participants to authenticated;
+grant select on public.meeting_participants to authenticated;
+grant update (left_at, last_seen_at, preferred_language, recording_consent) on public.meeting_participants to authenticated;
 grant select, insert, update, delete on public.meeting_messages to authenticated;
 grant select, insert on public.meeting_transcripts to authenticated;
 grant select on public.meeting_minutes, public.meeting_chair_transfers to authenticated;
