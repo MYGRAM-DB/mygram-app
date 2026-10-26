@@ -88,6 +88,7 @@ test('language selection translates placeholders and localizes country names wit
   // Country data must still localize correctly without exposing an unusable registration path.
   const country = page.locator('#phoneCountry');
   await expect(page.locator('#phoneTab')).toBeHidden();
+  await page.locator('#loginTab').click();
   await country.evaluate(el => { el.value = 'NL'; el.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#mygramLanguage').selectOption('en');
   await expect(page.locator('#password')).toHaveAttribute('placeholder', 'Password');
