@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const cfg=window.MYGRAM_CONFIG,db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey),$=id=>document.getElementById(id);
-let me=null,activeChat=null,activePeerId=null,toastTimer=null,mediaRecorder=null,recordingStream=null,recordingChunks=[],recordedVoiceFile=null,realtimeChannel=null,callSignalsChannel=null,peerConnection=null,localCallStream=null,currentCallId=null,currentCallKind=null,incomingOffer=null,callReady=false,localIceQueue=[],remoteIceQueue=[];
+let me=null,activeChat=null,activePeerId=null,activePeerProfile=null,presence=null,toastTimer=null,mediaRecorder=null,recordingStream=null,recordingChunks=[],recordedVoiceFile=null,recordedVoiceDurationSeconds=null,recordingStartedAt=0,realtimeChannel=null,callSignalsChannel=null,peerConnection=null,localCallStream=null,currentCallId=null,currentCallKind=null,incomingOffer=null,callReady=false,localIceQueue=[],remoteIceQueue=[];
 function setCallStatus(message){$('callStatus').textContent=window.MYGRAM_TRANSLATE_TEXT?window.MYGRAM_TRANSLATE_TEXT(message||''):(message||'')}
 function setCallMode(mode){$('acceptCallButton').hidden=mode!=='incoming';$('rejectCallButton').hidden=mode!=='incoming';$('endCallButton').hidden=!['calling','active','incoming'].includes(mode);$('audioCallButton').disabled=['calling','active','incoming'].includes(mode);$('videoCallButton').disabled=['calling','active','incoming'].includes(mode);$('callMedia').hidden=!['calling','active'].includes(mode);$('localCallVideo').hidden=currentCallKind!=='video';$('remoteCallVideo').hidden=currentCallKind!=='video';}
 async function sendCallSignal(signalType,payload={},target=activePeerId){if(!activeChat||!currentCallId||!target)throw new Error('اختر محادثة فردية قبل بدء المكالمة.');const {error}=await db.from('call_signals').insert({chat_id:activeChat,call_id:currentCallId,sender_id:me.id,target_user_id:target,signal_type:signalType,payload,expires_at:new Date(Date.now()+10*60*1000).toISOString()});if(error)throw error}
@@ -16,16 +16,101 @@ function subscribeToCallSignals(){if(!me||typeof db.channel!=='function')return;
 function toast(msg,error=false){
     msg=window.MYGRAM_TRANSLATE_TEXT?window.MYGRAM_TRANSLATE_TEXT(msg):msg;const e=$('chatToast');e.textContent=msg;e.className='toast show'+(error?' error':'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.className='toast',4500)}
 function safeName(p){return p?.full_name?.trim()||('@'+(p?.username||'عضو MYGRAM'))}
-async function getProfileByUsername(username){const {data,error}=await db.from('profiles').select('id,username,full_name').eq('username',username).maybeSingle();if(error)throw error;if(!data)throw new Error('لم نعثر على هذا المستخدم.');if(data.id===me.id)throw new Error('لا يمكنك بدء محادثة مع نفسك.');return data}
+async function getProfileByUsername(username){const {data,error}=await db.from('profiles').select('id,username,full_name,avatar_url').eq('username',username).maybeSingle();if(error)throw error;if(!data)throw new Error('لم نعثر على هذا المستخدم.');if(data.id===me.id)throw new Error('لا يمكنك بدء محادثة مع نفسك.');return data}
 async function getOrCreateChat(others){if(others.length===1){const other=others[0];const {data:mine,error}=await db.from('chat_members').select('chat_id').eq('user_id',me.id);if(error)throw error;const ids=(mine||[]).map(x=>x.chat_id);if(ids.length){const {data:members,error:e}=await db.from('chat_members').select('chat_id,user_id').in('chat_id',ids);if(e)throw e;const existing=(members||[]).find(x=>x.user_id===other.id);if(existing)return existing.chat_id}}const isGroup=others.length>1;const title=isGroup?others.map(safeName).join(', ').slice(0,100):null;const {data:chat,error:createError}=await db.from('chats').insert({created_by:me.id,is_group:isGroup,title}).select('id').single();if(createError)throw createError;const participants=[{chat_id:chat.id,user_id:me.id},...others.map(p=>({chat_id:chat.id,user_id:p.id}))];const {error:memberError}=await db.from('chat_members').insert(participants);if(memberError)throw memberError;return chat.id}
-async function loadChatList(){const box=$('chatList');box.replaceChildren();const {data:mine,error}=await db.from('chat_members').select('chat_id').eq('user_id',me.id);if(error)throw error;const ids=[...new Set((mine||[]).map(x=>x.chat_id))];if(!ids.length){box.textContent='لا توجد محادثات بعد.';return}const {data:members,error:membersError}=await db.from('chat_members').select('chat_id,user_id').in('chat_id',ids);if(membersError)throw membersError;const {data:chats,error:chatsError}=await db.from('chats').select('id,title,is_group').in('id',ids);if(chatsError)throw chatsError;const chatById=Object.fromEntries((chats||[]).map(c=>[c.id,c]));const otherIds=[...new Set((members||[]).map(x=>x.user_id).filter(id=>id!==me.id))];const {data:profiles,error:profileError}=otherIds.length?await db.from('profiles').select('id,username,full_name').in('id',otherIds):{data:[],error:null};if(profileError)throw profileError;const byId=Object.fromEntries((profiles||[]).map(p=>[p.id,p]));for(const id of ids){const chat=chatById[id];const member=(members||[]).find(x=>x.chat_id===id&&x.user_id!==me.id);const profile=chat?.is_group?{full_name:chat.title||'مجموعة'}:byId[member?.user_id];const button=document.createElement('button');button.type='button';button.className='chat-entry';button.dataset.chatId=id;button.setAttribute('aria-current',String(activeChat===id));button.textContent=(chat?.is_group?'👥 ':'')+safeName(profile);button.onclick=()=>openChat(id,profile);box.appendChild(button)}}
-async function openChat(chatId,profile,peerOverride=null){activeChat=chatId;activePeerId=peerOverride||profile?.id||null;$('threadHead').textContent=safeName(profile);for(const b of $('chatList').querySelectorAll('[data-chat-id]'))b.setAttribute('aria-current',String(b.dataset.chatId===chatId));if(realtimeChannel&&typeof db.removeChannel==='function'){try{await db.removeChannel(realtimeChannel)}catch{}realtimeChannel=null}await loadMessages();if(typeof db.channel==='function'){realtimeChannel=db.channel('mygram-chat-'+chatId).on('postgres_changes',{event:'*',schema:'public',table:'chat_messages',filter:'chat_id=eq.'+chatId},()=>{if(activeChat===chatId)loadMessages().catch(err=>toast('تعذر تحديث المحادثة: '+err.message,true))}).subscribe()}}
-async function loadMessages(){if(!activeChat)return;const box=$('chatMessages');box.replaceChildren();const {data,error}=await db.from('chat_messages').select('id,chat_id,sender_id,body,attachment_url,attachment_type,created_at').eq('chat_id',activeChat).order('created_at',{ascending:true}).limit(200);if(error)throw error;if(!data?.length){box.innerHTML='<div class="chat-empty">ابدأ المحادثة برسالة لطيفة.</div>';return}for(const m of data){const bubble=document.createElement('article');bubble.className='chat-bubble'+(m.sender_id===me.id?' mine':'');if(m.body){const p=document.createElement('p');p.textContent=m.body;bubble.appendChild(p)}if(m.attachment_url&&m.attachment_type){const signed=await db.storage.from('mygram-private-messages').createSignedUrl(m.attachment_url,3600);if(!signed.error){let media;if(m.attachment_type==='audio'){media=document.createElement('audio');media.controls=true}else if(m.attachment_type==='video'){media=document.createElement('video');media.controls=true;media.playsInline=true}else{media=document.createElement('img');media.alt='مرفق خاص';media.loading='lazy'}media.src=signed.data.signedUrl;bubble.appendChild(media)}}const time=document.createElement('small');time.textContent=new Date(m.created_at).toLocaleString(undefined,{hour:'2-digit',minute:'2-digit'});bubble.appendChild(time);box.appendChild(bubble)}box.scrollTop=box.scrollHeight}
-$('recordVoiceButton').addEventListener('click',async()=>{try{if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();return}if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==='undefined')throw new Error('تسجيل الصوت غير مدعوم في هذا المتصفح.');recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});recordingChunks=[];mediaRecorder=new MediaRecorder(recordingStream);mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)recordingChunks.push(e.data)};mediaRecorder.onerror=()=>toast('تعذر تسجيل الصوت.',true);mediaRecorder.onstop=()=>{recordingStream?.getTracks().forEach(track=>track.stop());recordingStream=null;const mime=mediaRecorder?.mimeType||'audio/webm';const blob=new Blob(recordingChunks,{type:mime});recordedVoiceFile=blob.size?new File([blob],'voice-note.webm',{type:mime}):null;$('recordVoiceButton').textContent='🎙️ تسجيل رسالة صوتية';$('recordVoiceButton').setAttribute('aria-pressed','false');$('voiceRecordingStatus').textContent=recordedVoiceFile?'تم تجهيز التسجيل الصوتي للإرسال.':'';if(recordedVoiceFile)toast('اكتمل التسجيل. أرسل الرسالة لإرفاقه.');};mediaRecorder.start();$('recordVoiceButton').textContent='⏹ إيقاف التسجيل';$('recordVoiceButton').setAttribute('aria-pressed','true');$('voiceRecordingStatus').textContent='جارٍ التسجيل...';toast('بدأ تسجيل الصوت.');}catch(err){recordingStream?.getTracks().forEach(track=>track.stop());recordingStream=null;toast('تعذر الوصول إلى الميكروفون: '+(err?.message||''),true)}});
+async function loadChatList(){
+ const box=$('chatList');box.replaceChildren();
+ const {data:mine,error}=await db.from('chat_members').select('chat_id').eq('user_id',me.id);
+ if(error)throw error;
+ const ids=[...new Set((mine||[]).map(x=>x.chat_id))];
+ if(!ids.length){box.textContent='لا توجد محادثات بعد.';return}
+ const {data:members,error:membersError}=await db.from('chat_members').select('chat_id,user_id').in('chat_id',ids);
+ if(membersError)throw membersError;
+ const {data:chats,error:chatsError}=await db.from('chats').select('id,title,is_group').in('id',ids);
+ if(chatsError)throw chatsError;
+ const chatById=Object.fromEntries((chats||[]).map(c=>[c.id,c]));
+ const otherIds=[...new Set((members||[]).map(x=>x.user_id).filter(id=>id!==me.id))];
+ const {data:profiles,error:profileError}=otherIds.length?await db.from('profiles').select('id,username,full_name,avatar_url').in('id',otherIds):{data:[],error:null};
+ if(profileError)throw profileError;
+ const byId=Object.fromEntries((profiles||[]).map(p=>[p.id,p]));
+ for(const id of ids){
+  const chat=chatById[id];
+  const member=(members||[]).find(x=>x.chat_id===id&&x.user_id!==me.id);
+  const profile=chat?.is_group?{full_name:chat.title||'مجموعة'}:byId[member?.user_id];
+  const button=document.createElement('button');button.type='button';button.className='chat-entry';button.dataset.chatId=id;button.setAttribute('aria-current',String(activeChat===id));
+  if(window.MYGRAM_PRESENCE)button.appendChild(window.MYGRAM_PRESENCE.createAvatar(profile,'presence-avatar'));
+  const copy=document.createElement('span');copy.className='chat-entry-copy';
+  const name=document.createElement('span');name.className='chat-entry-name';name.textContent=(chat?.is_group?'👥 ':'')+safeName(profile);copy.appendChild(name);
+  if(profile?.username){const handle=document.createElement('small');handle.className='chat-entry-status';handle.textContent='@'+profile.username;copy.appendChild(handle)}
+  button.appendChild(copy);button.onclick=()=>openChat(id,profile);box.appendChild(button);
+ }
+}
+async function openChat(chatId,profile,peerOverride=null){
+ activeChat=chatId;activePeerId=peerOverride||profile?.id||null;
+ if(activePeerId&&(!profile?.avatar_url&&!profile?.username)){
+  try{const result=await db.from('profiles').select('id,username,full_name,avatar_url').eq('id',activePeerId).maybeSingle();if(result.data)profile=result.data}catch{}
+ }
+ activePeerProfile=profile||null;
+ const head=$('threadHead');head.replaceChildren();
+ if(window.MYGRAM_PRESENCE)head.appendChild(window.MYGRAM_PRESENCE.createAvatar(profile, 'presence-avatar thread-peer-avatar'));
+ const copy=document.createElement('div');copy.className='thread-peer-copy';
+ const name=document.createElement('strong');name.className='thread-peer-name';name.textContent=safeName(profile);copy.appendChild(name);
+ if(profile?.username){const handle=document.createElement('small');handle.className='thread-peer-handle';handle.textContent='@'+profile.username;copy.appendChild(handle)}
+ const status=document.createElement('span');status.id='activePeerPresence';status.className='presence-status';status.textContent=activePeerId?'جارٍ التحقق من الحالة…':'محادثة جماعية';copy.appendChild(status);
+ head.appendChild(copy);
+ for(const b of $('chatList').querySelectorAll('[data-chat-id]'))b.setAttribute('aria-current',String(b.dataset.chatId===chatId));
+ if(activePeerId&&presence)await presence.refresh(activePeerId,status);else if(!activePeerId)status.textContent='محادثة جماعية';
+ if(realtimeChannel&&typeof db.removeChannel==='function'){try{await db.removeChannel(realtimeChannel)}catch{}realtimeChannel=null}
+ await loadMessages();
+ if(typeof db.channel==='function'){realtimeChannel=db.channel('mygram-chat-'+chatId).on('postgres_changes',{event:'*',schema:'public',table:'chat_messages',filter:'chat_id=eq.'+chatId},()=>{if(activeChat===chatId)loadMessages().catch(err=>toast('تعذر تحديث المحادثة: '+err.message,true))}).subscribe()}
+}
+function formatVoiceDuration(seconds){if(!Number.isFinite(Number(seconds))||Number(seconds)<1)return 'رسالة صوتية';const total=Math.floor(Number(seconds));return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0')}
+async function loadMessages(){
+ if(!activeChat)return;
+ const box=$('chatMessages');box.replaceChildren();
+ const {data,error}=await db.from('chat_messages').select('id,chat_id,sender_id,body,attachment_url,attachment_type,duration_seconds,created_at').eq('chat_id',activeChat).order('created_at',{ascending:true}).limit(200);
+ if(error)throw error;
+ if(!data?.length){box.innerHTML='<div class="chat-empty">ابدأ المحادثة برسالة لطيفة.</div>';return}
+ for(const m of data){
+  const bubble=document.createElement('article');bubble.className='chat-bubble'+(m.sender_id===me.id?' mine':'');
+  const placeholderVoice=m.attachment_type==='audio'&&/رسالة صوتية/.test(m.body||'');
+  if(m.body&&!placeholderVoice){const p=document.createElement('p');p.className='chat-message-text';p.textContent=m.body;bubble.appendChild(p)}
+  if(m.attachment_url&&m.attachment_type){
+   const signed=await db.storage.from('mygram-private-messages').createSignedUrl(m.attachment_url,3600);
+   if(!signed.error){
+    if(m.attachment_type==='audio'){
+     const card=document.createElement('div');card.className='voice-note-card';
+     const icon=document.createElement('span');icon.className='voice-note-icon';icon.setAttribute('aria-hidden','true');icon.textContent='🎙️';
+     const meta=document.createElement('span');meta.className='voice-note-copy';
+     const title=document.createElement('strong');title.textContent='رسالة صوتية';
+     const length=document.createElement('small');length.textContent=formatVoiceDuration(m.duration_seconds);
+     meta.append(title,length);
+     const audio=document.createElement('audio');audio.controls=true;audio.preload='metadata';audio.src=signed.data.signedUrl;audio.setAttribute('aria-label','تشغيل الرسالة الصوتية');
+     card.append(icon,meta,audio);bubble.appendChild(card);
+    }else{
+     let media;
+     if(m.attachment_type==='video'){media=document.createElement('video');media.controls=true;media.playsInline=true;media.preload='metadata'}
+     else{media=document.createElement('img');media.alt='مرفق خاص';media.loading='lazy'}
+     media.src=signed.data.signedUrl;bubble.appendChild(media);
+    }
+   }
+  }
+  const time=document.createElement('small');time.className='chat-message-time';time.textContent=new Date(m.created_at).toLocaleString(undefined,{hour:'2-digit',minute:'2-digit'});bubble.appendChild(time);box.appendChild(bubble);
+ }
+ box.scrollTop=box.scrollHeight;
+}
+$('recordVoiceButton').addEventListener('click',async()=>{try{if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();return}if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==='undefined')throw new Error('تسجيل الصوت غير مدعوم في هذا المتصفح.');recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});recordingChunks=[];recordingStartedAt=Date.now();recordedVoiceDurationSeconds=null;mediaRecorder=new MediaRecorder(recordingStream);mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)recordingChunks.push(e.data)};mediaRecorder.onerror=()=>toast('تعذر تسجيل الصوت.',true);mediaRecorder.onstop=()=>{recordingStream?.getTracks().forEach(track=>track.stop());recordingStream=null;const mime=mediaRecorder?.mimeType||'audio/webm';const blob=new Blob(recordingChunks,{type:mime});recordedVoiceFile=blob.size?new File([blob],'voice-note.webm',{type:mime}):null;recordedVoiceDurationSeconds=recordedVoiceFile?Math.max(1,Math.min(600,Math.round((Date.now()-recordingStartedAt)/1000))):null;$('recordVoiceButton').textContent='🎙️ تسجيل رسالة صوتية';$('recordVoiceButton').setAttribute('aria-pressed','false');$('voiceRecordingStatus').textContent=recordedVoiceFile?'تم تجهيز التسجيل الصوتي للإرسال.':'';if(recordedVoiceFile)toast('اكتمل التسجيل. أرسل الرسالة لإرفاقه.');};mediaRecorder.start();$('recordVoiceButton').textContent='⏹ إيقاف التسجيل';$('recordVoiceButton').setAttribute('aria-pressed','true');$('voiceRecordingStatus').textContent='جارٍ التسجيل...';toast('بدأ تسجيل الصوت.');}catch(err){recordingStream?.getTracks().forEach(track=>track.stop());recordingStream=null;toast('تعذر الوصول إلى الميكروفون: '+(err?.message||''),true)}});
 $('audioCallButton').addEventListener('click',()=>beginCall('audio'));$('videoCallButton').addEventListener('click',()=>beginCall('video'));$('acceptCallButton').addEventListener('click',()=>acceptCall());$('rejectCallButton').addEventListener('click',async()=>{try{await sendCallSignal('reject',{})}catch{}await endCall(false);setCallStatus('تم رفض المكالمة.')});$('endCallButton').addEventListener('click',()=>endCall(true));
 $('newChatForm').onsubmit=async e=>{e.preventDefault();const btn=$('newChatForm').querySelector('button');btn.disabled=true;try{const usernames=[...new Set($('chatUsername').value.split(',').map(v=>v.trim().replace(/^@/,'').toLowerCase()).filter(Boolean))];if(!usernames.length||usernames.some(name=>!/^[a-z0-9_]{3,30}$/.test(name)))throw new Error('اكتب اسم مستخدم صحيحاً، وافصل أسماء المجموعة بفواصل.');const others=[];for(const username of usernames)others.push(await getProfileByUsername(username));const chatId=await getOrCreateChat(others);await loadChatList();await openChat(chatId,others.length>1?{full_name:others.map(safeName).join(', ')}:others[0]);$('chatUsername').value='';toast('المحادثة جاهزة.')}catch(err){toast('تعذر بدء المحادثة: '+err.message,true)}finally{btn.disabled=false}};
-$('chatCompose').onsubmit=async e=>{e.preventDefault();if(!activeChat){toast('اختر محادثة أولاً.',true);return}const body=$('chatBody').value.trim(),file=$('chatFile').files[0]||recordedVoiceFile;if(!body&&!file){toast('اكتب رسالة أو اختر مرفقاً.',true);return}if(file&&file.size>50*1024*1024){toast('حجم المرفق يتجاوز 50 ميغابايت.',true);return}const btn=$('chatCompose').querySelector('button');btn.disabled=true;try{let attachment_url=null,attachment_type=null;if(file){attachment_type=file.type.startsWith('audio/')?'audio':file.type.startsWith('video/')?'video':file.type.startsWith('image/')?'image':null;if(!attachment_type)throw new Error('نوع الملف غير مدعوم.');const ext=(file.name.split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'').toLowerCase()||'bin';attachment_url=me.id+'/chats/'+activeChat+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;const {error}=await db.storage.from('mygram-private-messages').upload(attachment_url,file,{upsert:false,contentType:file.type,cacheControl:'3600'});if(error)throw error}const {error}=await db.from('chat_messages').insert({chat_id:activeChat,sender_id:me.id,body:body||(attachment_type==='audio'?'🎙️ رسالة صوتية':attachment_type==='video'?'🎬 فيديو مرفق':'🖼️ صورة مرفقة'),attachment_url,attachment_type});if(error)throw error;$('chatBody').value='';$('chatFile').value='';recordedVoiceFile=null;$('voiceRecordingStatus').textContent='';await loadMessages();toast('تم إرسال الرسالة.')}catch(err){toast('تعذر إرسال الرسالة: '+err.message,true)}finally{btn.disabled=false}};
-async function start(){const {data,error}=await db.auth.getSession();if(error)throw error;if(!data.session){location.replace(cfg.loginUrl);return}me=data.session.user;subscribeToCallSignals();await loadChatList()}
-setInterval(()=>{if(activeChat&&!document.hidden)loadMessages().catch(()=>{});},15000);
+$('chatCompose').onsubmit=async e=>{e.preventDefault();if(!activeChat){toast('اختر محادثة أولاً.',true);return}const body=$('chatBody').value.trim(),file=$('chatFile').files[0]||recordedVoiceFile;if(!body&&!file){toast('اكتب رسالة أو اختر مرفقاً.',true);return}if(file&&file.size>50*1024*1024){toast('حجم المرفق يتجاوز 50 ميغابايت.',true);return}const btn=$('chatCompose').querySelector('button');btn.disabled=true;try{let attachment_url=null,attachment_type=null;if(file){attachment_type=file.type.startsWith('audio/')?'audio':file.type.startsWith('video/')?'video':file.type.startsWith('image/')?'image':null;if(!attachment_type)throw new Error('نوع الملف غير مدعوم.');const ext=(file.name.split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'').toLowerCase()||'bin';attachment_url=me.id+'/chats/'+activeChat+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;const {error}=await db.storage.from('mygram-private-messages').upload(attachment_url,file,{upsert:false,contentType:file.type,cacheControl:'3600'});if(error)throw error}const {error}=await db.from('chat_messages').insert({chat_id:activeChat,sender_id:me.id,body:body||(attachment_type==='audio'?'🎙️ رسالة صوتية':attachment_type==='video'?'🎬 فيديو مرفق':'🖼️ صورة مرفقة'),attachment_url,attachment_type,duration_seconds:attachment_type==='audio'?recordedVoiceDurationSeconds:null});if(error)throw error;$('chatBody').value='';$('chatFile').value='';recordedVoiceFile=null;recordedVoiceDurationSeconds=null;$('voiceRecordingStatus').textContent='';await loadMessages();toast('تم إرسال الرسالة.')}catch(err){toast('تعذر إرسال الرسالة: '+err.message,true)}finally{btn.disabled=false}};
+async function start(){
+ const {data,error}=await db.auth.getSession();if(error)throw error;if(!data.session){location.replace(cfg.loginUrl);return}
+ me=data.session.user;
+ if(window.MYGRAM_PRESENCE){try{presence=await window.MYGRAM_PRESENCE.init(db,me,$('showPresenceToggle'))}catch(err){console.warn('Chat presence is unavailable until the presence migration is installed:',err?.message||err);const toggle=$('showPresenceToggle');if(toggle)toggle.disabled=true;const note=$('presenceSettingStatus');if(note)note.textContent='ميزة الحالة غير جاهزة بعد.'}}
+ subscribeToCallSignals();await loadChatList()
+}
+setInterval(()=>{
+ if(activeChat&&!document.hidden){loadMessages().catch(()=>{});if(activePeerId&&presence)presence.refresh(activePeerId,$('activePeerPresence'))}
+},15000);
 start().catch(err=>toast('تعذر تحميل MYGRAM Chat: '+err.message,true));
 })();
