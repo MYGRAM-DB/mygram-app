@@ -1,0 +1,125 @@
+/* MYGRAM Visual Identity System
+   Wordmark, colors, and UI accents derived from the approved black/green/red brand mark.
+*/
+:root {
+  --mygram-black: #111315;
+  --mygram-green: #28A745;
+  --mygram-green-dark: #1F8738;
+  --mygram-green-soft: #EAF6ED;
+  --mygram-red: #EF343B;
+  --mygram-red-dark: #C92730;
+  --mygram-red-soft: #FFF0F0;
+  --mygram-paper: #F7F8F6;
+  --mygram-white: #FFFFFF;
+  --mygram-text: #171A18;
+  --mygram-muted: #66706A;
+  --mygram-line: #E1E7E2;
+  --mygram-focus: #8CCB9B;
+  --blue: var(--mygram-green);
+  --blue2: var(--mygram-green-dark);
+  --ink: var(--mygram-text);
+  --muted: var(--mygram-muted);
+  --line: var(--mygram-line);
+  --bg: var(--mygram-paper);
+}
+html { accent-color: var(--mygram-green); }
+body { color: var(--mygram-text); }
+a { text-underline-offset: 3px; }
+a:hover { color: var(--mygram-green-dark); }
+:focus-visible { outline: 3px solid var(--mygram-focus); outline-offset: 2px; }
+::selection { color: var(--mygram-black); background: #CDECD4; }
+
+.mygram-wordmark { display:block; width:auto; height:36px; max-width:188px; object-fit:contain; }
+.mygram-wordmark--small { height:29px; max-width:155px; }
+.mygram-brand-subline { display:block; margin-top:2px; color:var(--mygram-muted); font-size:9px; line-height:1.2; font-weight:800; letter-spacing:.13em; }
+.brand-blue, .brand-word > span { color:var(--mygram-green) !important; }
+.brand-mark, .brand-symbol, .people-brand-icon { background:var(--mygram-green-soft); border:1px solid #CFE8D4; box-shadow:none; }
+.brand-icon, .brand-icon-large { filter:none !important; }
+.topbar .brand, .people-topbar .brand, .services-topbar .brand, .profile-topbar .brand { color:var(--mygram-black); }
+.topbar .brand:hover, .people-topbar .brand:hover, .services-topbar .brand:hover, .profile-topbar .brand:hover { color:var(--mygram-green-dark); }
+.brand-word { color:var(--mygram-black); }
+.eyebrow { color:var(--mygram-green-dark) !important; }
+
+button.primary, a.primary, .btn-primary, .button-primary,
+button[type="submit"]:not(.wa-button):not(.meet-btn) {
+  border-color:var(--mygram-green-dark) !important;
+}
+button.primary, a.primary, .btn-primary, .button-primary {
+  background:var(--mygram-green) !important;
+  color:#fff !important;
+}
+button.primary:hover, a.primary:hover, .btn-primary:hover, .button-primary:hover {
+  background:var(--mygram-green-dark) !important;
+}
+button.danger, .btn-danger, .logout-item {
+  color:var(--mygram-red-dark);
+}
+input:focus, textarea:focus, select:focus {
+  border-color:var(--mygram-green) !important;
+  box-shadow:0 0 0 3px #28A7451C;
+}
+.mygram-brand-badge {
+  display:inline-flex; align-items:center; gap:6px; border:1px solid #CDE8D3;
+  background:var(--mygram-green-soft); color:var(--mygram-green-dark);
+  padding:5px 9px; border-radius:999px; font-weight:850; font-size:10px;
+}
+.mygram-brand-red { color:var(--mygram-red) !important; }
+.mygram-brand-green { color:var(--mygram-green) !important; }
+
+.services-page .services-topbar .brand-symbol {
+  background:var(--mygram-green-soft); border-color:#CFE8D4; border-radius:12px;
+}
+.services-page .services-hero-logo { background:#FFFFFF18; border-color:#FFFFFF45; }
+.people-topbar, .profile-topbar { border-bottom-color:var(--mygram-line); }
+.people-hero, .services-hero {
+  border-color:#D1E8D6;
+}
+.people-hero-mark, .profile-hero-symbol {
+  border-color:#CFE8D4;
+}
+.people-tab[aria-selected="true"], .service-tab[aria-selected="true"],
+.profile-tab[aria-selected="true"] {
+  color:var(--mygram-green-dark) !important;
+  border-color:var(--mygram-green) !important;
+  background:var(--mygram-green-soft) !important;
+}
+.community-card, .panel, .card { border-color:var(--mygram-line); }
+
+.chat-page .topbar { background:var(--mygram-black); border-bottom-color:#2C322D; }
+.chat-page .chat-sidebar .primary, .chat-page .chat-compose .primary {
+  background:var(--mygram-green) !important;
+}
+.chat-page .chat-bubble.mine { border-color:#BFE3C7; }
+.chat-page .chat-bubble:not(.mine) { border-color:var(--mygram-line); }
+
+.whatsmygram-page .topbar { background:var(--mygram-black); border-bottom-color:#272B28; }
+.whatsmygram-page .wa-brand-row h1 { color:var(--mygram-green-dark); }
+.whatsmygram-page .wa-button.primary {
+  background:var(--mygram-green); border-color:var(--mygram-green-dark);
+}
+.whatsmygram-page .wa-button.primary:hover { background:var(--mygram-green-dark); }
+.whatsmygram-page .wa-bubble.mine { border-color:#BFE3C7; }
+
+.meetings-page { background:linear-gradient(145deg,#F0F7F1 0,#FBFCFA 290px,#F7F8F6 100%) !important; }
+.meet-topbar { background:var(--mygram-black) !important; box-shadow:0 5px 22px #11131512 !important; }
+.meet-brand small { color:#D3EBD8 !important; }
+.meet-hero { background:linear-gradient(125deg,#111315,#216C35) !important; box-shadow:0 18px 44px #1D6E3320 !important; }
+.meet-btn.primary { background:var(--mygram-green) !important; border-color:var(--mygram-green-dark) !important; color:#fff !important; }
+.meet-btn.success { background:var(--mygram-green-soft) !important; color:var(--mygram-green-dark) !important; border-color:#C5E6CD !important; }
+.meet-btn.danger { background:var(--mygram-red-soft) !important; color:var(--mygram-red-dark) !important; border-color:#F0C5C9 !important; }
+.meet-capacity { border-color:#B6D9BE !important; }
+.meet-state { background:var(--mygram-green-soft) !important; color:var(--mygram-green-dark) !important; }
+.meet-avatar { background:var(--mygram-green-soft) !important; color:var(--mygram-green-dark) !important; }
+
+.login-page .brand-symbol { background:#FFFFFFF0 !important; border-color:#FFFFFF !important; }
+.login-page .login-brand img { filter:none !important; }
+.login-page .login-art h1 { text-wrap:balance; }
+
+@media(max-width:600px) {
+  .mygram-wordmark { height:30px; max-width:154px; }
+  .mygram-wordmark--small { height:25px; max-width:132px; }
+  .mygram-brand-subline { font-size:8px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; }
+}
