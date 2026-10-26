@@ -66,6 +66,62 @@ input:focus, textarea:focus, select:focus {
 .mygram-brand-red { color:var(--mygram-red) !important; }
 .mygram-brand-green { color:var(--mygram-green) !important; }
 
+
+/* Brand color balance across editorial, profile, service and authentication surfaces. */
+body:not(.chat-page):not(.whatsmygram-page):not(.meetings-page) .topbar,
+.people-topbar, .profile-topbar, .services-page .services-topbar {
+  border-bottom-color: var(--mygram-line) !important;
+}
+.services-page .services-hero {
+  background: linear-gradient(125deg,#111315 0%,#1E6D34 58%,#28A745 100%) !important;
+  box-shadow: 0 20px 45px #14552622 !important;
+}
+.login-art {
+  background: linear-gradient(145deg,#111315 0%,#18592B 58%,#28A745 100%) !important;
+}
+.login-art::before, .login-art::after {
+  border-color:#FFFFFF1C !important;
+}
+.home-hero, .feed-hero, .hero-banner {
+  border-color:#D2E8D7;
+}
+.home-hero .primary, .feed-hero .primary,
+.post-composer button[type="submit"], .create-post-button {
+  background:var(--mygram-green) !important;
+  border-color:var(--mygram-green-dark) !important;
+  color:#fff !important;
+}
+.home-hero .primary:hover, .post-composer button[type="submit"]:hover,
+.create-post-button:hover { background:var(--mygram-green-dark) !important; }
+.topbar nav a[aria-current="page"], .topnav a[aria-current="page"],
+.services-topnav a[aria-current="page"], .profile-topnav a[aria-current="page"] {
+  color:var(--mygram-green-dark) !important;
+  background:var(--mygram-green-soft) !important;
+}
+input[type="checkbox"], input[type="radio"], progress { accent-color:var(--mygram-green); }
+.status-online, .presence-dot.is-online, .online-dot { background-color:var(--mygram-green) !important; }
+.toast.success, .status-success { border-inline-start-color:var(--mygram-green) !important; }
+.toast.error, .status-error { border-inline-start-color:var(--mygram-red) !important; }
+.community-actions button.secondary, .btn-secondary {
+  background:#F3F6F3 !important; color:var(--mygram-black) !important; border-color:var(--mygram-line) !important;
+}
+.mygram-brand-stack {display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.mygram-brand-stack small {font-size:9px;color:#D3EBD8;letter-spacing:.14em;font-weight:800}
+.meet-brand {display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.meet-brand .mygram-wordmark {height:29px;max-width:150px}
+.login-brand .mygram-wordmark {height:auto;width:min(250px,100%);max-width:100%}
+.services-page .brand .mygram-wordmark,
+.people-topbar .brand .mygram-wordmark,
+.profile-topbar .brand .mygram-wordmark {height:33px;max-width:172px}
+.chat-page .topbar .brand .mygram-wordmark {height:32px;max-width:165px}
+.whatsmygram-page .topbar .brand .mygram-wordmark {height:29px;max-width:150px}
+@media(max-width:520px) {
+  .services-page .brand .mygram-wordmark,.people-topbar .brand .mygram-wordmark,
+  .profile-topbar .brand .mygram-wordmark {height:28px;max-width:145px}
+  .chat-page .topbar .brand .mygram-wordmark {height:27px;max-width:140px}
+  .whatsmygram-page .topbar .brand .mygram-wordmark {height:25px;max-width:132px}
+}
+
 .services-page .services-topbar .brand-symbol {
   background:var(--mygram-green-soft); border-color:#CFE8D4; border-radius:12px;
 }
