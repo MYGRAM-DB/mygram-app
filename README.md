@@ -10,11 +10,18 @@ MYGRAM is a static HTML/CSS/JavaScript social platform deployed with GitHub Page
 - Feed posts, image/video attachments, comments, and eight reaction types.
 - Stories with expiry filtering and owner deletion.
 - Reels with video publishing, emoji reactions, comments, and owner deletion.
-- Direct Messenger with text, image/video/audio attachments, microphone voice recording, and Supabase Realtime subscriptions.
-- A separate MYGRAM Chat for private/group conversations, media and recorded voice notes, conversation-scoped Realtime updates, plus slower polling as a fallback.
+- Direct Messenger with text, image/video/audio attachments, microphone voice recording, rounded message bubbles, recipient avatar/name, privacy-aware online/last-seen status, and Supabase Realtime subscriptions.
+- A separate MYGRAM Chat for private/group conversations, media and recorded voice-note bubbles with duration, conversation-scoped Realtime updates, plus slower polling as a fallback.
+- Shared online-presence preferences: show/hide online status, green online indicator for permitted chat contacts, and relative last-seen time when visible. Hiding status clears the stored last-seen timestamp; presence records use RLS and are not exposed to anonymous users.
 - Community creation, membership, and community posts, protected by row-level security.
 - 60 language choices with 47 translated core interface strings per locale; feature-specific labels still need broader localization review.
 - Database migrations and RLS policies for social content, private messages, reels, and communities.
+
+## Messenger presence and voice notes
+
+The additive migration `supabase/migrations/20261026010000_add_chat_presence_and_voice_duration.sql` adds `public.user_presence` and `chat_messages.duration_seconds`. The same presence migration was applied to the connected Supabase project and read-only checks confirmed RLS, the own-row update policy, shared-conversation read restrictions, and the hidden-status constraint. Do not manually re-run schema changes against an existing project without checking migration history first.
+
+Presence is refreshed while the signed-in client is active. The UI treats a timestamp within 90 seconds as online, otherwise it renders a relative last-seen time when visible. If the user disables “إظهار حالتي للآخرين”, the client clears `last_seen_at` and other users see no online/last-seen information. Recorded voice notes are limited to ten minutes and are stored as private attachments.
 
 ## Deploy and configure
 
