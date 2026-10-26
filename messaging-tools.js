@@ -137,12 +137,6 @@
     });
     const info=rootStatus();info.textContent='اختر موضوعاً لفلترة الرسائل. إنشاء المواضيع متاح لمنشئ المساحة أو المشرف المصرّح له.';
     area.append(topicSelect,document.createElement('div'));area.lastChild.className='mygram-tools-row';area.lastChild.append(desc,create);area.appendChild(info);
-    const saved=button('⭐ حفظ الموضوع الحالي',async()=>{
-      if(!activeTopicId){notice('اختر موضوعاً أولاً.',true);return;}
-      await db.from('messaging_bookmarks').insert({user_id:context.userId,source:context.source,space_id:context.spaceId,message_id:'00000000-0000-0000-0000-000000000000',label:'topic:'+activeTopicId});
-      notice('ميزة حفظ المواضيع قيد التجهيز. احفظ رسالة محددة من فقاعة الرسالة بدلاً من ذلك.',true);
-    });
-    area.appendChild(saved);
     panelBody.append(title('مواضيع المحادثة'),area);
   }
   async function renderPins() {
