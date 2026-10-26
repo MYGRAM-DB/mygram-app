@@ -28,6 +28,7 @@ async function loadChat(){
   if(error)throw error;
   const box=$('chatBox');box.replaceChildren();
   if(!data?.length){box.textContent='ابدأ المحادثة برسالة لطيفة.';return}
+  await window.MYGRAM_MESSAGING_TOOLS?.loadMessageReactions(data.map(m=>m.id));
   for(const m of data){
    const bubble=document.createElement('article');bubble.className='dm-message-bubble'+(m.sender_id===me.id?' mine':'');
    const placeholderVoice=m.attachment_type==='audio'&&/رسالة صوتية/.test(m.body||'');
