@@ -15,7 +15,7 @@ test('dedicated login page exposes email and password authentication', async ({ 
 
 test('login page defaults to signup and switches cleanly to existing-account login', async ({ page }) => {
   await page.goto('/login.html');
-  await expect(page.locator('#nameLabel')).toBeVisible();
+  await expect(page.locator('#nameLabel')).toBeHidden();
   await expect(page.locator('#submitButton')).toHaveText('إنشاء الحساب');
   await expect(page.locator('#password')).toHaveAttribute('autocomplete', 'new-password');
   await page.locator('#loginTab').click();
@@ -23,7 +23,7 @@ test('login page defaults to signup and switches cleanly to existing-account log
   await expect(page.locator('#submitButton')).toHaveText('تسجيل الدخول');
   await expect(page.locator('#password')).toHaveAttribute('autocomplete', 'current-password');
   await page.locator('#signupTab').click();
-  await expect(page.locator('#nameLabel')).toBeVisible();
+  await expect(page.locator('#nameLabel')).toBeHidden();
 });
 
 
@@ -85,7 +85,6 @@ test('signup blocks passwords found in public breach corpus before contacting Su
   );
   await page.goto('/login.html');
   await page.locator('#signupTab').click();
-  await page.locator('#fullName').fill('Test User');
   await page.locator('#email').fill('new-user@example.test');
   await page.locator('#password').fill('password123');
   await page.locator('#authForm').evaluate(form => form.requestSubmit());
@@ -103,7 +102,6 @@ test('password breach check uses k-anonymity and blocks known compromised passwo
   });
   await page.goto('/login.html');
   await page.locator('#signupTab').click();
-  await page.locator('#fullName').fill('Test User');
   await page.locator('#email').fill('new-user@example.test');
   await page.locator('#password').fill('password123');
   await page.locator('#authForm').evaluate(form => form.requestSubmit());
