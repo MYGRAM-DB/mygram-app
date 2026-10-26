@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#087cf0"><meta name="description" content="اكتشف الأشخاص والمنشورات في MYGRAM.">
+  <link rel="icon" type="image/svg+xml" href="logo.svg"><title>MYGRAM | اكتشف</title>
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="discover.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js"></script><script defer src="auth-guard.js"></script>
+  <script defer src="language.js"></script><script defer src="notifications.js"></script><script defer src="discover.js"></script>
+</head>
+<body class="discover-page">
+  <header class="discover-topbar">
+    <a class="discover-brand" href="home.html"><img src="mygram-wordmark.svg" alt="MYGRAM"></a>
+    <nav aria-label="التنقل الرئيسي">
+      <a href="home.html">الرئيسية</a><a href="people.html">الأصدقاء</a><a href="services.html?tab=messages">Messenger</a><a href="whatsmygram.html">WHATSMYGRAM</a>
+    </nav>
+    <a class="discover-profile" href="profile.html">ملفي الشخصي</a>
+  </header>
+  <main class="discover-shell">
+    <section class="discover-hero">
+      <div class="discover-kicker">MYGRAM DISCOVER</div>
+      <h1>العالم أوسع من قائمة أصدقائك ✨</h1>
+      <p>اكتشف أشخاصاً ومنشورات جديدة. البحث يعرض فقط ما تسمح صلاحيات حسابك بالوصول إليه.</p>
+      <form id="discoverForm" class="discover-search" role="search">
+        <label class="sr-only" for="discoverQuery">ابحث عن أشخاص أو منشورات</label>
+        <input id="discoverQuery" name="q" type="search" maxlength="100" autocomplete="off" placeholder="ابحث عن اسم، اسم مستخدم، أو فكرة..." required>
+        <button type="submit" id="discoverSubmit">اكتشف</button>
+      </form>
+      <div class="discover-hints"><span>⌕ الأشخاص</span><span>▤ المنشورات</span><span>🔒 نتائج وفق صلاحياتك</span></div>
+    </section>
+    <div id="discoverStatus" class="discover-status" role="status" aria-live="polite">اكتب كلمتين على الأقل للبدء بالبحث.</div>
+    <section class="discover-section" aria-labelledby="peopleHeading">
+      <div class="discover-section-title"><div><span>01 / COMMUNITY</span><h2 id="peopleHeading">أشخاص قد يهمّونك</h2></div><a href="people.html">إدارة الأصدقاء ←</a></div>
+      <div id="peopleResults" class="discover-grid"><div class="discover-empty">ستظهر نتائج الأشخاص هنا.</div></div>
+    </section>
+    <section class="discover-section" aria-labelledby="postsHeading">
+      <div class="discover-section-title"><div><span>02 / THE CONVERSATION</span><h2 id="postsHeading">منشورات تستحق الاكتشاف</h2></div><a href="home.html#feed">العودة للموجز ←</a></div>
+      <div id="postResults" class="discover-posts"><div class="discover-empty">ستظهر نتائج المنشورات هنا.</div></div>
+    </section>
+    <footer class="discover-footer">MYGRAM · اكتشف باحترام، وتواصل بأمان.</footer>
+  </main>
+  <nav class="discover-mobile-nav" aria-label="التنقل السريع"><a href="home.html">⌂<small>الرئيسية</small></a><a class="current" href="discover.html">⌕<small>اكتشف</small></a><a href="people.html">♙<small>الأصدقاء</small></a><a href="services.html?tab=messages">✉<small>Messenger</small></a><a href="profile.html">◎<small>ملفي</small></a></nav>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
