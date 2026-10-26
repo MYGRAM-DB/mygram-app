@@ -240,18 +240,31 @@ input[type="checkbox"], input[type="radio"], progress { accent-color:var(--mygra
     animation:none !important;
     transform:none !important;
   }
+  body.profile-page .profile-wrap,
+  body.profile-page .profile-form,
+  body.profile-page .profile-tab-panel {
+    transform:none !important;
+    animation:none !important;
+    overflow:visible !important;
+    contain:none !important;
+  }
   body.profile-page .profile-actions {
-    position:relative !important;
+    position:static !important;
+    inset:auto !important;
     bottom:auto !important;
     z-index:auto !important;
+    transform:none !important;
+    overflow:visible !important;
+    contain:none !important;
     backdrop-filter:none !important;
   }
   body.profile-page #saveProfileButton {
-    position:relative;
-    z-index:1;
-    pointer-events:auto;
-    scroll-margin-top:82px;
-    scroll-margin-bottom:100px;
+    position:static !important;
+    inset:auto !important;
+    z-index:auto !important;
+    transform:none !important;
+    pointer-events:auto !important;
+    scroll-margin:0 !important;
   }
 }
 
@@ -417,3 +430,16 @@ button.primary:hover, a.primary:hover, .btn-primary:hover, .button-primary:hover
 .services-page .dm-call-media { background:#111827 !important; }
 .services-page .dm-call-toolbar { background:#F8FAFC !important; }
 .mygram-brand-stack small {color:#C4B5FD !important;}
+
+
+/* Higher-specificity mobile rule intentionally wins over earlier responsive styling. */
+@media(max-width:760px) {
+  html:has(body.profile-page) { scroll-behavior:auto !important; }
+  body.profile-page main.profile-wrap,
+  body.profile-page main.profile-wrap *,
+  body.profile-page .profile-actions,
+  body.profile-page #saveProfileButton {
+    scroll-behavior:auto !important;
+  }
+  body.profile-page .profile-actions { position:static !important; }
+}
