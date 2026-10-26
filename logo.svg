@@ -1,22 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
-<title id="title">MYGRAM</title><desc id="desc">Animated gradient social camera with orbiting connection dots</desc>
-<defs>
- <linearGradient id="bg" x1="8" y1="6" x2="120" y2="124" gradientUnits="userSpaceOnUse"><stop stop-color="#ff4fb8"/><stop offset=".48" stop-color="#7857ff"/><stop offset="1" stop-color="#11c8f4"/></linearGradient>
- <linearGradient id="lens" x1="36" y1="30" x2="91" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset="1" stop-color="#d9f7ff"/></linearGradient>
- <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>
-<style>
- @keyframes orbit{to{transform:rotate(360deg)}} @keyframes pulse{0%,100%{opacity:.7;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
- .orbit{transform-origin:64px 64px;animation:orbit 12s linear infinite}.spark{transform-origin:center;animation:pulse 2.4s ease-in-out infinite}
- @media(prefers-reduced-motion:reduce){.orbit,.spark{animation:none}}
-</style>
-<rect x="9" y="9" width="110" height="110" rx="34" fill="url(#bg)"/>
-<rect x="17" y="17" width="94" height="94" rx="29" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".42" stroke-width="1.5"/>
-<g class="orbit" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2"><ellipse cx="64" cy="64" rx="53" ry="22" transform="rotate(-42 64 64)"/></g>
-<g fill="#fff" filter="url(#glow)"><circle class="spark" cx="24" cy="45" r="4"/><circle class="spark" cx="100" cy="86" r="4" style="animation-delay:-.8s"/><circle class="spark" cx="88" cy="23" r="3" style="animation-delay:-1.4s"/></g>
-<rect x="31" y="37" width="66" height="54" rx="17" fill="url(#lens)" stroke="#fff" stroke-width="2.5"/>
-<path d="M43 37 48 29h18l6 8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="64" cy="64" r="18" fill="url(#bg)"/><circle cx="64" cy="64" r="11.5" fill="none" stroke="#fff" stroke-width="3"/><circle cx="64" cy="64" r="5" fill="#fff"/>
-<circle cx="84" cy="47" r="4.5" fill="#ffca68"/>
-<path d="M29 98c15 10 54 12 71-3" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 128" role="img" aria-labelledby="title desc">
+  <title id="title">MYGRAM</title>
+  <desc id="desc">MYGRAM ribbon M using sky blue, indigo, purple and emerald</desc>
+  <defs>
+    <linearGradient id="mygram-ribbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF"/>
+      <stop offset="27%" stop-color="#2563EB"/>
+      <stop offset="53%" stop-color="#4F46E5"/>
+      <stop offset="76%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="mygram-highlight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".24"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity=".02"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity=".25"/>
+    </linearGradient>
+  </defs>
+  <path d="M20 111V42C20 13 43 6 61 26L73 39C79 46 86 46 92 39L105 26C122 7 142 14 142 42V111"
+        fill="none" stroke="url(#mygram-ribbon)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20 111V42C20 13 43 6 61 26L73 39C79 46 86 46 92 39L105 26C122 7 142 14 142 42V111"
+        fill="none" stroke="url(#mygram-highlight)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
