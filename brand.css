@@ -196,3 +196,23 @@ input[type="checkbox"], input[type="radio"], progress { accent-color:var(--mygra
 }
 .home-page .reaction-trigger.is-liked { color:var(--mygram-green-dark) !important; background:var(--mygram-green-soft) !important; }
 .home-page .nav-item.active { color:var(--mygram-green-dark) !important; background:var(--mygram-green-soft) !important; }
+
+
+/* WHATSMYGRAM peer-to-peer calling controls; provider keys remain server-only. */
+.whatsmygram-page .wa-call-button:not(:disabled) {
+  border-color:#b8dfc0;
+  color:var(--mygram-green-dark);
+}
+.whatsmygram-page .wa-call-button:disabled { opacity:.48;cursor:not-allowed; }
+.whatsmygram-page .wa-button.danger {border-color:#f0c5c9;color:var(--mygram-red-dark);background:var(--mygram-red-soft)}
+.whatsmygram-page .wa-call-status {padding:4px 14px;color:var(--mygram-muted);font-size:11px}
+.whatsmygram-page .wa-call-status:empty {display:none}
+.whatsmygram-page .wa-call-media {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px 14px;background:#111315}
+.whatsmygram-page .wa-call-media[hidden] {display:none!important}
+.whatsmygram-page .wa-call-media video {width:100%;min-width:0;max-height:220px;object-fit:cover;background:#222;border-radius:10px}
+.whatsmygram-page .wa-call-media audio {display:none}
+@media(max-width:600px) {
+  .whatsmygram-page .wa-thread-actions {gap:4px;flex-wrap:wrap}
+  .whatsmygram-page .wa-thread-actions .wa-button {padding:7px 8px;font-size:10px}
+  .whatsmygram-page .wa-call-media {grid-template-columns:1fr 1fr}
+}
