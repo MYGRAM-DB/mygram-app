@@ -53,7 +53,9 @@ jobs:
 
       - name: Create source package
         run: |
-          zip -r mygram-app.zip index.html home.html people.html profile.html services.html chat.html whatsmygram.html meetings.html communities.html *.js *.css *.svg README-AR.md README.md VERSION.txt .nojekyll
+          zip -r mygram-app.zip index.html home.html people.html profile.html services.html chat.html whatsmygram.html meetings.html communities.html \\
+  *.js *.css *.svg README-AR.md README-AR.txt README.md VERSION.txt .nojekyll \\
+  docs/ supabase/ tests/ package.json playwright.config.js
 
       - name: Upload source artifact
         uses: actions/upload-artifact@v4
@@ -81,7 +83,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir _site
-          cp *.html *.js *.css *.svg README-AR.md VERSION.txt .nojekyll _site/
+          cp *.html *.js *.css *.svg README-AR.md VERSION.txt .nojekyll _site/\n          cp -R docs _site/docs
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
