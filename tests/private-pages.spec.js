@@ -379,6 +379,10 @@ test('standalone MYGRAM Chat shows peer identity and playable voice-note bubbles
       id: 'chat-voice-message-1', chat_id: 'chat-test-uuid', sender_id: 'other-user-uuid',
       body: '🎙️ رسالة صوتية', attachment_url: 'other-user-uuid/chats/chat-test-uuid/voice.webm',
       attachment_type: 'audio', duration_seconds: 11, created_at: '2026-10-26T00:00:00.000Z'
+    }, {
+      id: 'chat-text-message-2', chat_id: 'chat-test-uuid', sender_id: 'test-user-uuid',
+      body: 'رسالة مني', attachment_url: null, attachment_type: null, duration_seconds: null,
+      created_at: '2026-10-26T00:00:01.000Z'
     }];
   });
   await page.locator('#chatUsername').fill('someone');
@@ -389,6 +393,11 @@ test('standalone MYGRAM Chat shows peer identity and playable voice-note bubbles
   await expect(page.locator('#activePeerPresence .presence-dot.is-online')).toBeVisible();
   await expect(page.locator('#chatMessages .chat-bubble .voice-note-card audio')).toBeVisible();
   await expect(page.locator('#chatMessages .voice-note-copy small')).toHaveText('00:11');
+  const incomingBubble = await page.locator('#chatMessages .chat-bubble:not(.mine)').boundingBox();
+  const outgoingBubble = await page.locator('#chatMessages .chat-bubble.mine').boundingBox();
+  expect(incomingBubble).not.toBeNull();
+  expect(outgoingBubble).not.toBeNull();
+  expect(outgoingBubble.x).toBeGreaterThan(incomingBubble.x);
   await expect(page.locator('#showPresenceToggle')).toBeChecked();
   expect(errors).toEqual([]);
 });
