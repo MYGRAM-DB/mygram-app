@@ -6,18 +6,19 @@
   const $ = id => document.getElementById(id);
   let context = { source:null, spaceId:null, userId:null, chatType:'group' };
   let activeTopicId = null, panel = null, panelBody = null, currentPanel = null, topics = [];
-  const tableForSource = source => source === 'whatsmygram' ? 'whatsmygram_messages' : 'chat_messages';
+  const tableForSource = source => source === 'direct' ? 'direct_messages' : source === 'whatsmygram' ? 'whatsmygram_messages' : 'chat_messages';
   const messageText = m => m && m.body ? String(m.body) : (m && m.attachment_type ? '['+m.attachment_type+']' : 'رسالة');
-  function notice(message, error) {
+  function notice(message, kind) {
+    const isError = kind === true || kind === 'error';
     const id = context.source === 'whatsmygram' ? 'waToast' : 'chatToast';
     const el = $(id);
     if (el) {
       el.textContent = message; el.hidden = false;
-      if (context.source === 'whatsmygram') el.className = 'wa-toast show' + (error ? ' error' : '');
-      else { el.classList.remove('error'); if (error) el.classList.add('error'); el.classList.add('show'); }
+      if (context.source === 'whatsmygram') el.className = 'wa-toast show' + (isError ? ' error' : '');
+      else { el.classList.remove('error'); if (isError) el.classList.add('error'); el.classList.add('show'); }
       setTimeout(() => { if (context.source === 'whatsmygram') el.classList.remove('show'); else el.classList.remove('show'); }, 3500);
     } else window.alert(message);
-    if (error && window.MYGRAM_SOUNDS) window.MYGRAM_SOUNDS.play('error');
+    if (window.MYGRAM_SOUNDS) window.MYGRAM_SOUNDS.play(isError ? 'error' : kind === 'success' ? 'success' : 'notification');
   }
   function stylePanel() {
     if ($('mygramMessagingToolsStyles')) return;
@@ -46,19 +47,20 @@
   }
   function ensurePanel() {
     if (panel && panel.isConnected) return;
-    const composer = $(context.source === 'whatsmygram' ? 'waCompose' : 'chatCompose');
+    const composer = $(context.source === 'direct' ? 'messageForm' : context.source === 'whatsmygram' ? 'waCompose' : 'chatCompose');
     if (!composer || !composer.parentNode) return;
     stylePanel();
     panel = document.createElement('section'); panel.id = 'mygramMessagingTools'; panel.className = 'mygram-tools';
     panel.setAttribute('aria-label','أدوات المحادثة المشتركة');
     const toolbar = document.createElement('div'); toolbar.className = 'mygram-tools-toolbar';
-    toolbar.append(
-      button('🔎 البحث', () => openPanel('search')),
-      button('🧵 المواضيع', () => openPanel('topics')),
-      button('📌 المثبتة', () => openPanel('pins')),
-      button('⭐ المحفوظات', () => openPanel('bookmarks')),
-      button('📊 استطلاع', () => openPanel('polls'))
-    );
+    const specs=[
+      {kind:'search',label:'🔎 البحث'},
+      {kind:'topics',label:'🧵 المواضيع'},
+      {kind:'pins',label:'📌 المثبتة'},
+      {kind:'bookmarks',label:'⭐ المحفوظات'},
+      {kind:'polls',label:'📊 استطلاع'}
+    ];
+    specs.forEach(spec=>{const b=button(spec.label,()=>openPanel(spec.kind),false);b.dataset.kind=spec.kind;toolbar.appendChild(b);});
     panelBody = document.createElement('div'); panelBody.className = 'mygram-tools-body'; panelBody.hidden = true;
     panel.append(toolbar,panelBody); composer.parentNode.insertBefore(panel,composer);
   }
@@ -81,8 +83,9 @@
   function openPanel(kind) {
     ensurePanel(); if (!panelBody) return;
     currentPanel = kind; panelBody.hidden = false; panelBody.replaceChildren();
-    panel.querySelectorAll('[aria-pressed]').forEach(b => b.setAttribute('aria-pressed',String(b.textContent.toLowerCase().includes(kind))));
+    panel.querySelectorAll('button[data-kind]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.kind===kind));b.hidden=context.source==='direct'&&!['search','bookmarks'].includes(b.dataset.kind);});
     if (!context.spaceId || !context.userId) { empty(panelBody,'اختر محادثة أولاً.'); return; }
+    if (context.source==='direct'&&!['search','bookmarks'].includes(kind)) { empty(panelBody,'هذه الأداة متاحة في مجموعات MYGRAM Chat وWHATSMYGRAM.'); return; }
     if (kind === 'search') renderSearch();
     else if (kind === 'topics') renderTopics();
     else if (kind === 'pins') renderPins();
@@ -90,20 +93,29 @@
     else if (kind === 'polls') renderPolls();
   }
   async function renderSearch() {
-    const q = input('ابحث في رسائل هذه المحادثة…');
-    const output = listBox(); panelBody.append(title('بحث داخل المحادثة'),searchButton(q,run,'بحث'),output);
+    const q=input('ابحث في رسائل هذه المحادثة…');
+    const output=listBox();
+    panelBody.append(title('بحث داخل المحادثة'),searchButton(q,run,'بحث'),output);
     async function run() {
       const term=q.value.trim(); output.replaceChildren();
-      if (term.length < 2) { empty(output,'اكتب حرفين على الأقل.');return; }
-      const result = await db.from(tableForSource(context.source)).select('id,chat_id,sender_id,body,attachment_type,created_at')
-        .eq('chat_id',context.spaceId).ilike('body','%'+term.replace(/[%_]/g,'\\$&')+'%').order('created_at',{ascending:false}).limit(50);
-      if (result.error) { empty(output,'تعذر البحث: '+result.error.message);return; }
-      if (!(result.data||[]).length) { empty(output,'لم نعثر على رسائل مطابقة.');return; }
-      result.data.forEach(m=> {
+      if(term.length<2){empty(output,'اكتب حرفين على الأقل.');return;}
+      let query;
+      if(context.source==='direct') {
+        query=db.from('direct_messages').select('id,sender_id,recipient_id,body,attachment_type,created_at')
+          .or('and(sender_id.eq.'+context.userId+',recipient_id.eq.'+context.spaceId+'),and(sender_id.eq.'+context.spaceId+',recipient_id.eq.'+context.userId+')');
+      } else {
+        query=db.from(tableForSource(context.source)).select('id,chat_id,sender_id,body,attachment_type,created_at')
+          .eq('chat_id',context.spaceId);
+      }
+      const result=await query.ilike('body','%'+term+'%').order('created_at',{ascending:false}).limit(50);
+      if(result.error){empty(output,'تعذر البحث: '+result.error.message);return;}
+      if(!(result.data||[]).length){empty(output,'لم نعثر على رسائل مطابقة.');return;}
+      result.data.forEach(m=>{
         const item=document.createElement('article');item.className='mygram-tools-item';
         const p=document.createElement('p');p.textContent=messageText(m);
         const meta=document.createElement('small');meta.className='mygram-tools-muted';meta.textContent=new Date(m.created_at).toLocaleString();
-        const jump=button('الانتقال للرسالة',()=>jumpToMessage(m.id));item.append(p,meta,jump);output.appendChild(item);
+        const jump=button('الانتقال للرسالة',()=>jumpToMessage(m.id));
+        item.append(p,meta,jump);output.appendChild(item);
       });
     }
     q.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run();}});
@@ -156,16 +168,21 @@
   }
   async function renderBookmarks() {
     const box=listBox();panelBody.append(title('رسائلي المحفوظة'),box);
-    const result=await db.from('messaging_bookmarks').select('message_id,label,created_at').eq('user_id',context.userId).eq('source',context.source).eq('space_id',context.spaceId).order('created_at',{ascending:false}).limit(100);
+    let bookmarkQuery=db.from('messaging_bookmarks').select('message_id,label,created_at').eq('user_id',context.userId).eq('source',context.source);
+    if(context.source!=='direct')bookmarkQuery=bookmarkQuery.eq('space_id',context.spaceId);
+    const result=await bookmarkQuery.order('created_at',{ascending:false}).limit(100);
     if(result.error){empty(box,'تعذر تحميل المحفوظات: '+result.error.message);return;}
     if(!(result.data||[]).length){empty(box,'لا توجد رسائل محفوظة. اضغط «حفظ» أسفل أي رسالة.');return;}
-    const messages=await db.from(tableForSource(context.source)).select('id,body,attachment_type,created_at').in('id',result.data.map(x=>x.message_id));
+    const messages=await db.from(tableForSource(context.source)).select(context.source==='direct'?'id,sender_id,recipient_id,body,attachment_type,created_at':'id,body,attachment_type,created_at').in('id',result.data.map(x=>x.message_id));
     const map=new Map((messages.data||[]).map(m=>[m.id,m]));
     result.data.forEach(saved=>{
       const item=document.createElement('article');item.className='mygram-tools-item';
       const p=document.createElement('p');p.textContent=map.has(saved.message_id)?messageText(map.get(saved.message_id)):(saved.label||'رسالة محفوظة');
       const meta=document.createElement('small');meta.className='mygram-tools-muted';meta.textContent=new Date(saved.created_at).toLocaleString();
-      const row=document.createElement('div');row.className='mygram-tools-row';row.append(button('عرض',()=>jumpToMessage(saved.message_id)),button('إزالة من المحفوظات',async()=>{
+      const row=document.createElement('div');row.className='mygram-tools-row';
+      const message=map.get(saved.message_id);
+      const open=button(context.source==='direct'?'عرض الرسالة':'عرض',()=>jumpToMessage(saved.message_id));
+      row.append(open,button('إزالة من المحفوظات',async()=>{
         const del=await db.from('messaging_bookmarks').delete().eq('user_id',context.userId).eq('source',context.source).eq('message_id',saved.message_id);
         if(del.error)notice('تعذر حذف الحفظ: '+del.error.message,true);else{notice('تمت إزالة الرسالة من المحفوظات.');renderBookmarks();}
       }));item.append(p,meta,row);box.appendChild(item);
@@ -238,9 +255,9 @@
     const existing=await db.from('messaging_bookmarks').select('message_id').eq('user_id',context.userId).eq('source',context.source).eq('message_id',message.id).maybeSingle();
     if(existing.error){notice(existing.error.message,true);return;}
     if(existing.data){notice('هذه الرسالة محفوظة بالفعل.');return;}
-    const result=await db.from('messaging_bookmarks').insert({
-      user_id:context.userId,source:context.source,space_id:context.spaceId,message_id:message.id,label:messageText(message).slice(0,160)
-    });
+    const bookmark={user_id:context.userId,source:context.source,message_id:message.id,label:messageText(message).slice(0,160)};
+    if(context.source!=='direct')bookmark.space_id=context.spaceId;
+    const result=await db.from('messaging_bookmarks').insert(bookmark);
     if(result.error)notice('تعذر حفظ الرسالة: '+result.error.message,true);
     else {notice('تم حفظ الرسالة في «المحفوظات».');window.MYGRAM_SOUNDS&&window.MYGRAM_SOUNDS.play('success');}
   }
@@ -249,8 +266,9 @@
     bubble.dataset.messageId=message.id;
     const actions=document.createElement('div');actions.className='mygram-message-actions';
     const save=button('☆ حفظ',()=>toggleBookmark(message));save.setAttribute('aria-label','حفظ الرسالة');save.className='';
-    const pin=button('📌 تثبيت',()=>togglePin(message));pin.className='';
-    actions.append(save,pin);bubble.appendChild(actions);
+    actions.appendChild(save);
+    if(context.source!=='direct'){const pin=button('📌 تثبيت',()=>togglePin(message));pin.className='';actions.appendChild(pin);}
+    bubble.appendChild(actions);
   }
   function jumpToMessage(id) {
     const el=[...document.querySelectorAll('[data-message-id]')].find(node=>node.dataset.messageId===id);
@@ -259,8 +277,9 @@
   }
   function setContext(next) {
     context = Object.assign({},context,next||{});
-    ensurePanel();
+    if(panel && panel.isConnected){panel.remove();panel=null;panelBody=null;}
     activeTopicId = null;
+    ensurePanel();
     if (panel && panelBody) { panelBody.hidden = true; panelBody.replaceChildren(); }
     return Promise.resolve();
   }
