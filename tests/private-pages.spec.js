@@ -15,7 +15,7 @@ window.supabase = {
     const query = {
       select() { return this; }, insert() { return this; }, update() { return this; },
       delete() { return this; }, upsert() { return this; }, eq() { return this; }, is() { return this; },
-      neq() { return this; }, in() { return this; }, or() { return this; }, gt() { return this; },
+      neq() { return this; }, in() { return this; }, or() { return this; }, ilike() { return this; }, gt() { return this; },
       order() { return this; }, limit() { return this; },
       maybeSingle() { return Promise.resolve({ data: null, error: null }); },
       single() { return Promise.resolve({ data: null, error: null }); },
@@ -399,5 +399,40 @@ test('standalone MYGRAM Chat shows peer identity and playable voice-note bubbles
   expect(outgoingBubble).not.toBeNull();
   expect(outgoingBubble.x).toBeGreaterThan(incomingBubble.x);
   await expect(page.locator('#showPresenceToggle')).toBeChecked();
+  expect(errors).toEqual([]);
+});
+
+
+test('signed-in MYGRAM Meetings page exposes scheduling, invitations and meeting controls', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/npm/livekit-client@2.23.0/**', routeHandler =>
+    routeHandler.fulfill({ status: 200, contentType: 'application/javascript', body: 'window.LivekitClient = window.LivekitClient || {};' })
+  );
+  const errors = await openAuthenticatedPage(page, '/meetings.html');
+  await expect(page.getByRole('heading', { name: 'اجتماعات MYGRAM' })).toBeVisible();
+  await expect(page.locator('#createMeetingForm')).toBeVisible();
+  await expect(page.locator('#joinMeetingForm')).toBeVisible();
+  await expect(page.locator('#meetingList')).toContainText('ابدأ اجتماعك الأول');
+  await expect(page.locator('.meet-capacity strong')).toHaveText('31');
+  expect(errors).toEqual([]);
+});
+
+test('WHATSMYGRAM page loads separately and links to MYGRAM Meetings', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/whatsmygram.html');
+  await expect(page.locator('body')).toContainText('WHATSMYGRAM');
+  await expect(page.locator('a[href="meetings.html"]')).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('direct Messenger exposes shared search and saved-message tools in a private thread', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await selectServiceTab(page, 'messages');
+  await page.locator('#messageUsername').fill('someone');
+  await page.locator('#loadChat').click();
+  await expect(page.locator('#mygramMessagingTools')).toBeVisible();
+  await expect(page.locator('#mygramMessagingTools [data-kind="search"]')).toBeVisible();
+  await expect(page.locator('#mygramMessagingTools [data-kind="bookmarks"]')).toBeVisible();
+  await expect(page.locator('#mygramMessagingTools [data-kind="topics"]')).toBeHidden();
+  await page.locator('#mygramMessagingTools [data-kind="search"]').click();
+  await expect(page.getByPlaceholder('ابحث في رسائل هذه المحادثة…')).toBeVisible();
   expect(errors).toEqual([]);
 });
