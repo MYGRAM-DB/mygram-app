@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#087cf0"><title>MYGRAM Chat | المحادثات</title>
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="config.js"></script><script defer src="auth-guard.js"></script><script defer src="language.js"></script><script defer src="chat.js"></script>
+<script defer src="config.js"></script><script defer src="auth-guard.js"></script><script defer src="language.js"></script><script defer src="presence.js"></script><script defer src="chat.js"></script>
 <style>
 .chat-shell{max-width:1100px;margin:24px auto;padding:0 14px}.chat-layout{display:grid;grid-template-columns:minmax(230px,320px) minmax(0,1fr);gap:14px}.chat-panel{padding:16px;min-width:0}.chat-list{display:grid;gap:8px;max-height:65vh;overflow:auto}.chat-entry{display:block;width:100%;text-align:start;background:transparent;color:inherit;border:1px solid #e2e8f0;border-radius:12px;padding:12px;cursor:pointer}.chat-entry[aria-current=true]{border-color:#087cf0;background:#eff6ff}.chat-thread{display:flex;flex-direction:column;min-height:65vh}.chat-messages{flex:1;max-height:58vh;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:8px}.chat-bubble{max-width:min(88%,560px);padding:10px 12px;border-radius:14px;background:#f1f5f9;align-self:flex-start;overflow-wrap:anywhere}.chat-bubble.mine{align-self:flex-end;background:#dbeafe}.chat-bubble img,.chat-bubble video{display:block;max-width:100%;max-height:260px;border-radius:10px}.chat-bubble audio{max-width:100%}.chat-compose{display:grid;gap:8px;margin-top:12px}.chat-compose textarea{min-height:72px}.chat-compose input,.chat-compose textarea,.chat-new input{width:100%;padding:11px;border:1px solid #dce5f0;border-radius:10px;font:inherit}.chat-new{display:flex;gap:8px;margin:10px 0}.chat-new input{min-width:0;flex:1}.chat-subtitle{color:#718096;font-size:13px}.chat-thread-head{padding:10px;border-bottom:1px solid #e5e7eb}.chat-empty{padding:24px;text-align:center;color:#64748b}@media(max-width:700px){.chat-layout{grid-template-columns:1fr}.chat-thread{min-height:50vh}.chat-messages{max-height:45vh}.chat-list{max-height:32vh}}
 .call-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px;border-bottom:1px solid #e5e7eb}.call-toolbar [hidden],.call-media[hidden]{display:none!important}.call-toolbar #callStatus{font-size:13px;color:#52637a}.call-media{display:flex;gap:10px;flex-wrap:wrap;padding:10px}.call-media video{width:min(48%,360px);min-width:180px;max-height:260px;object-fit:cover;background:#0f172a;border-radius:12px}.call-media audio{display:none}
@@ -50,6 +50,35 @@ body.chat-page{min-height:100vh;background:#0b1220;color:#e6edf7;color-scheme:da
  .chat-page .chat-new button{white-space:nowrap}
 }
 @media(prefers-reduced-motion:reduce){.chat-page *{transition:none!important;scroll-behavior:auto!important}}
+
+/* Presence, identity and expressive voice bubbles */
+.chat-page .presence-setting{display:flex;align-items:center;gap:9px;margin:10px 0 12px;padding:10px 11px;border:1px solid #2b3c55;border-radius:12px;background:#0c1626;color:#b9c9df;font-size:12px;cursor:pointer}
+.chat-page .presence-setting input{width:16px;height:16px;accent-color:#20c779}
+.chat-page .presence-setting-status{color:#f3bf72;font-size:11px;min-height:0}
+.chat-page .chat-thread-head{display:flex;align-items:center;gap:12px;min-height:76px;padding:12px 14px}
+.chat-page .thread-peer-copy{display:flex;min-width:0;flex-direction:column;gap:4px}
+.chat-page .thread-peer-name{font-weight:850;font-size:15px;overflow-wrap:anywhere}
+.chat-page .thread-peer-handle{color:#91a7c3;font-size:12px;direction:ltr;text-align:start}
+.chat-page .presence-avatar{display:grid;flex:0 0 auto;place-items:center;width:46px;height:46px;border-radius:50%;overflow:hidden;background:#233b5a;color:#d9ebff;font-weight:800;font-size:17px}
+.chat-page .presence-avatar img{width:100%;height:100%;object-fit:cover}
+.chat-page .thread-peer-avatar{width:48px;height:48px}
+.chat-page .chat-entry{display:flex;align-items:center;gap:10px;text-align:start}
+.chat-page .chat-entry .presence-avatar{width:38px;height:38px;font-size:14px}
+.chat-page .chat-entry-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px;overflow-wrap:anywhere}
+.chat-page .chat-entry-name{font-weight:750}
+.chat-page .chat-entry-status{font-size:11px;color:#9aafc9}
+.chat-page .presence-status{display:flex;align-items:center;gap:6px;font-size:12px;color:#a9bad2;min-height:16px}
+.chat-page .presence-dot{width:8px;height:8px;display:inline-block;flex:0 0 8px;border-radius:50%;background:#73839a}
+.chat-page .presence-dot.is-online{background:#22c55e;box-shadow:0 0 0 3px #22c55e20}
+.chat-page .presence-dot.is-offline{background:#74849a}
+.chat-page .voice-note-card{display:grid;grid-template-columns:32px minmax(80px,1fr);align-items:center;gap:5px 10px;min-width:min(300px,72vw);padding:10px 12px;border:1px solid #355372;border-radius:15px;background:#10243b}
+.chat-page .voice-note-icon{grid-row:span 2;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#1a4d79;font-size:17px}
+.chat-page .voice-note-copy{display:flex;flex-direction:column;gap:2px}
+.chat-page .voice-note-copy strong{font-size:12px}
+.chat-page .voice-note-copy small{font-size:11px;color:#a6bbd4}
+.chat-page .voice-note-card audio{grid-column:1/-1;width:100%;max-width:100%;height:36px}
+.chat-page .chat-bubble .chat-message-time{display:block;margin-top:6px;text-align:end;font-size:10px;color:#9db2ce}
+@media(max-width:760px){.chat-page .thread-peer-avatar{width:42px;height:42px}.chat-page .chat-thread-head{min-height:68px;padding:10px}.chat-page .voice-note-card{min-width:min(250px,72vw)}}
 </style>
   <script defer src="notifications.js"></script>
 </head>
@@ -59,6 +88,7 @@ body.chat-page{min-height:100vh;background:#0b1220;color:#e6edf7;color-scheme:da
 <div class="chat-layout">
 <section class="card chat-panel chat-sidebar">
 <h1>💬 MYGRAM Chat</h1><p class="chat-subtitle">مساحة محادثات منفصلة عن الرسائل المباشرة في Messenger.</p>
+<label class="presence-setting" for="showPresenceToggle"><input id="showPresenceToggle" type="checkbox" checked><span>إظهار حالتي للآخرين</span></label><small id="presenceSettingStatus" class="presence-setting-status" role="status" aria-live="polite"></small>
 <form id="newChatForm" class="chat-new"><input id="chatUsername" autocomplete="off" placeholder="اسم مستخدم أو عدة أسماء مفصولة بفواصل" minlength="3" maxlength="30" required><button class="button primary" type="submit">محادثة جديدة</button></form>
 <div id="chatList" class="chat-list" aria-label="قائمة المحادثات"></div>
 </section>
