@@ -23,6 +23,7 @@ async function renderDirectChatHeader(recipient){
 async function loadChat(){
  try{
   const recipient=await resolveRecipient();await renderDirectChatHeader(recipient);
+  window.MYGRAM_MESSAGING_TOOLS?.setContext({source:'direct',spaceId:recipient.id,userId:me?.id,chatType:'direct'});
   const {data,error}=await db.from('direct_messages').select('id,sender_id,recipient_id,body,attachment_url,attachment_type,duration_seconds,created_at,read_at').or(`and(sender_id.eq.${me.id},recipient_id.eq.${recipient.id}),and(sender_id.eq.${recipient.id},recipient_id.eq.${me.id})`).order('created_at',{ascending:true}).limit(100);
   if(error)throw error;
   const box=$('chatBox');box.replaceChildren();
@@ -51,6 +52,7 @@ async function loadChat(){
     }
    }
    const time=document.createElement('small');time.className='dm-message-time';time.textContent=new Date(m.created_at).toLocaleString(undefined,{hour:'2-digit',minute:'2-digit'});bubble.appendChild(time);
+   window.MYGRAM_MESSAGING_TOOLS?.decorateMessageBubble(bubble,m);
    box.appendChild(bubble);
   }
   box.scrollTop=box.scrollHeight;
