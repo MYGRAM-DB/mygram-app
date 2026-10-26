@@ -435,10 +435,13 @@ test('signed-in MYGRAM Meetings page exposes scheduling, invitations and meeting
   expect(errors).toEqual([]);
 });
 
-test('WHATSMYGRAM page loads separately and links to MYGRAM Meetings', async ({ page }) => {
+test('WHATSMYGRAM page loads its own audio/video calling controls', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/whatsmygram.html');
   await expect(page.locator('body')).toContainText('WHATSMYGRAM');
   await expect(page.locator('a[href="meetings.html"]')).toBeVisible();
+  await expect(page.locator('#waAudioCallButton')).toBeAttached();
+  await expect(page.locator('#waVideoCallButton')).toBeAttached();
+  await expect(page.locator('#waCallMedia')).toBeHidden();
   expect(errors).toEqual([]);
 });
 
