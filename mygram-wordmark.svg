@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 128" role="img" aria-labelledby="title desc">
+  <title id="title">MYGRAM</title>
+  <desc id="desc">MYGRAM logo, black lettering with green and red mark</desc>
+  <g transform="translate(0 0)" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="7">
+    <path d="M51 15H29L11 33V85L29 103H51" stroke="#111315"/>
+    <path d="M36 28L61 49L85 28" stroke="#28A745"/>
+    <path d="M36 80L61 59L85 80" stroke="#EF343B"/>
+  </g>
+  <text x="115" y="82" fill="#111315" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" letter-spacing="-1.4">MYGRAM</text>
+</svg>
