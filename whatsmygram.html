@@ -16,6 +16,7 @@
   <script defer src="messaging-tools.js"></script>
   <script defer src="language.js"></script>
   <script defer src="whatsmygram.js"></script>
+  <script defer src="whatsmygram-calls.js"></script>
   <script defer src="notifications.js"></script>
   <style>
     :root{--wa-green:#075e54;--wa-bright:#128c7e;--wa-ink:#172b27;--wa-muted:#70837f;--wa-line:#dce8e4;--wa-bg:#edf4f1;--wa-surface:#fff}
@@ -155,8 +156,21 @@
         <header id="waThreadHead" class="wa-thread-head" hidden>
           <span id="waPeerAvatar" class="presence-avatar">👤</span>
           <div class="wa-peer-copy"><strong id="waPeerName"></strong><small id="waPeerHandle"></small><span id="waPeerPresence" class="presence-status" role="status" aria-live="polite"></span></div>
-          <div class="wa-thread-actions"><button id="waReloadMessages" type="button" class="wa-button" aria-label="تحديث الرسائل">↻</button></div>
+          <div class="wa-thread-actions">
+            <button id="waAudioCallButton" type="button" class="wa-button wa-call-button" disabled aria-label="بدء مكالمة صوتية">📞 صوت</button>
+            <button id="waVideoCallButton" type="button" class="wa-button wa-call-button" disabled aria-label="بدء مكالمة فيديو">🎥 فيديو</button>
+            <button id="waAcceptCallButton" type="button" class="wa-button primary" hidden>قبول</button>
+            <button id="waRejectCallButton" type="button" class="wa-button" hidden>رفض</button>
+            <button id="waEndCallButton" type="button" class="wa-button danger" hidden>إنهاء</button>
+            <button id="waReloadMessages" type="button" class="wa-button" aria-label="تحديث الرسائل">↻</button>
+          </div>
         </header>
+        <div id="waCallStatus" class="wa-call-status" role="status" aria-live="polite"></div>
+        <div id="waCallMedia" class="wa-call-media" hidden>
+          <video id="waLocalCallVideo" autoplay muted playsinline aria-label="صورتك أثناء المكالمة"></video>
+          <video id="waRemoteCallVideo" autoplay playsinline aria-label="صورة الطرف الآخر"></video>
+          <audio id="waRemoteCallAudio" autoplay></audio>
+        </div>
         <div id="waMessages" class="wa-messages"><div class="wa-empty"><span class="wa-empty-icon">💬</span>مرحباً بك في WHATSMYGRAM<br>اختر محادثة أو ابدأ محادثة جديدة. الرسائل والوسائط محفوظة في مساحة مستقلة.</div></div>
         <form id="waCompose" class="wa-compose">
           <label for="waBody">رسالتك</label>
