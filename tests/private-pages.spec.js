@@ -399,6 +399,19 @@ test('standalone MYGRAM Chat shows peer identity and playable voice-note bubbles
   expect(outgoingBubble).not.toBeNull();
   expect(outgoingBubble.x).toBeGreaterThan(incomingBubble.x);
   await expect(page.locator('#showPresenceToggle')).toBeChecked();
+  await expect(page.locator('#mygramMessagingTools')).toBeVisible();
+  await page.locator('#mygramMessagingTools [data-kind="topics"]').click();
+  await expect(page.getByPlaceholder('اسم الموضوع الجديد')).toBeVisible();
+  await page.locator('#chatMessages .chat-bubble:not(.mine) button[aria-label="الرد على الرسالة"]').click();
+  await expect(page.locator('#mygramReplyIndicator')).toBeVisible();
+  await expect(page.locator('#mygramReplyText')).toContainText('رسالة صوتية');
+  await page.locator('#chatBody').fill('رد اختبار');
+  await page.locator('#chatCompose button[type="submit"]').click();
+  await expect.poll(async () => page.evaluate(() =>
+    window.__mockCalls.some(call => call.table === 'chat_messages' && call.op === 'insert' &&
+      call.payload.reply_to_message_id === 'chat-voice-message-1' && call.payload.body === 'رد اختبار')
+  )).toBe(true);
+  await expect(page.locator('#mygramReplyIndicator')).toBeHidden();
   expect(errors).toEqual([]);
 });
 
