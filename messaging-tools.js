@@ -6,6 +6,7 @@
   const $ = id => document.getElementById(id);
   let context = { source:null, spaceId:null, userId:null, chatType:'group' };
   let activeTopicId = null, replyTarget = null, panel = null, panelBody = null, currentPanel = null, topics = [];
+  const reactionCache = new Map();
   const tableForSource = source => source === 'direct' ? 'direct_messages' : source === 'whatsmygram' ? 'whatsmygram_messages' : 'chat_messages';
   const messageText = m => m && m.body ? String(m.body) : (m && m.attachment_type ? '['+m.attachment_type+']' : 'رسالة');
   function notice(message, kind) {
@@ -36,6 +37,9 @@
       '.mygram-tools-item p{margin:0 0 5px;line-height:1.65}.mygram-tools-muted{color:#7a879a;font-size:10px}',
       '.mygram-message-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.mygram-message-actions button{border:1px solid #d5deeb;border-radius:7px;background:#fff;padding:4px 7px;font-size:10px;color:#435572;cursor:pointer}',
       '.mygram-message-quote{display:block;margin:5px 0;padding:6px 9px;border-inline-start:3px solid #6b83c5;background:#f4f7ff;border-radius:5px;font-size:11px;color:#536481;white-space:pre-wrap}',
+      '.mygram-reaction-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}',
+      '.mygram-reaction-chip{border:1px solid #dbe4f0;border-radius:999px;background:#fff;color:#3c4f70;padding:3px 7px;font-size:11px;cursor:pointer}',
+      '.mygram-reaction-chip[aria-pressed=true]{background:#eaf0ff;border-color:#96afea;color:#243f87;font-weight:900}',
       '.mygram-reply-indicator{display:flex;align-items:center;gap:8px;padding:7px 10px;margin-bottom:8px;background:#eef3ff;border:1px solid #cfdaf7;border-radius:9px;color:#2f477e;font-size:11px}',
       '.mygram-reply-indicator[hidden]{display:none!important}.mygram-reply-indicator span{flex:1;overflow-wrap:anywhere}',
       '.mygram-poll-option{display:flex;align-items:center;gap:7px;width:100%;text-align:start;margin-top:5px}.mygram-poll-option span:first-child{flex:1}.mygram-poll-bar{height:5px;background:#d9e4ff;border-radius:99px;overflow:hidden;margin-top:4px}.mygram-poll-bar i{display:block;height:100%;background:#476ac3}',
@@ -300,7 +304,64 @@
       const reply=button('↩ رد',()=>setReplyTarget(message));reply.setAttribute('aria-label','الرد على الرسالة');reply.className='';actions.appendChild(reply);
       const pin=button('📌 تثبيت',()=>togglePin(message));pin.className='';actions.appendChild(pin);
     }
+    renderReactionRow(bubble,message);
     bubble.appendChild(actions);
+  }
+  async function loadMessageReactions(messageIds) {
+    const ids=[...new Set((messageIds||[]).filter(Boolean))];
+    if(!ids.length || !context.source || !context.userId) return new Map();
+    let query=db.from('messaging_message_reactions').select('id,source,space_id,message_id,user_id,emoji')
+      .eq('source',context.source).in('message_id',ids);
+    if(context.source!=='direct')query=query.eq('space_id',context.spaceId);
+    const result=await query;
+    if(result.error){console.warn('Could not load message reactions:',result.error.message);return reactionCache;}
+    ids.forEach(id=>reactionCache.delete(id));
+    for(const row of result.data||[]){
+      if(!reactionCache.has(row.message_id))reactionCache.set(row.message_id,[]);
+      const values=reactionCache.get(row.message_id);
+      let summary=values.find(x=>x.emoji===row.emoji);
+      if(!summary){summary={emoji:row.emoji,count:0,mine:false};values.push(summary);}
+      summary.count++;
+      if(row.user_id===context.userId)summary.mine=true;
+    }
+    return reactionCache;
+  }
+  function renderReactionRow(bubble,message) {
+    if(!bubble||!message)return;
+    let row=bubble.querySelector('.mygram-reaction-row');
+    if(!row){row=document.createElement('div');row.className='mygram-reaction-row';const actions=bubble.querySelector('.mygram-message-actions');if(actions)bubble.insertBefore(row,actions);else bubble.appendChild(row);}
+    row.replaceChildren();
+    const current=reactionCache.get(message.id)||[];
+    const defaults=['👍','❤️','😂','🔥'];
+    const emojiList=[...new Set([...current.map(x=>x.emoji),...defaults])];
+    for(const emoji of emojiList){
+      const summary=current.find(x=>x.emoji===emoji);
+      const chip=document.createElement('button');chip.type='button';chip.className='mygram-reaction-chip';
+      chip.textContent=emoji+(summary&&summary.count?' '+summary.count:'');
+      chip.setAttribute('aria-label','تفاعل '+emoji);chip.setAttribute('aria-pressed',String(!!summary?.mine));
+      chip.addEventListener('click',()=>toggleMessageReaction(message,emoji));
+      row.appendChild(chip);
+    }
+    if(!emojiList.length)row.remove();
+  }
+  async function toggleMessageReaction(message,emoji) {
+    if(!context.source||!context.userId)return;
+    const lookup=db.from('messaging_message_reactions').select('id')
+      .eq('source',context.source).eq('message_id',message.id).eq('user_id',context.userId).eq('emoji',emoji);
+    const existing=await lookup.maybeSingle();
+    if(existing.error){notice('تعذر قراءة التفاعل: '+existing.error.message,true);return;}
+    let result;
+    if(existing.data){
+      result=await db.from('messaging_message_reactions').delete().eq('id',existing.data.id);
+    }else{
+      const payload={source:context.source,space_id:context.source==='direct'?null:context.spaceId,message_id:message.id,user_id:context.userId,emoji};
+      result=await db.from('messaging_message_reactions').insert(payload);
+    }
+    if(result.error){notice('تعذر حفظ التفاعل: '+result.error.message,true);return;}
+    await loadMessageReactions([message.id]);
+    const bubble=[...document.querySelectorAll('[data-message-id]')].find(node=>node.dataset.messageId===message.id);
+    if(bubble)renderReactionRow(bubble,message);
+    if(window.MYGRAM_SOUNDS)window.MYGRAM_SOUNDS.play('reaction');
   }
   function setReplyTarget(message) {
     if(context.source==='direct' || !message || !message.id)return;
@@ -331,7 +392,7 @@
     return Promise.resolve();
   }
   window.MYGRAM_MESSAGING_TOOLS = {
-    setContext, getActiveTopicId:()=>activeTopicId, getReplyToMessageId:()=>replyTarget&&replyTarget.id, clearReplyTarget, decorateMessageBubble,
+    setContext, getActiveTopicId:()=>activeTopicId, getReplyToMessageId:()=>replyTarget&&replyTarget.id, clearReplyTarget, loadMessageReactions, decorateMessageBubble,
     getContext:()=>Object.assign({},context), openPanel
   };
   window.addEventListener('mygram:topic-changed', event => {
