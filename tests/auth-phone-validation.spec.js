@@ -14,7 +14,7 @@ test('country calling-code catalog contains 205 unique supported entries', async
   const catalog = await page.evaluate(() => window.MYGRAM_COUNTRIES.map(c => ({ code: c.code, dial: c.dial, nationalPrefix: c.nationalPrefix })));
   expect(catalog).toHaveLength(205);
   expect(new Set(catalog.map(c => c.code)).size).toBe(205);
-  expect(catalog.every(c => /^\\+[0-9]+$/.test(c.dial))).toBe(true);
+  expect(catalog.every(c => /^\+[0-9]+$/.test(c.dial))).toBe(true);
   const byCode = Object.fromEntries(catalog.map(c => [c.code, c.dial]));
   expect(byCode.US).toBe('+1');
   expect(byCode.NL).toBe('+31');
