@@ -45,12 +45,17 @@ Deno.serve(async (req: Request) => {
 
     const body = await req.json().catch(() => ({}));
     const chatId = String(body?.chatId || "");
+    const product = body?.product === undefined ? "messenger" : String(body.product);
+    if (!["messenger", "whatsmygram"].includes(product)) {
+      return json(req, { error: "Unsupported call product" }, 400);
+    }
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(chatId)) {
       return json(req, { error: "A valid private chat is required" }, 400);
     }
-    const { data: membership, error: membershipError } = await supabase
-      .from("chat_members")
-      .select("chat_id")
+    const membershipQuery = product === "whatsmygram"
+      ? supabase.from("whatsmygram_chat_members").select("chat_id")
+      : supabase.from("chat_members").select("chat_id");
+    const { data: membership, error: membershipError } = await membershipQuery
       .eq("chat_id", chatId)
       .eq("user_id", authData.user.id)
       .maybeSingle();
