@@ -162,7 +162,27 @@ test('authenticated member can save profile changes through the editor', async (
   await page.locator('#fullName').fill('Test Member');
   await page.locator('#username').fill('test_member_95');
   await page.locator('#bio').fill('Profile save regression test');
-  await page.locator('#saveProfileButton').click();
+  const saveButton = page.locator('#saveProfileButton');
+  await saveButton.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(100);
+  const profileHitDiagnostic = await saveButton.evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    const actions = el.closest('.profile-actions');
+    const main = document.querySelector('main.profile-wrap');
+    const style = node => {
+      if (!node) return null;
+      const css = getComputedStyle(node);
+      return { tag:node.tagName, id:node.id, cls:typeof node.className === 'string' ? node.className : '',
+        position:css.position, transform:css.transform, overflow:css.overflow, zIndex:css.zIndex,
+        rect:(()=>{const r=node.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}})() };
+    };
+    return { viewport:{w:innerWidth,h:innerHeight,scrollY}, button:style(el), actions:style(actions),
+      main:style(main), hit:style(hit), htmlScroll:getComputedStyle(document.documentElement).scrollBehavior,
+      bodyScroll:getComputedStyle(document.body).scrollBehavior };
+  });
+  console.log('PROFILE_SAVE_DIAGNOSTIC ' + JSON.stringify(profileHitDiagnostic));
+  await saveButton.click();
   await expect.poll(async () => page.evaluate(() =>
     window.__mockCalls.some(call => call.table === 'profiles' && call.op === 'update' &&
       call.payload.username === 'test_member_95' && call.payload.full_name === 'Test Member')
