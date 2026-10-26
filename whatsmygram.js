@@ -172,6 +172,7 @@
       .select('id,created_by,is_group,title,created_at,updated_at').eq('id', chatId).maybeSingle();
     if (chatError) throw chatError;
     activeChatMeta = chatRows || chatHint || { id: chatId, is_group: peerIds.length > 1 };
+    window.MYGRAM_MESSAGING_TOOLS?.setContext({source:'whatsmygram',spaceId:chatId,userId:me?.id,chatType:activeChatMeta.is_group?'group':'direct'});
     const profile = peerIds.length === 1 ? activeProfiles.get(peerIds[0]) : { full_name: activeChatMeta.title || 'مجموعة WHATSMYGRAM' };
     $('waThreadHead').hidden = false;
     const previousAvatar = $('waPeerAvatar');
@@ -188,9 +189,12 @@
   async function loadMessages() {
     if (!activeChat) return;
     const chatId = activeChat;
-    const { data, error } = await db.from('whatsmygram_messages')
-      .select('id,chat_id,sender_id,body,attachment_url,attachment_type,duration_seconds,created_at')
-      .eq('chat_id', chatId).order('created_at', { ascending: true }).limit(PAGE_LIMIT);
+    let query = db.from('whatsmygram_messages')
+      .select('id,chat_id,sender_id,body,attachment_url,attachment_type,duration_seconds,created_at,topic_id')
+      .eq('chat_id', chatId);
+    const topicId = window.MYGRAM_MESSAGING_TOOLS?.getActiveTopicId();
+    if (topicId) query = query.eq('topic_id', topicId);
+    const { data, error } = await query.order('created_at', { ascending: true }).limit(PAGE_LIMIT);
     if (error) throw error;
     if (chatId !== activeChat) return;
     const box = $('waMessages'); box.replaceChildren();
@@ -228,7 +232,7 @@
       const meta = document.createElement('div'); meta.className = 'wa-bubble-meta';
       const time = document.createElement('time'); time.dateTime = message.created_at; time.textContent = formatTime(message.created_at); meta.appendChild(time);
       if (message.sender_id === me.id) { const readMark = document.createElement('span'); readMark.className = 'wa-read-mark'; readMark.setAttribute('aria-label', allOthersRead(message.created_at) ? 'قرأها الأعضاء' : 'تم الإرسال'); readMark.textContent = allOthersRead(message.created_at) ? '✓✓' : '✓'; meta.appendChild(readMark); }
-      bubble.appendChild(meta); box.appendChild(bubble);
+      bubble.appendChild(meta); window.MYGRAM_MESSAGING_TOOLS?.decorateMessageBubble(bubble,message); box.appendChild(bubble);
     }
     box.scrollTop = box.scrollHeight;
     const readAt = new Date().toISOString();
@@ -332,7 +336,8 @@
         chat_id: activeChat, sender_id: me.id,
         body: body || (attachment_type === 'audio' ? '🎙️ رسالة صوتية' : attachment_type === 'video' ? '🎬 فيديو مرفق' : '🖼️ صورة مرفقة'),
         attachment_url, attachment_type,
-        duration_seconds: attachment_type === 'audio' && file === recordedVoiceFile ? recordedVoiceDurationSeconds : null
+        duration_seconds: attachment_type === 'audio' && file === recordedVoiceFile ? recordedVoiceDurationSeconds : null,
+        topic_id: window.MYGRAM_MESSAGING_TOOLS?.getActiveTopicId() || null
       });
       if (error) throw error;
       $('waBody').value = ''; $('waFile').value = ''; $('waComposeStatus').textContent = '';
@@ -366,6 +371,7 @@
       }
     }, 15000);
   }
+  window.addEventListener('mygram:topic-changed', event => { if (event.detail?.source === 'whatsmygram' && event.detail.spaceId === activeChat) loadMessages().catch(error => toast('تعذر تحميل الموضوع: ' + error.message, true)); });
   window.addEventListener('beforeunload', () => {
     clearTimeout(recordingLimitTimer);
     recordingStream?.getTracks().forEach(track => track.stop());
