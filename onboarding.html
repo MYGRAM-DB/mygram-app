@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#087cf0"><title>أكمل ملفك الشخصي | MYGRAM</title>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="brand.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="config.js"></script><script defer src="country-data.js"></script><script defer src="language.js"></script>
+<style>
+body{min-height:100vh;background:radial-gradient(circle at 90% 0,#dcecff,transparent 28rem),#f4f7fc;color:#1b2d46}
+.onboard{width:min(900px,calc(100% - 28px));margin:28px auto 54px}.hero{padding:25px 28px;border-radius:22px;background:linear-gradient(120deg,#153b7c,#087cf0 65%,#7368ee);color:#fff}.hero h1{margin:0 0 8px;font-size:clamp(23px,4vw,32px)}.hero p{margin:0;color:#e7f2ff;line-height:1.8}.progress{height:6px;background:#ffffff40;border-radius:99px;margin-top:20px;overflow:hidden}.progress span{display:block;width:30%;height:100%;background:#fff;border-radius:99px}
+form{margin-top:16px;padding:clamp(18px,4vw,30px);background:#fff;border:1px solid #e3ebf5;border-radius:22px;box-shadow:0 12px 32px #193b6609}
+h2{font-size:17px;margin:0 0 5px}.section-note{color:#7c8ba0;font-size:12px;line-height:1.8;margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 15px}.field{min-width:0;margin-bottom:13px}.field.full{grid-column:1/-1}.field label{display:block;font-size:12px;font-weight:800;color:#53657b;margin:0 0 6px}.field input,.field select,.field textarea{box-sizing:border-box;width:100%;min-height:44px;padding:10px 12px;border:1px solid #dce6f2;border-radius:11px;background:#fbfdff;color:#263953;font:inherit;font-size:13px}.field textarea{min-height:90px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{outline:3px solid #087cf014;border-color:#7abaff}.hint{font-size:11px;color:#8190a5;line-height:1.7;margin-top:5px}.avatar-row{display:flex;align-items:center;gap:14px}.avatar-preview{width:76px;height:76px;border-radius:50%;object-fit:cover;background:#edf4fc;border:2px solid #e5edf8}.notice{min-height:25px;font-size:12px;line-height:1.8}.notice.error{color:#c83b52}.notice.success{color:#10865d}.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}.actions button{border:0;border-radius:11px;padding:12px 18px;font:inherit;font-weight:800;cursor:pointer}.primary{background:#087cf0;color:#fff}.secondary{background:#eef3f9;color:#4c5e75}.primary:disabled{opacity:.6;cursor:wait}.privacy{padding:12px 14px;background:#f6faff;border:1px solid #e2edfc;border-radius:12px;font-size:11px;color:#637894;line-height:1.9}
+@media(max-width:600px){.onboard{margin:12px auto 30px}.hero{padding:21px;border-radius:17px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.avatar-row{align-items:flex-start}}
+</style>
+</head>
+<body>
+<main class="onboard">
+<header class="hero"><h1>أهلاً بك في MYGRAM 💙</h1><p>بقيت خطوة واحدة. أكمل معلوماتك لتخصيص تجربتك والعثور على أشخاص واهتمامات تناسبك. معلومات الميلاد ووسائل الاتصال تبقى خاصة.</p><div class="progress" aria-label="خطوة استكمال الملف"><span></span></div></header>
+<form id="onboardingForm" novalidate>
+<section><h2>١. معلوماتك الأساسية</h2><p class="section-note">اسمك واسم المستخدم هما ما يساعد الآخرين على التعرّف إليك.</p>
+<div class="grid">
+<div class="field"><label for="firstName">الاسم *</label><input id="firstName" autocomplete="given-name" maxlength="60" required></div>
+<div class="field"><label for="lastName">اسم العائلة *</label><input id="lastName" autocomplete="family-name" maxlength="60" required></div>
+<div class="field"><label for="username">اسم المستخدم *</label><input id="username" autocomplete="username" minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]{3,30}" placeholder="مثال: loai_92" required><div class="hint" id="usernameHint">3 إلى 30 حرفاً إنجليزياً أو رقماً أو شرطة سفلية.</div></div>
+<div class="field"><label for="birthDate">تاريخ الميلاد *</label><input id="birthDate" type="date" autocomplete="bday" required><div class="hint">لن يظهر تاريخ ميلادك علناً.</div></div>
+<div class="field"><label for="gender">الجنس (اختياري)</label><select id="gender"><option value="">يفضّل عدم التحديد</option><option value="female">أنثى</option><option value="male">ذكر</option><option value="nonbinary">غير ثنائي</option><option value="prefer_not_to_say">أفضل عدم الإجابة</option></select></div>
+<div class="field"><label for="nationality">الجنسية *</label><select id="nationality" required><option value="">اختر الجنسية</option></select></div>
+<div class="field full"><label for="bio">نبذة عنك</label><textarea id="bio" maxlength="500" placeholder="اكتب نبذة قصيرة عن نفسك..."></textarea></div>
+<div class="field full"><label for="interests">هواياتك واهتماماتك</label><input id="interests" maxlength="500" placeholder="مثال: التقنية، السفر، كرة القدم، الموسيقى"><div class="hint">افصل بين الاهتمامات بفواصل، وسنستخدمها لتحسين التوصيات.</div></div>
+<div class="field full"><label for="avatar">الصورة الشخصية (اختياري)</label><div class="avatar-row"><img class="avatar-preview" id="avatarPreview" alt="معاينة الصورة الشخصية" hidden><input id="avatar" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></div><div class="hint">JPG أو PNG أو WebP أو GIF، بحد أقصى 5 ميغابايت.</div></div>
+</div></section>
+<hr style="border:0;border-top:1px solid #edf1f7;margin:22px 0">
+<section><h2>٢. الموقع والتواصل</h2><p class="section-note">اختياري لتخصيص الاقتراحات. لا نعرض موقع سكنك للآخرين تلقائياً.</p>
+<div class="grid">
+<div class="field"><label for="country">بلد الإقامة</label><select id="country"><option value="">اختر البلد</option></select></div>
+<div class="field"><label for="region">المنطقة / المحافظة</label><input id="region" maxlength="100" autocomplete="address-level1"></div>
+<div class="field"><label for="city">المدينة</label><input id="city" maxlength="100" autocomplete="address-level2"></div>
+<div class="field"><label for="language">لغة التطبيق</label><select id="language"><option value="ar">العربية</option><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></div>
+<div class="field"><label for="contactEmail">البريد الإلكتروني المرتبط بالحساب</label><input id="contactEmail" type="email" readonly></div>
+<div class="field"><label for="contactPhone">رقم الهاتف المرتبط بالحساب</label><input id="contactPhone" type="tel" readonly><div class="hint">تظهر وسيلة الاتصال هنا للعرض فقط، ولا نعتبرها موثّقة إلا إذا أكدها مزوّد المصادقة.</div></div>
+</div>
+<div class="privacy">🔒 تاريخ الميلاد والجنس وبيانات الاتصال تُحفظ في جدول التفاصيل الخاصة. مشاركة المدينة مع الآخرين متوقفة افتراضياً ويمكن تغيير إعدادات الخصوصية لاحقاً.</div>
+</section>
+<p id="notice" class="notice" role="status" aria-live="polite"></p>
+<div class="actions"><button id="saveButton" class="primary" type="submit">حفظ الملف والمتابعة إلى MYGRAM</button><button id="logoutButton" class="secondary" type="button">تسجيل الخروج</button></div>
+</form>
+</main>
+<script>
+(() => {
+"use strict";
+const $=id=>document.getElementById(id);
+const cfg=window.MYGRAM_CONFIG;
+let client,user,existingProfile=null,selectedAvatar=null,checkTimer;
+const notice=(message,kind="")=>{$("notice").textContent=message;$("notice").className="notice"+(kind?" "+kind:"")};
+const today=new Date();$("birthDate").max=[today.getFullYear(),String(today.getMonth()+1).padStart(2,"0"),String(today.getDate()).padStart(2,"0")].join("-");
+function fillCountries(){
+ if(!window.MYGRAM_FILL_COUNTRIES)return;
+ window.MYGRAM_FILL_COUNTRIES($("nationality"),"ar");
+ window.MYGRAM_FILL_COUNTRIES($("country"),"ar");
+}
+async function init(){
+ if(!cfg?.supabaseUrl||!window.supabase){notice("تعذّر تهيئة الاتصال. حدّث الصفحة بعد قليل.","error");return}
+ client=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ const {data,error}=await client.auth.getSession();if(error)throw error;
+ if(!data.session){location.replace(cfg.loginUrl);return}
+ user=data.session.user;fillCountries();
+ const [profileResult,privateResult,prefsResult]=await Promise.all([
+  client.from("profiles").select("first_name,last_name,full_name,username,bio,interests,avatar_url,profile_completed,public_nationality_code,public_living_country_code,public_living_region,public_living_city").eq("id",user.id).maybeSingle(),
+  client.from("profile_private_details").select("date_of_birth,gender,nationality_code,contact_email,contact_phone").eq("user_id",user.id).maybeSingle(),
+  client.from("user_preferences").select("language_code,current_country_code,nationality_code,region,city_name").eq("user_id",user.id).maybeSingle()
+ ]);
+ if(profileResult.error)throw profileResult.error;if(privateResult.error)throw privateResult.error;if(prefsResult.error)throw prefsResult.error;
+ existingProfile=profileResult.data||{};
+ const p=existingProfile,d=privateResult.data||{},prefs=prefsResult.data||{};
+ const meta=user.user_metadata||{},full=p.full_name||meta.full_name||"";
+ const parts=full.split(/\s+/);
+ $("firstName").value=p.first_name||parts.shift()||"";
+ $("lastName").value=p.last_name||parts.join(" ");
+ $("username").value=p.username||meta.username||"";
+ $("bio").value=p.bio||"";
+ $("interests").value=(p.interests||[]).join(", ");
+ $("birthDate").value=d.date_of_birth||"";
+ $("gender").value=d.gender||"";
+ $("nationality").value=d.nationality_code||prefs.nationality_code||p.public_nationality_code||"";
+ $("country").value=prefs.current_country_code||p.public_living_country_code||"";
+ $("region").value=prefs.region||p.public_living_region||"";
+ $("city").value=prefs.city_name||p.public_living_city||"";
+ $("language").value=prefs.language_code||"ar";
+ $("contactEmail").value=user.email||d.contact_email||"";
+ $("contactPhone").value=user.phone||d.contact_phone||"";
+ if(p.avatar_url){$("avatarPreview").src=p.avatar_url;$("avatarPreview").hidden=false}
+ $("username").addEventListener("input",()=>{
+  clearTimeout(checkTimer);const name=$("username").value.trim().toLowerCase();
+  if(!/^[a-z0-9_]{3,30}$/.test(name)){ $("usernameHint").textContent="استخدم 3 إلى 30 حرفاً إنجليزياً أو رقماً أو _.";return}
+  $("usernameHint").textContent="جارٍ التحقق من توفر الاسم…";
+  checkTimer=setTimeout(async()=>{
+   const {data,error}=await client.from("profiles").select("id").eq("username",name).neq("id",user.id).maybeSingle();
+   $("usernameHint").textContent=error?"سنتحقق من الاسم عند الحفظ.":data?"الاسم مستخدم بالفعل، جرّب اسماً آخر.":"الاسم متاح ✓";
+  },350);
+ });
+ $("avatar").addEventListener("change",()=>{
+  const f=$("avatar").files?.[0];selectedAvatar=f||null;
+  if(!f){if(existingProfile.avatar_url){$("avatarPreview").src=existingProfile.avatar_url;$("avatarPreview").hidden=false}else $("avatarPreview").hidden=true;return}
+  if(!/^image\/(jpeg|png|webp|gif)$/.test(f.type)||f.size>5*1024*1024){selectedAvatar=null;$("avatar").value="";notice("اختر صورة JPG أو PNG أو WebP أو GIF بحجم لا يتجاوز 5 ميغابايت.","error");return}
+  $("avatarPreview").src=URL.createObjectURL(f);$("avatarPreview").hidden=false;
+ });
+ $("logoutButton").addEventListener("click",async()=>{await client.auth.signOut();location.replace(cfg.loginUrl)});
+ if(p.profile_completed)notice("ملفك الشخصي مكتمل. يمكنك تعديل معلوماتك ثم حفظها مجدداً.","success");
+}
+$("onboardingForm").addEventListener("submit",async event=>{
+ event.preventDefault();if(!client||!user)return;
+ const firstName=$("firstName").value.trim(),lastName=$("lastName").value.trim(),username=$("username").value.trim().toLowerCase(),birthDate=$("birthDate").value,nationality=$("nationality").value;
+ if(!firstName||!lastName){notice("أدخل الاسم واسم العائلة للمتابعة.","error");return}
+ if(!/^[a-z0-9_]{3,30}$/.test(username)){notice("اسم المستخدم يجب أن يكون من 3 إلى 30 حرفاً إنجليزياً أو رقماً أو _.","error");return}
+ if(!birthDate||birthDate>$("birthDate").max){notice("أدخل تاريخ ميلاد صحيحاً.","error");return}
+ if(!nationality){notice("اختر الجنسية للمتابعة.","error");return}
+ const button=$("saveButton");button.disabled=true;notice("جارٍ حفظ معلوماتك بأمان…");
+ try{
+  let avatarUrl=existingProfile.avatar_url||null;
+  if(selectedAvatar){
+   const ext=selectedAvatar.type==="image/png"?"png":selectedAvatar.type==="image/webp"?"webp":selectedAvatar.type==="image/gif"?"gif":"jpg";
+   const path=user.id+"/avatar-"+Date.now()+"."+ext;
+   const {error}=await client.storage.from("mygram-media").upload(path,selectedAvatar,{upsert:false,contentType:selectedAvatar.type,cacheControl:"3600"});
+   if(error)throw new Error("تعذّر رفع الصورة. تحقق من إعدادات تخزين الصور ثم حاول مجدداً.");
+   avatarUrl=client.storage.from("mygram-media").getPublicUrl(path).data.publicUrl;
+  }
+  const fullName=(firstName+" "+lastName).trim(),interests=[...new Set($("interests").value.split(",").map(x=>x.trim()).filter(Boolean))].slice(0,30);
+  const profile={id:user.id,first_name:firstName,last_name:lastName,full_name:fullName,username,bio:$("bio").value.trim().slice(0,500),interests,avatar_url:avatarUrl,profile_completed:true,public_nationality_code:nationality,public_living_country_code:$("country").value||null,public_living_region:$("region").value.trim()||null,public_living_city:$("city").value.trim()||null,show_living_location:false,updated_at:new Date().toISOString()};
+  const {error:profileError}=await client.from("profiles").upsert(profile,{onConflict:"id"});
+  if(profileError){if(profileError.code==="23505")throw new Error("اسم المستخدم محجوز بالفعل. اختر اسماً آخر.");throw new Error("تعذّر حفظ الملف الشخصي. تحقق من الاتصال ثم حاول مجدداً.")}
+  const privateDetails={user_id:user.id,date_of_birth:birthDate,gender:$("gender").value||null,nationality_code:nationality,contact_email:user.email||null,contact_phone:user.phone||null,updated_at:new Date().toISOString()};
+  const {error:privateError}=await client.from("profile_private_details").upsert(privateDetails,{onConflict:"user_id"});
+  if(privateError)throw new Error("تم حفظ الملف الأساسي، لكن تعذّر حفظ بعض التفاصيل الخاصة. حاول الحفظ مجدداً.");
+  const {error:prefsError}=await client.from("user_preferences").upsert({user_id:user.id,language_code:$("language").value,current_country_code:$("country").value||null,nationality_code:nationality,region:$("region").value.trim()||null,city_name:$("city").value.trim()||null,share_location:false,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+  if(prefsError)throw new Error("حُفظ الملف، لكن تعذّر حفظ تفضيلات الموقع واللغة. أعد المحاولة.");
+  try{localStorage.setItem("mygram-language",$("language").value);localStorage.setItem("mygram-profile-complete","1")}catch{}
+  notice("اكتمل ملفك الشخصي بنجاح! جارٍ فتح MYGRAM…","success");
+  setTimeout(()=>location.replace(cfg.homeUrl),350);
+ }catch(error){console.error("MYGRAM onboarding save failed:",error);notice(error.message||"تعذّر حفظ الملف. حاول مجدداً.","error")}
+ finally{button.disabled=false}
+});
+window.addEventListener("DOMContentLoaded",()=>init().catch(error=>{console.error("MYGRAM onboarding init failed:",error);notice("تعذّر تحميل معلومات الحساب. حدّث الصفحة أو سجّل الدخول مجدداً.","error")}));
+})();
+</script>
+</body></html>
