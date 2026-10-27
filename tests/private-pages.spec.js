@@ -4,7 +4,7 @@ const mockSupabase = `
 window.__mockCalls = [];
 window.__mockChannels = [];
 window.__mockFunctionInvocations = [];
-window.__mockTableData = {
+window.__mockTableData = window.__searchTestSeed || {
   profiles: [{ id: 'other-user-uuid', username: 'someone', full_name: 'Someone', bio: 'Test profile', avatar_url: null }],
   reels: [{ id: 'reel-test-uuid', user_id: 'other-user-uuid', video_url: 'https://example.test/reel.mp4', caption: 'A test reel', created_at: '2026-10-25T10:00:00.000Z' }],
   reel_reactions: [], reel_comments: [], chat_members: [], chat_messages: []
@@ -15,7 +15,7 @@ window.supabase = {
     const query = {
       select() { return this; }, insert() { return this; }, update() { return this; },
       delete() { return this; }, upsert() { return this; }, eq() { return this; }, is() { return this; },
-      neq() { return this; }, in() { return this; }, or() { return this; }, ilike() { return this; }, gt() { return this; },
+      neq() { return this; }, in() { return this; }, or(filter) { window.__mockCalls.push({ table: this._table, op: 'or', filter }); return this; }, ilike() { return this; }, gt() { return this; },
       order() { return this; }, limit() { return this; },
       maybeSingle() { return Promise.resolve({ data: null, error: null }); },
       single() { return Promise.resolve({ data: null, error: null }); },
@@ -231,6 +231,29 @@ test('authenticated member can publish a reel with video', async ({ page }) => {
     window.__mockCalls.some(call => call.table === 'reels' && call.op === 'insert' &&
       call.payload.user_id === 'test-user-uuid' && call.payload.caption === 'Reel upload smoke test')
   )).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('member search keeps Unicode and usernames while neutralizing filter syntax', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await selectServiceTab(page, 'messages');
+  await page.locator('#memberSearch').fill('@O\'Connor_测试),username.eq.*');
+  await expect.poll(() => page.evaluate(() => window.__mockCalls.filter(call => call.op === 'or').length)).toBe(1);
+  const filter = await page.evaluate(() => window.__mockCalls.find(call => call.op === 'or').filter);
+  expect(filter).toBe('username.ilike."%O\'Connor\\_测试 username eq%",full_name.ilike."%O\'Connor\\_测试 username eq%"');
+  const searchTerms = [...filter.matchAll(/%([^%]*)%/g)].map(([, term]) => term);
+  expect(searchTerms).toEqual(['O\'Connor\\_测试 username eq', 'O\'Connor\\_测试 username eq']);
+  expect(searchTerms.join('')).not.toMatch(/[(),.*"]/);
+  expect(errors).toEqual([]);
+});
+
+test('member search caps very long input before building the PostgREST filter', async ({ page }) => {
+  const errors = await openAuthenticatedPage(page, '/services.html');
+  await selectServiceTab(page, 'messages');
+  await page.locator('#memberSearch').fill('x'.repeat(500));
+  await expect.poll(() => page.evaluate(() => window.__mockCalls.filter(call => call.op === 'or').length)).toBe(1);
+  const filter = await page.evaluate(() => window.__mockCalls.find(call => call.op === 'or').filter);
+  expect(filter).toBe(`username.ilike."%${'x'.repeat(80)}%",full_name.ilike."%${'x'.repeat(80)}%"`);
   expect(errors).toEqual([]);
 });
 

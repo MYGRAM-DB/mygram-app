@@ -19,7 +19,35 @@ function toast(msg,error=false){
     msg=window.MYGRAM_TRANSLATE_TEXT?window.MYGRAM_TRANSLATE_TEXT(msg):msg;const e=$('chatToast');e.textContent=msg;e.className='toast show'+(error?' error':'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.className='toast',4500)}
 function safeName(p){return p?.full_name?.trim()||('@'+(p?.username||'عضو MYGRAM'))}
 async function getProfileByUsername(username){const {data,error}=await db.from('profiles').select('id,username,full_name,avatar_url').eq('username',username).maybeSingle();if(error)throw error;if(!data)throw new Error('لم نعثر على هذا المستخدم.');if(data.id===me.id)throw new Error('لا يمكنك بدء محادثة مع نفسك.');return data}
-async function getOrCreateChat(others){if(others.length===1){const other=others[0];const {data:mine,error}=await db.from('chat_members').select('chat_id').eq('user_id',me.id);if(error)throw error;const ids=(mine||[]).map(x=>x.chat_id);if(ids.length){const {data:members,error:e}=await db.from('chat_members').select('chat_id,user_id').in('chat_id',ids);if(e)throw e;const existing=(members||[]).find(x=>x.user_id===other.id);if(existing)return existing.chat_id}}const isGroup=others.length>1;const title=isGroup?others.map(safeName).join(', ').slice(0,100):null;const {data:chat,error:createError}=await db.from('chats').insert({created_by:me.id,is_group:isGroup,title}).select('id').single();if(createError)throw createError;const participants=[{chat_id:chat.id,user_id:me.id},...others.map(p=>({chat_id:chat.id,user_id:p.id}))];const {error:memberError}=await db.from('chat_members').insert(participants);if(memberError)throw memberError;return chat.id}
+async function getOrCreateChat(others){
+ if(others.length===1){
+  const other=others[0];
+  const {data:mine,error}=await db.from('chat_members').select('chat_id').eq('user_id',me.id);
+  if(error)throw error;
+  const ids=[...new Set((mine||[]).map(x=>x.chat_id))];
+  if(ids.length){
+   const {data:chats,error:chatError}=await db.from('chats').select('id,is_group,created_at').in('id',ids).eq('is_group',false);
+   if(chatError)throw chatError;
+   const directChats=(chats||[]).filter(chat=>chat.is_group===false);
+   const directChatIds=directChats.map(chat=>chat.id);
+   if(directChatIds.length){
+    const {data:members,error:memberError}=await db.from('chat_members').select('chat_id,user_id').in('chat_id',directChatIds);
+    if(memberError)throw memberError;
+    const membersByChat=new Map();
+    for(const member of members||[]){
+     if(!membersByChat.has(member.chat_id))membersByChat.set(member.chat_id,new Set());
+     membersByChat.get(member.chat_id).add(member.user_id);
+    }
+    const existing=directChats.filter(chat=>{
+     const participants=membersByChat.get(chat.id);
+     return participants?.size===2&&participants.has(me.id)&&participants.has(other.id);
+    }).sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||'')))[0];
+    if(existing)return existing.id;
+   }
+  }
+ }
+ const isGroup=others.length>1;const title=isGroup?others.map(safeName).join(', ').slice(0,100):null;const {data:chat,error:createError}=await db.from('chats').insert({created_by:me.id,is_group:isGroup,title}).select('id').single();if(createError)throw createError;const participants=[{chat_id:chat.id,user_id:me.id},...others.map(p=>({chat_id:chat.id,user_id:p.id}))];const {error:memberError}=await db.from('chat_members').insert(participants);if(memberError)throw memberError;return chat.id
+}
 async function loadChatList(){
  const box=$('chatList');box.replaceChildren();
  const {data:mine,error}=await db.from('chat_members').select('chat_id').eq('user_id',me.id);
