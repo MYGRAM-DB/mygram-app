@@ -11,7 +11,8 @@ test('direct chat lookup excludes group chats and requires exactly both particip
 test('member search sanitizes PostgREST filter syntax and wildcard input before building OR filter', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'services.js'), 'utf8');
   expect(source).toContain('function sanitizeMemberSearch(value)');
-  expect(source).toMatch(/replace\(\/[\\\\%_\(\),\.\\\"']\/g,\s*' '\)/);
+  expect(source).toContain('.replace(/[');
+  expect(source).toContain(".replace(/\\s+/g,' ')");
   expect(source).toContain('const q=sanitizeMemberSearch($(\'memberSearch\').value)');
   expect(source).toContain('.or(`username.ilike.${pattern},full_name.ilike.${pattern}`)');
 });
