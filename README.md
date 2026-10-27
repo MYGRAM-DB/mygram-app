@@ -17,6 +17,14 @@ MYGRAM is a static HTML/CSS/JavaScript social platform deployed with GitHub Page
 - 60 language choices with 47 translated core interface strings per locale; feature-specific labels still need broader localization review.
 - Database migrations and RLS policies for social content, private messages, reels, and communities.
 
+## Messaging privacy and encryption status
+
+Messaging traffic is protected in transit by HTTPS/TLS when connecting to the deployed site and Supabase endpoints. Access to private conversations and messages also depends on the configured Supabase Postgres Row Level Security (RLS) policies and authenticated conversation membership.
+
+**MYGRAM does not currently claim end-to-end encryption (E2EE).** TLS protects data while it travels between client and service; it does not prevent the service/database from processing message contents. RLS is an authorization control, not encryption. Do not describe private messages as E2EE until a reviewed cryptographic protocol, device key management, identity verification, recovery behavior, and multi-device support are implemented and tested.
+
+Playwright tests that mock Supabase or intercept REST requests are simulations of expected client/API behavior. They do not prove the live database's RLS policies. Live cross-account authorization must be verified using separate authenticated test users and the deployed Supabase project before release sign-off.
+
 ## Messenger presence and voice notes
 
 The additive migration `supabase/migrations/20261026010000_add_chat_presence_and_voice_duration.sql` adds `public.user_presence` and `chat_messages.duration_seconds`. The same presence migration was applied to the connected Supabase project and read-only checks confirmed RLS, the own-row update policy, shared-conversation read restrictions, and the hidden-status constraint. Do not manually re-run schema changes against an existing project without checking migration history first.
