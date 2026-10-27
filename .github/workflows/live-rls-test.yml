@@ -1,0 +1,67 @@
+
+name: MYGRAM Live Supabase RLS Isolation Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-rls-isolation:
+    name: Live private-chat RLS isolation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate required secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          USER_A_EMAIL: ${{ secrets.MYGRAM_TEST_USER_A_EMAIL }}
+          USER_A_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_A_PASSWORD }}
+          USER_B_EMAIL: ${{ secrets.MYGRAM_TEST_USER_B_EMAIL }}
+          USER_B_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_B_PASSWORD }}
+          USER_C_EMAIL: ${{ secrets.MYGRAM_TEST_USER_C_EMAIL }}
+          USER_C_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_C_PASSWORD }}
+          TEST_CHAT_ID: ${{ secrets.MYGRAM_TEST_CHAT_ID }}
+        run: |
+          set -eu
+          for name in \
+            SUPABASE_URL \
+            SUPABASE_ANON_KEY \
+            USER_A_EMAIL \
+            USER_A_PASSWORD \
+            USER_B_EMAIL \
+            USER_B_PASSWORD \
+            USER_C_EMAIL \
+            USER_C_PASSWORD \
+            TEST_CHAT_ID
+          do
+            if [ -z "$(printenv "$name")" ]; then
+              echo "::error::Required GitHub secret is missing: $name"
+              exit 1
+            fi
+          done
+          echo "All required secret values are present."
+
+      - name: Run live RLS isolation test
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          MYGRAM_TEST_USER_A_EMAIL: ${{ secrets.MYGRAM_TEST_USER_A_EMAIL }}
+          MYGRAM_TEST_USER_A_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_A_PASSWORD }}
+          MYGRAM_TEST_USER_B_EMAIL: ${{ secrets.MYGRAM_TEST_USER_B_EMAIL }}
+          MYGRAM_TEST_USER_B_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_B_PASSWORD }}
+          MYGRAM_TEST_USER_C_EMAIL: ${{ secrets.MYGRAM_TEST_USER_C_EMAIL }}
+          MYGRAM_TEST_USER_C_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_C_PASSWORD }}
+          MYGRAM_TEST_CHAT_ID: ${{ secrets.MYGRAM_TEST_CHAT_ID }}
+        run: node tests/live-rls-isolation.mjs
