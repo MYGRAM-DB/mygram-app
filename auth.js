@@ -295,7 +295,7 @@
         const { data, error } = await client.auth.signUp({
           email: normalizedEmail,
           password: pass,
-          options: { data: { full_name: name }, emailRedirectTo: new URL(config.homeUrl, location.href).href }
+          options: { data: { full_name: name }, emailRedirectTo: new URL("onboarding.html", location.href).href }
         });
         if (error) throw error;
         try { localStorage.setItem("mygram-account-known", "1"); } catch {}
