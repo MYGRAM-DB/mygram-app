@@ -201,6 +201,21 @@
     }
   });
 
+  async function routeAfterAuth() {
+    try {
+      const { data: sessionData } = await client.auth.getSession();
+      const user = sessionData?.session?.user;
+      if (!user) { window.location.replace(config.loginUrl); return; }
+      const { data: profile, error } = await client.from("profiles")
+        .select("profile_completed").eq("id", user.id).maybeSingle();
+      if (error) throw error;
+      window.location.replace(profile?.profile_completed ? config.homeUrl : "onboarding.html");
+    } catch (error) {
+      console.error("MYGRAM profile routing failed:", error);
+      window.location.replace("onboarding.html");
+    }
+  }
+
   async function ensureSessionRedirect() {
     const params = new URLSearchParams(location.search);
     const oauthError = params.get("error_description") || params.get("error");
@@ -219,7 +234,7 @@
       return;
     }
     const { data } = await client.auth.getSession();
-    if (data.session) window.location.replace(config.homeUrl);
+    if (data.session) await routeAfterAuth();
   }
 
   form.addEventListener("submit", async (event) => {
@@ -246,7 +261,7 @@
           if(!data.session)throw new Error("تم التحقق، لكن لم تُنشأ جلسة. حاول تسجيل الدخول مجدداً.");
           try { localStorage.setItem("mygram-account-known", "1"); } catch {}
           setNotice("تم التحقق من الهاتف بنجاح. جارٍ فتح MYGRAM...","success");
-          window.location.replace(config.homeUrl);
+          await routeAfterAuth();
         }
       }catch(err){console.warn("MYGRAM phone auth failed",err);setNotice(err.message&&/رقم الهاتف|رمز التحقق|تم التحقق/.test(err.message)?err.message:"تعذّر إرسال أو التحقق من الرمز. تحقق من إعدادات SMS في Supabase وحاول مجدداً.","error")}
       finally{submitButton.disabled=false}
@@ -286,7 +301,7 @@
         try { localStorage.setItem("mygram-account-known", "1"); } catch {}
         if (data.session) {
           setNotice("تم إنشاء الحساب بنجاح. جارٍ فتح MYGRAM...", "success");
-          setTimeout(() => window.location.replace(config.homeUrl), 700);
+          setTimeout(() => routeAfterAuth(), 250);
         } else {
           setMode("login");
           setNotice("إذا كان التسجيل متاحاً، ستصلك رسالة تأكيد إلى بريدك الإلكتروني.", "success");
@@ -295,7 +310,7 @@
         const { error } = await client.auth.signInWithPassword({ email: normalizedEmail, password: pass });
         if (error) throw error;
         try { localStorage.setItem("mygram-account-known", "1"); } catch {}
-        window.location.replace(config.homeUrl);
+        await routeAfterAuth();
       }
     } catch (error) {
       console.error("MYGRAM auth operation failed:", error);
