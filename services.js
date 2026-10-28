@@ -8,7 +8,28 @@ async function start(){
  subscribeToDirectMessages();loadDirectInbox();const params=new URLSearchParams(location.search);const target=params.get('to');const requestedTab=params.get('tab');if(requestedTab&&['stories','reels','live','messages'].includes(requestedTab))document.querySelector('[data-service-tab="'+requestedTab+'"]')?.click();if(target){$('messageUsername').value=target;document.querySelector('[data-service-tab="messages"]')?.click()}await Promise.all([loadStories(),loadReels(),loadLive()]);if(target)await loadChat()
 }function addItem(target,html){const e=$(target);e.insertAdjacentHTML('beforeend',html)}async function loadStories(){const box=$('storiesList');box.innerHTML='';const {data,error}=await db.from('stories').select('id,user_id,media_url,media_type,caption,created_at,expires_at').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(30);if(error){box.textContent='نفّذ ملف SQL الخاص بخدمات MYGRAM أولاً. '+error.message;return}if(!data?.length){box.textContent='لا توجد حالات حالياً.';return}for(const x of data){const media=x.media_type==='video'?`<video controls playsinline src="${esc(x.media_url)}"></video>`:`<img loading="lazy" src="${esc(x.media_url)}" alt="حالة">`;addItem('storiesList',`<article class="item">${media}<p>${esc(x.caption)}</p><small>${new Date(x.created_at).toLocaleString('ar')}</small>${x.user_id===me.id?` <button class="button ghost small" data-delete-story="${x.id}">حذف</button>`:''}</article>`)}box.querySelectorAll('[data-delete-story]').forEach(b=>b.onclick=async()=>{const {error}=await db.from('stories').delete().eq('id',b.dataset.deleteStory);toast(error?error.message:'حُذفت الحالة');if(!error)loadStories()})}
 $('storyForm').onsubmit=async e=>{e.preventDefault();const f=$('storyMedia').files[0];if(!f)return;if(f.size>50*1024*1024){toast('حجم الملف يتجاوز 50 ميغابايت.',true);return}try{const url=await upload(f,'stories');const {error}=await db.from('stories').insert({user_id:me.id,media_url:url,media_type:f.type.startsWith('video/')?'video':'image',caption:$('storyCaption').value.trim()});if(error)throw error;$('storyForm').reset();toast('تم نشر الحالة لمدة 24 ساعة.');loadStories()}catch(err){toast('تعذر نشر الحالة: '+err.message,true)}};
-async function resolveRecipient(){const name=$('messageUsername').value.trim().replace(/^@/,'').toLowerCase();if(!/^[a-z0-9_]{3,30}$/.test(name))throw new Error('أدخل اسم مستخدم صحيحاً.');const {data,error}=await db.from('profiles').select('id,username,full_name,avatar_url').eq('username',name).maybeSingle();if(error)throw error;if(!data)throw new Error('لم نعثر على هذا المستخدم.');if(data.id===me.id)throw new Error('لا يمكنك مراسلة نفسك.');activeRecipient=data;return data}
+async function resolveRecipient(){
+ const input=$('messageUsername').value.trim().replace(/^@/,'');
+ if(!input)throw new Error('أدخل اسم المستخدم أو الاسم الكامل للعثور على الشخص.');
+ let data=null;
+ if(/^[a-zA-Z0-9_]{3,30}$/.test(input)){
+  const result=await db.from('profiles').select('id,username,full_name,avatar_url').ilike('username',input).limit(2);
+  if(result.error)throw result.error;
+  if(result.data?.length===1)data=result.data[0];
+  else if(result.data?.length>1)throw new Error('نتائج البحث غير فريدة. استخدم اسم المستخدم الكامل.');
+ }
+ if(!data){
+  const result=await db.from('profiles').select('id,username,full_name,avatar_url').eq('full_name',input).limit(3);
+  if(result.error)throw result.error;
+  const matches=result.data||[];
+  if(matches.length===1)data=matches[0];
+  else if(matches.length>1)throw new Error('وجدنا أكثر من شخص بهذا الاسم. ابحث باستخدام اسم المستخدم الذي يبدأ بـ @.');
+ }
+ if(!data)throw new Error('لم نعثر على هذا المستخدم. جرّب اسم المستخدم أو الاسم الكامل كما يظهر في ملفه الشخصي.');
+ if(data.id===me.id)throw new Error('لا يمكنك مراسلة نفسك.');
+ if(!data.username)throw new Error('هذا الحساب لم يُكمل اسم المستخدم بعد. يمكنه إكماله من الملف الشخصي ثم إعادة المحاولة.');
+ activeRecipient=data;return data;
+}
 function formatVoiceDuration(seconds){if(!Number.isFinite(Number(seconds))||Number(seconds)<1)return 'رسالة صوتية';const total=Math.floor(Number(seconds));return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0')}
 async function renderDirectChatHeader(recipient){
  const head=$('dmConversationHeader');if(!head)return;head.hidden=false;
