@@ -107,13 +107,15 @@ async function searchMembers(){
    const name=document.createElement('strong');name.textContent=u.full_name||u.username||'عضو MYGRAM';
    const bio=document.createElement('small');bio.textContent=u.bio||'عضو في MYGRAM';
    copy.append(name,bio);
+   const actions=document.createElement('div');actions.className='member-result-actions';
+   const view=document.createElement('a');view.className='button ghost small';view.href='profile-view.html?id='+encodeURIComponent(u.id);view.textContent='الملف';
    const action=document.createElement('button');action.type='button';action.className='button primary small';action.textContent='💬 مراسلة';
    action.addEventListener('click',async()=>{action.disabled=true;try{
     if(!u.username)throw new Error('هذا الحساب لا يملك اسم مستخدم بعد.');$('messageUsername').value=u.username;
     document.querySelector('[data-service-tab="messages"]')?.click();await loadChat();
     $('messageForm').scrollIntoView({behavior:'smooth',block:'center'});$('messageBody').focus();
    }catch(err){toast('تعذر فتح المحادثة: '+err.message,true)}finally{action.disabled=false}});
-   card.append(avatar,copy,action);box.appendChild(card);
+   actions.append(view,action);card.append(avatar,copy,actions);box.appendChild(card);
   }
  }catch(err){if(request===memberSearchRequest){box.replaceChildren();const msg=document.createElement('p');msg.className='member-search-error';msg.textContent='تعذر البحث عن الأعضاء. تأكد من تسجيل الدخول وصلاحيات قراءة الملفات الشخصية ثم أعد المحاولة.';box.appendChild(msg);console.error('MYGRAM member search failed:',err)}}
 }
