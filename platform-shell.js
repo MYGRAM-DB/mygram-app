@@ -5,15 +5,15 @@ const translations={
  ar:{workspace:'مساحة العمل',overview:'نظرة عامة',socialFeed:'المنشورات',people:'الأشخاص',messaging:'المراسلة',profile:'الملف الشخصي',platformWorkspace:'مساحة منصة MYGRAM',everything:'كل ما تحتاجه.',onePlace:'في مكان واحد.',heroCopy:'تسع مساحات وحساب واحد وطريق واضح إلى الأدوات. نعرض حالة الميزات بصدق من سجل المشروع المتصل.',openFeed:'افتح المنشورات',openMessages:'افتح المراسلة',ecosystem:'النظام المتكامل',nineSpaces:'تسع مساحات تعمل معًا.',spaces:'مساحات',transparentStatus:'حالة واضحة، بلا أزرار وهمية.',statusCopy:'تفتح الشاشات الموجودة مساراتها الحقيقية. الميزات التي تحتاج إلى إعدادات خارجية أو اختبارات إضافية تظهر حالتها بوضوح.',refresh:'تحديث الحالة'}
 };
 const spaces=[
-{slug:'ai',name:'MYGRAM AI',icon:'✧',status:'integration_required',route:'services.html',key:'ai'},
-{slug:'fb',name:'MYGRAM Social',icon:'◈',status:'in_progress',route:'home.html',key:'social'},
-{slug:'insta',name:'MYGRAM Insta',icon:'◎',status:'in_progress',route:'services.html#stories',key:'insta'},
-{slug:'messenger',name:'MYGRAM Messenger',icon:'✉',status:'in_progress',route:'services.html',key:'messenger'},
-{slug:'whatsmygram',name:'WHATSMYGRAM',icon:'◉',status:'in_progress',route:'services.html#whatsmygram',key:'whats'},
-{slug:'twitty',name:'MYGRAM Twitty',icon:'≋',status:'planned',route:'home.html',key:'twitty'},
-{slug:'tube',name:'MYGRAM Tube',icon:'▷',status:'planned',route:'services.html#videos',key:'tube'},
-{slug:'tiktoks',name:'MYGRAM TikToks',icon:'♫',status:'in_progress',route:'services.html#reels',key:'tiktoks'},
-{slug:'meeting',name:'MYGRAM Meeting',icon:'▣',status:'in_progress',route:'services.html#meeting',key:'meeting'}
+{slug:'ai',name:'MYGRAM AI',icon:'✧',status:'integration_required',route:'platform.html?space=ai',legacyRoute:'services.html',key:'ai'},
+{slug:'fb',name:'MYGRAM Social',icon:'◈',status:'in_progress',route:'platform.html?space=social',legacyRoute:'home.html',key:'social'},
+{slug:'insta',name:'MYGRAM Insta',icon:'◎',status:'in_progress',route:'platform.html?space=insta',legacyRoute:'services.html#stories',key:'insta'},
+{slug:'messenger',name:'MYGRAM Messenger',icon:'✉',status:'in_progress',route:'platform.html?space=messenger',legacyRoute:'services.html',key:'messenger'},
+{slug:'whatsmygram',name:'WHATSMYGRAM',icon:'◉',status:'in_progress',route:'platform.html?space=whatsmygram',legacyRoute:'services.html#whatsmygram',key:'whats'},
+{slug:'twitty',name:'MYGRAM Twitty',icon:'≋',status:'planned',route:'platform.html?space=twitty',legacyRoute:'home.html',key:'twitty'},
+{slug:'tube',name:'MYGRAM Tube',icon:'▷',status:'planned',route:'platform.html?space=tube',legacyRoute:'services.html#videos',key:'tube'},
+{slug:'tiktoks',name:'MYGRAM TikToks',icon:'♫',status:'in_progress',route:'platform.html?space=tiktoks',legacyRoute:'services.html#reels',key:'tiktoks'},
+{slug:'meeting',name:'MYGRAM Meeting',icon:'▣',status:'in_progress',route:'platform.html?space=meeting',legacyRoute:'services.html#meeting',key:'meeting'}
 ];
 const descriptions={
  en:{ai:'AI workspace entry. External AI provider integration is not yet configured here.',social:'Open the existing social feed to publish posts and use available reactions and comments.',insta:'Open the existing stories and media tools. Upload and expiry behavior still needs verification.',messenger:'Open the existing messaging workspace. Live two-account delivery remains under test.',whats:'Open the separate WHATSMYGRAM messaging area. Verify group and media flows before launch.',twitty:'Short-form publishing is planned. This entry takes you to the existing feed while the dedicated composer is built.',tube:'Video hub entry. Full upload, storage, playback and moderation flows are not yet verified.',tiktoks:'Open the existing reels/video tools. Upload and playback require end-to-end verification.',meeting:'Open the existing meeting and call tools. Real device-to-device calling still needs verification.'},
@@ -21,14 +21,27 @@ const descriptions={
 };
 const statusLabels={en:{available:'AVAILABLE',in_progress:'IN PROGRESS',integration_required:'SETUP REQUIRED',planned:'PLANNED',implemented_unverified:'NEEDS VERIFICATION',verified:'VERIFIED',blocked:'BLOCKED'},ar:{available:'متاح',in_progress:'قيد التطوير',integration_required:'يحتاج إعدادًا',planned:'مخطط',implemented_unverified:'يحتاج اختبارًا',verified:'تم التحقق',blocked:'متوقف'}};
 let lang=localStorage.getItem('mygram-shell-language')||'en', db=null, dbConnected=false;
-function applyLanguage(){const t=translations[lang]||translations.en;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':(localStorage.getItem('mygram-shell-dir')||'ltr');document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(t[k])el.textContent=t[k]});$('directionToggle').textContent=document.documentElement.dir.toUpperCase()+' / '+(document.documentElement.dir==='rtl'?'LTR':'RTL');renderSpaces($('spaceSearch').value||'');}
+function applyLanguage(){const t=translations[lang]||translations.en;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':(localStorage.getItem('mygram-shell-dir')||'ltr');document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(t[k])el.textContent=t[k]});$('directionToggle').textContent=document.documentElement.dir.toUpperCase()+' / '+(document.documentElement.dir==='rtl'?'LTR':'RTL');renderSpaces($('spaceSearch').value||'');renderWorkspaceRoute();}
+
+function renderWorkspaceRoute(){
+ const slug=new URLSearchParams(location.search).get('space');
+ const selected=spaces.find(s=>s.slug===slug);
+ let view=$('workspaceRoute');
+ if(!selected){if(view)view.remove();document.querySelector('.section-head').hidden=false;$('spaceGrid').hidden=false;document.querySelector('.status-panel').hidden=false;return}
+ if(!view){view=document.createElement('section');view.id='workspaceRoute';view.className='status-panel';document.querySelector('.hero').after(view)}
+ document.querySelector('.section-head').hidden=true;$('spaceGrid').hidden=true;document.querySelector('.status-panel').hidden=true;
+ const dict=descriptions[lang]||descriptions.en, sl=statusLabels[lang]||statusLabels.en, status=selected.liveStatus||selected.status;
+ view.hidden=false;
+ view.innerHTML='<div class="status-icon">◈</div><div><div class="eyebrow">'+selected.name+'</div><h3>'+selected.name+'</h3><p>'+dict[selected.key]+'</p><p><strong>'+ (lang==='ar'?'الحالة: ':'Status: ') +(sl[status]||sl.in_progress)+'</strong></p><div class="hero-actions"><a class="secondary" href="platform.html">'+(lang==='ar'?'العودة إلى مساحة العمل':'Back to workspace')+'</a><a class="primary" href="'+selected.legacyRoute+'">'+(lang==='ar'?'فتح الأداة الحالية':'Open current tool')+' ↗</a></div></div>';
+}
+
 function statusClass(s){return s==='available'||s==='verified'?'ready':s==='integration_required'?'integration':s==='planned'?'planned':'progress'}
 function renderSpaces(filter=''){const q=filter.trim().toLowerCase(), dict=descriptions[lang]||descriptions.en, sl=statusLabels[lang]||statusLabels.en, list=spaces.filter(s=>(s.name+' '+s.slug+' '+(dict[s.key]||'')).toLowerCase().includes(q));$('spaceCount').textContent=list.length;$('spaceGrid').innerHTML=list.length?list.map(s=>{const st=s.liveStatus||s.status;return '<article class="space-card"><div class="space-card-top"><div class="space-icon">'+s.icon+'</div><span class="badge '+statusClass(st)+'">'+(sl[st]||sl.in_progress)+'</span></div><h3>'+s.name+'</h3><p>'+dict[s.key]+'</p><div class="card-actions"><a class="card-open" href="'+s.route+'">'+(lang==='ar'?'فتح المساحة ↗':'Open workspace ↗')+'</a><span class="card-note">'+(dbConnected?(lang==='ar'?'متصل بسجل المشروع':'Project registry connected'):(lang==='ar'?'مسار التطبيق الحالي':'Existing app route'))+'</span></div></article>'}).join(''):'<div class="loading-card">'+(lang==='ar'?'لا توجد مساحات مطابقة.':'No matching spaces.')+'</div>'}
-async function loadRegistry(){const state=$('connectionState'),foot=$('footerStatus');try{if(!window.supabase||!cfg.supabaseUrl||!cfg.supabaseKey)throw Error('Supabase config unavailable');db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey);const {data,error}=await db.from('platform_spaces').select('slug,status,display_name,description,sort_order').order('sort_order');if(error)throw error;dbConnected=true;data.forEach(row=>{const s=spaces.find(x=>x.slug===row.slug);if(s)s.liveStatus=row.status});state.textContent=lang==='ar'?'سجل المشروع متصل':'Project registry connected';foot.textContent=lang==='ar'?'تم تحميل الحالة من Supabase':'Statuses loaded from Supabase';renderSpaces($('spaceSearch').value||'')}catch(e){dbConnected=false;state.textContent=lang==='ar'?'تعذر قراءة السجل، تعرض الحالة المحلية':'Registry unavailable; showing local status';foot.textContent=lang==='ar'?'تعذر الاتصال بسجل المساحات':'Could not read platform registry';renderSpaces($('spaceSearch').value||'');console.warn('MYGRAM platform registry:',e.message)}}
+async function loadRegistry(){const state=$('connectionState'),foot=$('footerStatus');try{if(!window.supabase||!cfg.supabaseUrl||!cfg.supabaseKey)throw Error('Supabase config unavailable');db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey);const {data,error}=await db.from('platform_spaces').select('slug,status,display_name,description,sort_order').order('sort_order');if(error)throw error;dbConnected=true;data.forEach(row=>{const s=spaces.find(x=>x.slug===row.slug);if(s)s.liveStatus=row.status});state.textContent=lang==='ar'?'سجل المشروع متصل':'Project registry connected';foot.textContent=lang==='ar'?'تم تحميل الحالة من Supabase':'Statuses loaded from Supabase';renderSpaces($('spaceSearch').value||'')}catch(e){dbConnected=false;state.textContent=lang==='ar'?'تعذر قراءة السجل، تعرض الحالة المحلية':'Registry unavailable; showing local status';foot.textContent=lang==='ar'?'تعذر الاتصال بسجل المساحات':'Could not read platform registry';renderSpaces($('spaceSearch').value||'');renderWorkspaceRoute();console.warn('MYGRAM platform registry:',e.message)}}
 $('spaceSearch').addEventListener('input',e=>renderSpaces(e.target.value));
 $('themeToggle').addEventListener('click',()=>{const root=document.documentElement,next=root.dataset.theme==='light'?'dark':'light';root.dataset.theme=next;localStorage.setItem('mygram-shell-theme',next);});
 $('directionToggle').addEventListener('click',()=>{const next=document.documentElement.dir==='rtl'?'ltr':'rtl';document.documentElement.dir=next;localStorage.setItem('mygram-shell-dir',next);$('directionToggle').textContent=next.toUpperCase()+' / '+(next==='rtl'?'LTR':'RTL')});
 $('refreshStatus').addEventListener('click',loadRegistry);
 const savedTheme=localStorage.getItem('mygram-shell-theme')||'dark';document.documentElement.dataset.theme=savedTheme;
-applyLanguage();loadRegistry();
+applyLanguage();renderWorkspaceRoute();loadRegistry();
 })();
