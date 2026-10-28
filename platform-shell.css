@@ -49,3 +49,6 @@ button, a, input { max-width:100%; }
 @media (prefers-reduced-motion:reduce) {
   *, *::before, *::after { scroll-behavior:auto !important; transition:none !important; animation:none !important; }
 }
+
+/* Mobile edge safety */
+*,*::before,*::after{box-sizing:border-box}html,body{width:100%;max-width:100%;overflow-x:clip}@supports not (overflow:clip){html,body{overflow-x:hidden}}.topbar,.layout,.main,.hero,.space-grid,.space-card,.status-panel,footer{min-width:0}@media(max-width:760px){.topbar{padding-inline:max(14px,env(safe-area-inset-left)) max(14px,env(safe-area-inset-right))}.main{padding-inline:16px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}.sidebar{padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right))}.hero,.space-card,.status-panel{max-width:100%}.space-grid{gap:12px}}@media(max-width:430px){.main{padding-inline:14px}.hero{padding-inline:17px}.space-card{padding-inline:16px}}
