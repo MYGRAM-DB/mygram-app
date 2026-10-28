@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#087cf0">
+<title>MYGRAM | الملف الشخصي</title><link rel="icon" type="image/svg+xml" href="logo.svg"><link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="config.js"></script><script defer src="auth-guard.js"></script><script defer src="profile-view.js"></script><script defer src="language.js"></script>
+<style>
+body.public-profile-page{margin:0;min-height:100vh;background:#f0f2f5;color:#1c2735}.pv-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px max(16px,calc((100% - 980px)/2));background:#fff;border-bottom:1px solid #e0e5eb}.pv-brand{display:flex;align-items:center;gap:8px;text-decoration:none;font-weight:900;color:#087cf0}.pv-wrap{width:min(980px,100%);margin:18px auto 50px;padding:0 12px}.pv-card{overflow:hidden;border:1px solid #dfe4eb;border-radius:18px;background:#fff;box-shadow:0 4px 16px #152a400b}.pv-cover{height:clamp(150px,32vw,320px);background:linear-gradient(130deg,#16417e,#1689f5,#8d70e9);background-position:center;background-size:cover}.pv-person{position:relative;padding:0 24px 22px}.pv-avatar{width:clamp(94px,18vw,150px);height:clamp(94px,18vw,150px);margin-top:calc(clamp(94px,18vw,150px)/-2);border:5px solid #fff;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#e4efff;color:#1c5895;font-size:40px;font-weight:900;position:relative}.pv-avatar img{width:100%;height:100%;object-fit:cover}.pv-online{position:absolute;bottom:6px;inset-inline-start:8px;width:18px;height:18px;border:3px solid #fff;border-radius:50%;background:#31a852}.pv-name-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:12px}.pv-name{font-size:clamp(24px,4vw,32px);font-weight:950;margin:0}.pv-bio{margin:6px 0 0;color:#66758a;line-height:1.8;white-space:pre-wrap}.pv-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.pv-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 17px;border:0;border-radius:11px;background:#e9eef5;color:#20364f;text-decoration:none;font:inherit;font-size:14px;font-weight:850;cursor:pointer}.pv-button.primary{background:#087cf0;color:#fff}.pv-meta{display:flex;flex-wrap:wrap;gap:12px;margin-top:13px;color:#6e7d90;font-size:13px}.pv-section-title{margin:22px 4px 12px;font-size:20px;font-weight:900}.pv-posts{display:grid;gap:14px}.pv-post{padding:18px;border:1px solid #e0e5ec;border-radius:16px;background:#fff;line-height:1.8;overflow-wrap:anywhere}.pv-post time{display:block;color:#7a8798;font-size:12px;margin-bottom:8px}.pv-post p{white-space:pre-wrap;margin:0}.pv-post img,.pv-post video{display:block;width:100%;max-height:560px;object-fit:contain;border-radius:12px;margin-top:12px;background:#eef1f5}.pv-status{padding:22px;text-align:center;color:#748298;background:#fff;border-radius:14px}.pv-error{color:#a32b3d}@media(max-width:560px){.pv-person{padding:0 16px 18px}.pv-name-row{display:block}.pv-actions .pv-button{flex:1}.pv-top{padding:10px 14px}}
+</style></head>
+<body class="public-profile-page">
+<header class="pv-top"><a class="pv-brand" href="home.html"><img src="logo.svg" width="32" height="32" alt=""> MYGRAM</a><nav><a class="pv-button" href="people.html">👥 اكتشف الأصدقاء</a><a class="pv-button" href="home.html">⌂ الرئيسية</a></nav></header>
+<main class="pv-wrap">
+<section class="pv-card">
+<div id="pvCover" class="pv-cover"></div>
+<div class="pv-person">
+<div id="pvAvatar" class="pv-avatar" aria-label="الصورة الشخصية">م</div>
+<div class="pv-name-row"><div><h1 id="pvName" class="pv-name">جارٍ تحميل الملف…</h1><p id="pvBio" class="pv-bio"></p><div id="pvMeta" class="pv-meta"></div></div></div>
+<div id="pvActions" class="pv-actions"></div>
+</div></section>
+<h2 class="pv-section-title">المنشورات</h2><section id="pvPosts" class="pv-posts"><div class="pv-status">جارٍ تحميل المنشورات…</div></section>
+</main><div id="pvToast" role="status" aria-live="polite" hidden></div>
+</body></html>

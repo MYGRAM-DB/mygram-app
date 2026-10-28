@@ -120,7 +120,32 @@
     }
     @media(max-width:430px){.whatsmygram-page .brand small{display:none}.whatsmygram-page .wa-top-links a{font-size:9px;padding:6px}.whatsmygram-page .wa-voice-card{min-width:min(230px,70vw)}.whatsmygram-page .wa-compose-row .wa-button{padding:9px 10px;font-size:10px}}
     @media(prefers-reduced-motion:reduce){.whatsmygram-page *{scroll-behavior:auto!important;transition:none!important}}
-  </style>
+  
+    .whatsmygram-page .wa-user-results{display:grid;gap:7px;max-height:230px;overflow:auto}
+    .whatsmygram-page .wa-user-results:empty{display:none}
+    .whatsmygram-page .wa-user-results>p{margin:0;padding:9px 11px;color:#748780;background:#f6faf8;border-radius:10px;font-size:12px;line-height:1.7}
+    .whatsmygram-page .wa-user-result{display:flex;align-items:center;gap:10px;width:100%;padding:9px;border:1px solid #e0ebe6;border-radius:12px;background:#fff;text-align:start;cursor:pointer}
+    .whatsmygram-page .wa-user-result:hover{background:#f1fbf6;border-color:#9bd8c1}
+    .whatsmygram-page .wa-user-result-avatar{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:50%;overflow:hidden;background:#dff5eb;color:#075e54;font-weight:900}
+    .whatsmygram-page .wa-user-result-avatar img{width:100%;height:100%;object-fit:cover}
+    .whatsmygram-page .wa-user-result-copy{display:grid;gap:3px;min-width:0}
+    .whatsmygram-page .wa-user-result-copy strong{font-size:12px;color:#183a32}
+    .whatsmygram-page .wa-user-result-copy small{font-size:10px;color:#7b8d86}
+
+    .whatsmygram-page .wa-contacts-section{padding:12px 14px;border-bottom:1px solid var(--wa-line);background:#fff}
+    .whatsmygram-page .wa-contacts-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .whatsmygram-page .wa-contacts-heading strong{font-size:13px;color:#183a32}
+    .whatsmygram-page .wa-contacts-refresh{border:0;border-radius:9px;background:#e7f7ef;color:#087e6b;width:30px;height:30px;font-size:18px;cursor:pointer}
+    .whatsmygram-page .wa-contacts-hint{margin:4px 0 10px;color:#81928b;font-size:10px;line-height:1.6}
+    .whatsmygram-page .wa-contacts-strip{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;padding:3px 1px 9px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+    .whatsmygram-page .wa-contact-card{display:flex;flex:0 0 76px;flex-direction:column;align-items:center;gap:6px;padding:5px 4px;border:1px solid transparent;border-radius:13px;background:#f8fcfa;color:#284c42;cursor:pointer;scroll-snap-align:start}
+    .whatsmygram-page .wa-contact-card:hover,.whatsmygram-page .wa-contact-card:focus-visible{background:#e9f8f1;border-color:#a5ddc7;outline:none}
+    .whatsmygram-page .wa-contact-avatar{display:grid;place-items:center;width:56px;height:56px;overflow:hidden;border-radius:50%;border:2px solid #c6ebd9;background:#dff5eb;color:#075e54;font-size:20px;font-weight:900}
+    .whatsmygram-page .wa-contact-avatar img{width:100%;height:100%;object-fit:cover}
+    .whatsmygram-page .wa-contact-name{width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-size:10px;font-weight:800}
+    .whatsmygram-page .wa-contacts-loading,.whatsmygram-page .wa-contacts-empty{margin:0;padding:8px;color:#7c8d86;font-size:11px}
+    .whatsmygram-page .wa-contact-card:disabled{opacity:.55;cursor:wait}
+\n  </style>
   <link rel="stylesheet" href="brand.css">
 </head>
 <body class="whatsmygram-page">
@@ -143,10 +168,17 @@
           <div class="wa-brand-row"><h1>WHATSMYGRAM</h1><span class="wa-mark" aria-hidden="true">◉</span></div>
           <p class="wa-subtitle">محادثات قريبة من أسلوب واتساب، لكن بهوية MYGRAM ومساحة مستقلة.</p>
           <form id="waNewChat" class="wa-new-chat">
-            <label for="waUsernames">ابدأ محادثة فردية أو مجموعة</label>
-            <input id="waUsernames" autocomplete="off" placeholder="اسم مستخدم، أو عدة أسماء مفصولة بفواصل" maxlength="500" required>
-            <div class="wa-start-row"><button class="wa-button primary" type="submit">＋ محادثة جديدة</button><button class="wa-button" id="waRefresh" type="button">↻ تحديث</button></div>
+            <label for="waUserSearch">محادثة جديدة</label>
+            <input id="waUserSearch" autocomplete="off" placeholder="ابحث باسم الشخص…" aria-label="البحث عن شخص لبدء محادثة">
+            <div id="waUserResults" class="wa-user-results" aria-live="polite"><p>اكتب اسم شخص للعثور عليه وبدء المحادثة.</p></div>
+            <input id="waUsernames" autocomplete="off" aria-label="المستلم أو أعضاء المجموعة" placeholder="للمجموعات: أسماء المستخدمين مفصولة بفواصل" maxlength="500" hidden>
+            <div class="wa-start-row"><button class="wa-button primary" id="waNewChatSubmit" type="submit" hidden>＋ بدء المحادثة</button><button class="wa-button" id="waRefresh" type="button">↻ تحديث المحادثات</button></div>
           </form>
+          <section class="wa-contacts-section" aria-label="أشخاص على WHATSMYGRAM">
+            <div class="wa-contacts-heading"><strong>الأشخاص</strong><button id="waContactsRefresh" type="button" class="wa-contacts-refresh" aria-label="تحديث الأشخاص">↻</button></div>
+            <p class="wa-contacts-hint">اسحب الصور يميناً ويساراً، واضغط على صورة لبدء محادثة.</p>
+            <div id="waContactsStrip" class="wa-contacts-strip" tabindex="0" aria-label="قائمة الأشخاص"><p class="wa-contacts-loading">جارٍ تحميل الأشخاص…</p></div>
+          </section>
           <label class="wa-presence-setting" for="showPresenceToggle"><input id="showPresenceToggle" type="checkbox" checked><span>إظهار حالتي للآخرين</span></label>
           <small id="presenceSettingStatus" role="status" aria-live="polite"></small>
         </div>

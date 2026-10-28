@@ -269,6 +269,71 @@
     if (error) throw error;
     return path;
   }
+  async function loadWhatsmygramContacts(){
+    const box=$('waContactsStrip');if(!box||!me)return;
+    box.replaceChildren();const loading=document.createElement('p');loading.className='wa-contacts-loading';loading.textContent='جارٍ تحميل الأشخاص…';box.appendChild(loading);
+    try{
+      const {data,error}=await db.from('profiles').select('id,username,full_name,avatar_url,bio').neq('id',me.id).order('full_name',{ascending:true}).limit(100);
+      if(error)throw error;box.replaceChildren();
+      const users=data||[];
+      if(!users.length){const p=document.createElement('p');p.className='wa-contacts-empty';p.textContent='سيظهر الأشخاص هنا عندما ينشئون ملفاتهم على MYGRAM.';box.appendChild(p);return}
+      for(const user of users){
+        const button=document.createElement('button');button.type='button';button.className='wa-contact-card';button.title=user.full_name||user.username||'عضو MYGRAM';
+        const avatar=document.createElement('span');avatar.className='wa-contact-avatar';
+        if(user.avatar_url){const img=document.createElement('img');img.src=user.avatar_url;img.alt='';img.loading='lazy';img.onerror=()=>{avatar.textContent=initial(user)};avatar.appendChild(img)}else avatar.textContent=initial(user);
+        const name=document.createElement('span');name.className='wa-contact-name';name.textContent=user.full_name||user.username||'عضو';
+        button.append(avatar,name);
+        button.addEventListener('click',async()=>{button.disabled=true;try{
+          const chat=await createOrFindChat([user]);await loadChatList();await openChat(chat.id,chat);toast('تم فتح المحادثة.');
+        }catch(error){toast('تعذر فتح المحادثة: '+(error?.message||'تحقق من صلاحيات المحادثات.'),true);console.error('WHATSMYGRAM contact open failed',error)}finally{button.disabled=false}});
+        box.appendChild(button);
+      }
+    }catch(error){box.replaceChildren();const p=document.createElement('p');p.className='wa-contacts-empty';p.textContent='تعذر تحميل الأشخاص حالياً. تحقق من صلاحيات عرض الملفات الشخصية.';box.appendChild(p);console.error('WHATSMYGRAM contacts load failed',error)}
+  }
+  $('waContactsRefresh')?.addEventListener('click',loadWhatsmygramContacts);
+  let waSearchTimer=null,waSearchSeq=0;
+  $('waUserSearch').addEventListener('input',()=>{
+    clearTimeout(waSearchTimer);
+    const q=$('waUserSearch').value.trim();
+    $('waUserResults').replaceChildren();
+    $('waUsernames').value='';
+    $('waNewChatSubmit').hidden=true;
+    if(q.length<2){const p=document.createElement('p');p.textContent='اكتب حرفين أو أكثر للبحث عن شخص.';$('waUserResults').appendChild(p);return}
+    waSearchTimer=setTimeout(()=>searchWhatsMygramPeople(q),250);
+  });
+  async function searchWhatsMygramPeople(query){
+    const seq=++waSearchSeq,box=$('waUserResults');box.replaceChildren();
+    const loading=document.createElement('p');loading.textContent='جارٍ البحث عن الأشخاص…';box.appendChild(loading);
+    try{
+      const q=query.replace(/[,%()]/g,' ').trim();if(q.length<2)return;
+      const [names,handles]=await Promise.all([
+        db.from('profiles').select('id,username,full_name,avatar_url,bio').ilike('full_name','%'+q+'%').neq('id',me.id).limit(15),
+        db.from('profiles').select('id,username,full_name,avatar_url,bio').ilike('username','%'+q+'%').neq('id',me.id).limit(15)
+      ]);
+      if(seq!==waSearchSeq)return;
+      if(names.error)throw names.error;if(handles.error)throw handles.error;
+      const users=[...(names.data||[]),...(handles.data||[])].filter((u,i,a)=>a.findIndex(x=>x.id===u.id)===i).slice(0,15);
+      box.replaceChildren();
+      if(!users.length){const p=document.createElement('p');p.textContent='لم نعثر على أشخاص بهذا الاسم.';box.appendChild(p);return}
+      for(const user of users){
+        const button=document.createElement('button');button.type='button';button.className='wa-user-result';
+        const avatar=document.createElement('span');avatar.className='wa-user-result-avatar';
+        if(user.avatar_url){const img=document.createElement('img');img.src=user.avatar_url;img.alt='';avatar.appendChild(img)}else avatar.textContent=initial(user);
+        const copy=document.createElement('span');copy.className='wa-user-result-copy';
+        const name=document.createElement('strong');name.textContent=safeName(user);
+        const sub=document.createElement('small');sub.textContent=user.bio||'اضغط لبدء محادثة';copy.append(name,sub);button.append(avatar,copy);
+        button.addEventListener('click',()=>{
+          if(!user.username){toast('هذا الحساب لا يملك اسم مستخدم، لذلك لا يمكن فتح محادثته حالياً.',true);return}
+          $('waUsernames').value=user.username;
+          $('waUserSearch').value=user.full_name||user.username;
+          $('waNewChatSubmit').hidden=false;
+          $('waNewChatSubmit').textContent='💬 مراسلة '+(user.full_name||user.username);
+          $('waNewChatSubmit').focus();
+        });
+        box.appendChild(button);
+      }
+    }catch(error){if(seq===waSearchSeq){box.replaceChildren();const p=document.createElement('p');p.textContent='تعذر البحث عن الأشخاص. تحقق من تسجيل الدخول وصلاحيات الملفات الشخصية.';box.appendChild(p);console.error('WHATSMYGRAM people search failed',error)}}
+  }
   $('waNewChat').addEventListener('submit', async event => {
     event.preventDefault();
     const names = [...new Set($('waUsernames').value.split(/[，,\n]/).map(x => x.trim().replace(/^@/, '').toLowerCase()).filter(Boolean))];
@@ -281,6 +346,7 @@
       const chat = await createOrFindChat(others);
       $('waUsernames').value = '';
       await loadChatList();
+      await loadWhatsmygramContacts();
       await openChat(chat.id, chat);
       toast(others.length > 1 ? 'تم إنشاء مجموعة WHATSMYGRAM.' : 'تم فتح محادثة WHATSMYGRAM.');
       window.MYGRAM_SOUNDS?.play('success');
