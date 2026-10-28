@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827"><meta name="description" content="MYGRAM platform workspace">
+<title>MYGRAM | Everything You Need</title>
+<link rel="stylesheet" href="platform-shell.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="config.js"></script><script defer src="platform-shell.js"></script>
+</head>
+<body>
+<header class="topbar">
+<a class="brand" href="platform.html" aria-label="MYGRAM home"><span class="brand-mark">M</span><span>MYGRAM<span class="brand-dot">.</span></span></a>
+<div class="search-wrap"><span aria-hidden="true">⌕</span><input id="spaceSearch" type="search" placeholder="Search spaces and tools" aria-label="Search spaces and tools"></div>
+<div class="toolbar"><button id="directionToggle" class="quiet" type="button" aria-label="Toggle text direction">RTL / LTR</button><button id="themeToggle" class="quiet" type="button" aria-label="Toggle color theme">☼ Theme</button><a class="avatar" href="profile.html" title="Profile">MY</a></div>
+</header>
+<div class="layout">
+<aside class="sidebar"><div class="side-label" data-i18n="workspace">WORKSPACE</div><a class="side-link active" href="platform.html"><span>◈</span><span data-i18n="overview">Overview</span></a><a class="side-link" href="home.html"><span>⌂</span><span data-i18n="socialFeed">Social feed</span></a><a class="side-link" href="people.html"><span>♧</span><span data-i18n="people">People</span></a><a class="side-link" href="services.html"><span>✉</span><span data-i18n="messaging">Messaging</span></a><a class="side-link" href="profile.html"><span>◎</span><span data-i18n="profile">Profile</span></a><div class="sidebar-foot"><span class="live-dot"></span><span id="connectionState">Checking connection…</span></div></aside>
+<main class="main">
+<section class="hero"><div><div class="eyebrow" data-i18n="platformWorkspace">THE PLATFORM WORKSPACE</div><h1><span data-i18n="everything">Everything you need.</span><br><span class="gradient-text" data-i18n="onePlace">One connected place.</span></h1><p data-i18n="heroCopy">Nine spaces, one account, and a clear path to every tool. Availability is shown honestly from the connected project registry.</p><div class="hero-actions"><a class="primary" href="home.html" data-i18n="openFeed">Open social feed <span>↗</span></a><a class="secondary" href="services.html" data-i18n="openMessages">Open messaging</a></div></div><div class="hero-orb" aria-hidden="true"><div class="orb-inner">M<span>YGRAM</span></div></div></section>
+<section class="section-head"><div><div class="eyebrow" data-i18n="ecosystem">THE ECOSYSTEM</div><h2 data-i18n="nineSpaces">Nine spaces. Built to work together.</h2></div><div class="count-pill"><span id="spaceCount">9</span> <span data-i18n="spaces">spaces</span></div></section>
+<div id="spaceGrid" class="space-grid" aria-live="polite"><div class="loading-card">Loading spaces from Supabase…</div></div>
+<section class="status-panel"><div class="status-icon">✓</div><div><h3 data-i18n="transparentStatus">Clear status, no pretend buttons.</h3><p data-i18n="statusCopy">Existing screens open their real app routes. Features that need provider credentials or more verification are marked clearly instead of being presented as finished.</p></div><button id="refreshStatus" class="secondary" type="button" data-i18n="refresh">Refresh status</button></section>
+<footer><span>MYGRAM · Everything You Need</span><span id="footerStatus">Connecting to project registry…</span></footer>
+</main></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body></html>
