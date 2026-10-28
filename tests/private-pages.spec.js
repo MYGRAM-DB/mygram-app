@@ -237,8 +237,9 @@ test('authenticated member can publish a reel with video', async ({ page }) => {
 test('authenticated member can send a direct message to another member', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/services.html');
   await selectServiceTab(page, 'messages');
-  await page.locator('#messageUsername').fill('someone');
-  await page.locator('#loadChat').click();
+  await page.locator('#memberSearch').fill('someone');
+  await expect(page.locator('#membersResults')).toContainText('Someone');
+  await page.locator('#membersResults').getByRole('button', { name: '💬 مراسلة' }).click();
   await expect(page.locator('#chatBox')).toContainText('ابدأ المحادثة');
   await expect(page.locator('#dmCallToolbar')).toBeVisible();
   await expect(page.locator('#dmAudioCallButton')).toBeDisabled();
@@ -374,8 +375,9 @@ test('direct Messenger shows the recipient avatar, live dot, voice bubble, and h
     }];
   });
   await selectServiceTab(page, 'messages');
-  await page.locator('#messageUsername').fill('someone');
-  await page.locator('#loadChat').click();
+  await page.locator('#memberSearch').fill('someone');
+  await expect(page.locator('#membersResults')).toContainText('Someone');
+  await page.locator('#membersResults').getByRole('button', { name: '💬 مراسلة' }).click();
   await expect(page.locator('#dmConversationHeader')).toBeVisible();
   await expect(page.locator('#dmPeerName')).toHaveText('Someone');
   await expect(page.locator('#dmPeerAvatar img')).toHaveAttribute('src', 'https://example.test/avatar.png');
@@ -476,8 +478,9 @@ test('WHATSMYGRAM page loads its own audio/video calling controls', async ({ pag
 test('direct Messenger exposes shared search and saved-message tools in a private thread', async ({ page }) => {
   const errors = await openAuthenticatedPage(page, '/services.html');
   await selectServiceTab(page, 'messages');
-  await page.locator('#messageUsername').fill('someone');
-  await page.locator('#loadChat').click();
+  await page.locator('#memberSearch').fill('someone');
+  await expect(page.locator('#membersResults')).toContainText('Someone');
+  await page.locator('#membersResults').getByRole('button', { name: '💬 مراسلة' }).click();
   await expect(page.locator('#mygramMessagingTools')).toBeVisible();
   await expect(page.locator('#mygramMessagingTools [data-kind="search"]')).toBeVisible();
   await expect(page.locator('#mygramMessagingTools [data-kind="bookmarks"]')).toBeVisible();
