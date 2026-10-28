@@ -25,7 +25,7 @@ function applyLanguage(){const t=translations[lang]||translations.en;document.do
 
 function renderWorkspaceRoute(){
  const slug=new URLSearchParams(location.search).get('space');
- const selected=spaces.find(s=>s.slug===slug);
+ const selected=spaces.find(s=>s.slug===slug)||({people:{slug:'people',name:'People',key:'social',status:'in_progress',legacyRoute:'people.html'},profile:{slug:'profile',name:'Profile',key:'social',status:'in_progress',legacyRoute:'profile.html'}}[slug]);
  let view=$('workspaceRoute');
  if(!selected){if(view)view.remove();document.querySelector('.section-head').hidden=false;$('spaceGrid').hidden=false;document.querySelector('.status-panel').hidden=false;return}
  if(!view){view=document.createElement('section');view.id='workspaceRoute';view.className='status-panel';document.querySelector('.hero').after(view)}
