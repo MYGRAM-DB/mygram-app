@@ -161,6 +161,26 @@
     .services-page .member-search-error{color:#b42336;background:#fff5f5}
     @media(max-width:600px){.services-page .member-results{grid-template-columns:minmax(0,1fr)}.services-page .member-result-card{padding:10px}.services-page .member-result-card .button{padding:8px}.services-page .messenger-find-people{padding:12px}}
 
+
+    .services-page .messenger-inbox{margin:12px 0 18px;padding:16px;border:1px solid #e1eaf5;border-radius:20px;background:#fff;box-shadow:0 5px 18px #1a467208}
+    .services-page .messenger-inbox-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .services-page .messenger-inbox-heading h3{margin:0;color:#193452;font-size:18px;font-weight:900}
+    .services-page .messenger-inbox-heading p{margin:5px 0 0;color:#8290a3;font-size:12px;line-height:1.7}
+    .services-page .messenger-inbox-list{display:flex;flex-direction:column;gap:8px}
+    .services-page .messenger-thread{display:flex;align-items:center;gap:11px;width:100%;padding:11px;border:1px solid #e9eff7;border-radius:15px;background:#fbfdff;text-align:start;cursor:pointer;color:inherit}
+    .services-page .messenger-thread:hover,.services-page .messenger-thread:focus-visible{border-color:#9bc9ff;background:#f2f8ff;outline:none}
+    .services-page .messenger-thread-avatar{position:relative;display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:50%;overflow:hidden;background:#e5efff;color:#235b91;font-weight:900}
+    .services-page .messenger-thread-avatar img{width:100%;height:100%;object-fit:cover}
+    .services-page .messenger-online-dot{position:absolute;bottom:0;inset-inline-end:0;width:12px;height:12px;border:2px solid white;border-radius:50%;background:#aab5c4}
+    .services-page .messenger-online-dot.online{background:#22c55e}
+    .services-page .messenger-thread-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+    .services-page .messenger-thread-copy strong{font-size:13px;color:#243a55;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .services-page .messenger-thread-copy small{font-size:11px;color:#8290a3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .services-page .messenger-thread-time{font-size:10px;color:#95a1b1;white-space:nowrap}
+    .services-page .messenger-thread-profile{border:0;background:transparent;color:#1875d1;font-size:11px;text-decoration:underline;white-space:nowrap;cursor:pointer}
+    .services-page .messenger-thread-empty{padding:16px;text-align:center;color:#8290a3;background:#f7faff;border-radius:13px;font-size:12px}
+    @media(max-width:600px){.services-page .messenger-inbox{padding:12px}.services-page .messenger-thread{padding:9px;gap:8px}.services-page .messenger-thread-avatar{flex-basis:42px;width:42px;height:42px}.services-page .messenger-thread-profile{font-size:10px}}
+
 </style>
   <script defer src="notifications.js"></script>
   <link rel="stylesheet" href="brand.css">
@@ -244,7 +264,11 @@
       <section id="messagesPanel" class="card service-card service-panel" data-service-panel="messages" role="tabpanel" aria-labelledby="serviceTabMessages" tabindex="0" hidden>
         <header class="service-panel-head"><span class="service-panel-icon" aria-hidden="true">✉</span><div><h2>الرسائل المباشرة</h2><p>ابدأ محادثة خاصة، وأرسل نصوصاً وصوراً ومقاطع صوتية.</p></div><span class="service-panel-badge">خاص</span></header>
         <div class="presence-preferences"><label for="showPresenceToggle"><input id="showPresenceToggle" type="checkbox" checked><span>إظهار حالتي للآخرين</span></label><small id="presenceSettingStatus" role="status" aria-live="polite"></small></div>
-        <div class="messenger-find-people"><label for="memberSearch">ابدأ محادثة مع أي شخص</label><p>ابحث بالاسم الظاهر أو جزء من الاسم، ثم اضغط «مراسلة». لا تحتاج إلى كتابة @ أو حفظ اسم المستخدم.</p><div class="messenger-search-box"><span aria-hidden="true">🔎</span><input id="memberSearch" autocomplete="off" placeholder="اكتب اسم الشخص هنا…" aria-label="البحث عن الأشخاص"><button id="clearMemberSearch" type="button" class="button ghost small" hidden>مسح</button></div><div id="membersResults" class="service-list member-results" aria-live="polite"><p class="member-search-empty">ابدأ بكتابة اسم شخص للعثور عليه بسرعة.</p></div></div><form id="directChatPicker" class="direct-chat-picker" onsubmit="return false" hidden><label for="messageUsername">المستلم</label><div class="recipient-row"><input id="messageUsername" autocomplete="off" aria-label="المستلم"><button id="loadChat" type="button">فتح المحادثة</button></div></form>
+        <section class="messenger-inbox" aria-labelledby="messengerInboxTitle">
+ <div class="messenger-inbox-heading"><div><h3 id="messengerInboxTitle">محادثاتك</h3><p>تابع محادثاتك السابقة وابدأ واحدة جديدة بسهولة.</p></div><button id="refreshMessengerInbox" type="button" class="button ghost small">تحديث</button></div>
+ <div id="messengerInboxList" class="messenger-inbox-list" aria-live="polite"><p class="member-search-empty">جارٍ تحميل محادثاتك…</p></div>
+</section>
+<div class="messenger-find-people"><label for="memberSearch">ابدأ محادثة مع أي شخص</label><p>ابحث بالاسم الظاهر أو جزء من الاسم، ثم اضغط «مراسلة». لا تحتاج إلى كتابة @ أو حفظ اسم المستخدم.</p><div class="messenger-search-box"><span aria-hidden="true">🔎</span><input id="memberSearch" autocomplete="off" placeholder="اكتب اسم الشخص هنا…" aria-label="البحث عن الأشخاص"><button id="clearMemberSearch" type="button" class="button ghost small" hidden>مسح</button></div><div id="membersResults" class="service-list member-results" aria-live="polite"><p class="member-search-empty">ابدأ بكتابة اسم شخص للعثور عليه بسرعة.</p></div></div><form id="directChatPicker" class="direct-chat-picker" onsubmit="return false" hidden><label for="messageUsername">المستلم</label><div class="recipient-row"><input id="messageUsername" autocomplete="off" aria-label="المستلم"><button id="loadChat" type="button">فتح المحادثة</button></div></form>
         <div id="dmConversationHeader" class="dm-conversation-header" hidden><span id="dmPeerAvatar" class="presence-avatar dm-peer-avatar">👤</span><div class="dm-peer-copy"><strong id="dmPeerName"></strong><small id="dmPeerHandle"></small><span id="dmPeerPresence" class="presence-status" role="status" aria-live="polite"></span></div></div>
         <div id="dmCallToolbar" class="dm-call-toolbar" hidden>
           <button id="dmAudioCallButton" type="button" class="button ghost" disabled aria-label="بدء مكالمة صوتية">📞 مكالمة صوتية</button>
