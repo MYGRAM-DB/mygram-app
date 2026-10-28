@@ -161,7 +161,21 @@
     .services-page .member-search-error{color:#b42336;background:#fff5f5}
     @media(max-width:600px){.services-page .member-results{grid-template-columns:minmax(0,1fr)}.services-page .member-result-card{padding:10px}.services-page .member-result-card .button{padding:8px}.services-page .messenger-find-people{padding:12px}}
 
-</style>
+
+    .services-page .dm-inbox-section{margin:14px 0;padding:15px;border:1px solid #e0e9f4;border-radius:19px;background:#fff}
+    .services-page .dm-inbox-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .services-page .dm-inbox-title h3{margin:0;font-size:15px;font-weight:900;color:#1d3653}
+    .services-page .dm-recent-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .services-page .dm-recent-item{display:flex;align-items:center;gap:10px;min-width:0;width:100%;padding:10px;border:1px solid #e5ecf5;border-radius:14px;background:#f9fbff;text-align:start;cursor:pointer}
+    .services-page .dm-recent-item:hover{background:#eef6ff;border-color:#bddcff}
+    .services-page .dm-recent-avatar{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;overflow:hidden;border-radius:50%;background:#e0edff;color:#22558e;font-weight:900}
+    .services-page .dm-recent-avatar img{width:100%;height:100%;object-fit:cover}
+    .services-page .dm-recent-copy{display:grid;gap:4px;min-width:0;flex:1}
+    .services-page .dm-recent-copy strong{font-size:12px;color:#203954;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .services-page .dm-recent-copy small{font-size:11px;color:#7b8ba0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    @media(max-width:600px){.services-page .dm-recent-list{grid-template-columns:minmax(0,1fr)}.services-page .dm-inbox-section{padding:11px}}
+
+  </style>
   <script defer src="notifications.js"></script>
   <link rel="stylesheet" href="brand.css">
 </head>
@@ -244,6 +258,7 @@
       <section id="messagesPanel" class="card service-card service-panel" data-service-panel="messages" role="tabpanel" aria-labelledby="serviceTabMessages" tabindex="0" hidden>
         <header class="service-panel-head"><span class="service-panel-icon" aria-hidden="true">✉</span><div><h2>الرسائل المباشرة</h2><p>ابدأ محادثة خاصة، وأرسل نصوصاً وصوراً ومقاطع صوتية.</p></div><span class="service-panel-badge">خاص</span></header>
         <div class="presence-preferences"><label for="showPresenceToggle"><input id="showPresenceToggle" type="checkbox" checked><span>إظهار حالتي للآخرين</span></label><small id="presenceSettingStatus" role="status" aria-live="polite"></small></div>
+        <section class="dm-inbox-section" aria-label="المحادثات الأخيرة"><div class="dm-inbox-title"><h3>محادثاتك الأخيرة</h3><button id="refreshDmInbox" type="button" class="button ghost small">↻ تحديث</button></div><div id="dmRecentList" class="dm-recent-list" aria-live="polite"><p class="member-search-empty">جارٍ تحميل المحادثات…</p></div></section>
         <div class="messenger-find-people"><label for="memberSearch">ابدأ محادثة مع أي شخص</label><p>ابحث بالاسم الظاهر أو جزء من الاسم، ثم اضغط «مراسلة». لا تحتاج إلى كتابة @ أو حفظ اسم المستخدم.</p><div class="messenger-search-box"><span aria-hidden="true">🔎</span><input id="memberSearch" autocomplete="off" placeholder="اكتب اسم الشخص هنا…" aria-label="البحث عن الأشخاص"><button id="clearMemberSearch" type="button" class="button ghost small" hidden>مسح</button></div><div id="membersResults" class="service-list member-results" aria-live="polite"><p class="member-search-empty">ابدأ بكتابة اسم شخص للعثور عليه بسرعة.</p></div></div><form id="directChatPicker" class="direct-chat-picker" onsubmit="return false" hidden><label for="messageUsername">المستلم</label><div class="recipient-row"><input id="messageUsername" autocomplete="off" aria-label="المستلم"><button id="loadChat" type="button">فتح المحادثة</button></div></form>
         <div id="dmConversationHeader" class="dm-conversation-header" hidden><span id="dmPeerAvatar" class="presence-avatar dm-peer-avatar">👤</span><div class="dm-peer-copy"><strong id="dmPeerName"></strong><small id="dmPeerHandle"></small><span id="dmPeerPresence" class="presence-status" role="status" aria-live="polite"></span></div></div>
         <div id="dmCallToolbar" class="dm-call-toolbar" hidden>
