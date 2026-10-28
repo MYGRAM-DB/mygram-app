@@ -20,3 +20,6 @@
 .lang-ltr .topbar-inner,.lang-ltr .topbar{direction:ltr}
 .lang-ltr .brand{direction:ltr}
 @media(max-width:700px){.language-switch{padding:4px 6px}.language-switch select{max-width:76px;font-size:11px}.brand-icon-large{width:76px;height:76px}}
+
+/* Mobile edge safety */
+*,*::before,*::after{box-sizing:border-box}html,body{width:100%;max-width:100%;overflow-x:clip}@supports not (overflow:clip){html,body{overflow-x:hidden}}@media(max-width:760px){.app{width:100%;padding-inline:14px;padding-bottom:calc(82px + env(safe-area-inset-bottom))}.topbar{padding-inline:12px}.layout,.feed-column,.card,.post,.composer,.stories-card{width:100%;min-width:0;max-width:100%}.mobile-nav{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right));padding-bottom:max(6px,env(safe-area-inset-bottom))}.mobile-nav a{min-width:0;flex:1 1 0}.post-image,.post-video,video,img{max-width:100%}}
