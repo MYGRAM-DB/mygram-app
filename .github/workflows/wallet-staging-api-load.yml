@@ -88,6 +88,10 @@ jobs:
             echo "Applying $migration"
             psql -v ON_ERROR_STOP=1 -f "$migration"
           done
+      - name: Refresh PostgREST schema cache after migrations
+        run: |
+          psql -v ON_ERROR_STOP=1 -c "NOTIFY pgrst, 'reload schema';"
+          sleep 3
       - name: Wait for PostgREST to become ready
         run: |
           for attempt in $(seq 1 30); do
