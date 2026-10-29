@@ -79,7 +79,7 @@ begin
 end $$;
 
 -- A changed amount on an existing transfer key must be rejected as SQLSTATE 23505 / HTTP 409.
-do $
+do $$
 begin
   begin
     perform public.post_wallet_transfer(
@@ -91,7 +91,7 @@ begin
   exception when unique_violation then
     null; -- Expected conflict for a payload mismatch.
   end;
-end $;
+end $$;
 
 -- Decay test: age one gift grant beyond the fixed 30-day grace window, enable a test-only
 -- 10% rate, and prove the real wallet balance remains unchanged.
@@ -105,7 +105,7 @@ update public.wallet_airdrop_decay_policy
    set enabled=true,decay_basis_points=1000,updated_at=now()
  where singleton=true;
 select wallet_private.process_daily_airdrop_decay();
-do $
+do $$
 begin
   if (select balance_atomic from public.wallet_airdrop_balances where user_id='10000000-0000-4000-8000-000000000001') <> 2700 then
     raise exception 'FAIL: expected 10% decay of airdrop balance after 30-day grace';
@@ -120,7 +120,7 @@ begin
     group by t.id
     having sum(case when l.entry_kind='debit' then l.amount_atomic else -l.amount_atomic end) <> 0
   ) then raise exception 'FAIL: unbalanced airdrop ledger'; end if;
-end $;
+end $$;
 
 -- Enable one service only in this test DB with a controlled 1,000-unit price.
 update public.wallet_service_catalog
