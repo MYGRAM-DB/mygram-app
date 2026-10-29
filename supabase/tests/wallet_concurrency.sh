@@ -52,7 +52,7 @@ fi
 grep -q 'idempotency key conflict' /tmp/wallet-idempotency-amount.log || {
   cat /tmp/wallet-idempotency-amount.log; echo "FAIL: changed amount did not return idempotency conflict" >&2; exit 1;
 }
-if transfer "$A" "$A" "same-key-concurrent-000001" 7 >/tmp/wallet-idempotency-recipient.log 2>&1; then
+if transfer "$A" "10000000-0000-4000-8000-000000000003" "same-key-concurrent-000001" 7 >/tmp/wallet-idempotency-recipient.log 2>&1; then
   echo "FAIL: same key with changed recipient was accepted" >&2; exit 1
 fi
 grep -q 'idempotency key conflict' /tmp/wallet-idempotency-recipient.log || {
