@@ -14,8 +14,11 @@ insert into auth.users(id,email) values
 
 do $$
 begin
-  if (select balance_atomic from public.wallets where user_id='10000000-0000-4000-8000-000000000001' and asset_code='MYGRAM_COIN') <> 3000 then
-    raise exception 'FAIL: signup grant amount is not 3000';
+  if (select balance_atomic from public.wallets where user_id='10000000-0000-4000-8000-000000000001' and asset_code='MYGRAM_COIN') <> 0 then
+    raise exception 'FAIL: signup gift leaked into real wallet balance';
+  end if;
+  if (select balance_atomic from public.wallet_airdrop_balances where user_id='10000000-0000-4000-8000-000000000001') <> 3000 then
+    raise exception 'FAIL: signup airdrop balance is not 3000';
   end if;
   if (select granted_count from public.wallet_grant_control where grant_name='signup_welcome') <> 3 then
     raise exception 'FAIL: signup grant counter should be 3';
@@ -70,10 +73,54 @@ begin
   if (select balance_atomic from public.wallets where user_id='10000000-0000-4000-8000-000000000001' and asset_code='MYGRAM_COIN') <> 8800 then
     raise exception 'FAIL: sender balance wrong or idempotent retry double-debited';
   end if;
-  if (select balance_atomic from public.wallets where user_id='10000000-0000-4000-8000-000000000002' and asset_code='MYGRAM_COIN') <> 4200 then
-    raise exception 'FAIL: recipient balance wrong or idempotent retry double-credited';
+  if (select balance_atomic from public.wallets where user_id='10000000-0000-4000-8000-000000000002' and asset_code='MYGRAM_COIN') <> 1200 then
+    raise exception 'FAIL: recipient real-wallet balance wrong or idempotent retry double-credited';
   end if;
 end $$;
+
+-- A changed amount on an existing transfer key must be rejected as SQLSTATE 23505 / HTTP 409.
+do $
+begin
+  begin
+    perform public.post_wallet_transfer(
+      'test-transfer-idempotency-0001',
+      '10000000-0000-4000-8000-000000000002',
+      'MYGRAM_COIN', 1201, 'staging-smoke'
+    );
+    raise exception 'FAIL: changed amount reused an idempotency key';
+  exception when unique_violation then
+    null; -- Expected conflict for a payload mismatch.
+  end;
+end $;
+
+-- Decay test: age one gift grant beyond the fixed 30-day grace window, enable a test-only
+-- 10% rate, and prove the real wallet balance remains unchanged.
+update public.wallet_airdrop_balances
+   set granted_at=now()-interval '31 days',last_decay_on=null
+ where user_id='10000000-0000-4000-8000-000000000001';
+update public.user_activity_monitor
+   set last_active_at=now()-interval '31 days'
+ where user_id='10000000-0000-4000-8000-000000000001';
+update public.wallet_airdrop_decay_policy
+   set enabled=true,decay_basis_points=1000,updated_at=now()
+ where singleton=true;
+select wallet_private.process_daily_airdrop_decay();
+do $
+begin
+  if (select balance_atomic from public.wallet_airdrop_balances where user_id='10000000-0000-4000-8000-000000000001') <> 2700 then
+    raise exception 'FAIL: expected 10% decay of airdrop balance after 30-day grace';
+  end if;
+  if (select balance_atomic from public.wallets where user_id='10000000-0000-4000-8000-000000000001' and asset_code='MYGRAM_COIN') <> 8800 then
+    raise exception 'FAIL: decay modified real wallet balance';
+  end if;
+  if exists (
+    select t.id from public.wallet_transactions t
+    join public.wallet_airdrop_ledger l on l.transaction_id=t.id
+    where t.status='posted'
+    group by t.id
+    having sum(case when l.entry_kind='debit' then l.amount_atomic else -l.amount_atomic end) <> 0
+  ) then raise exception 'FAIL: unbalanced airdrop ledger'; end if;
+end $;
 
 -- Enable one service only in this test DB with a controlled 1,000-unit price.
 update public.wallet_service_catalog
