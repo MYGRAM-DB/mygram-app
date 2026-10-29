@@ -5,6 +5,7 @@ on:
     paths:
       - "supabase/migrations/2026102900*.sql"
       - "supabase/tests/wallet_staging_smoke.sql"
+      - "supabase/tests/wallet_concurrency.sh"
       - ".github/workflows/wallet-staging-tests.yml"
   push:
     branches:
@@ -76,3 +77,5 @@ jobs:
           done
       - name: Run wallet staging smoke and invariant tests
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/wallet_staging_smoke.sql
+      - name: Run multi-session concurrency and double-spend race tests
+        run: bash supabase/tests/wallet_concurrency.sh
