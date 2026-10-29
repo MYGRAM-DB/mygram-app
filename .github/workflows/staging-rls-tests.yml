@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_URL: https://cbyvtehvaojxfcgpelir.supabase.co
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       MYGRAM_TEST_USER_A_EMAIL: ${{ secrets.MYGRAM_TEST_USER_A_EMAIL }}
       MYGRAM_TEST_USER_A_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_A_PASSWORD }}
@@ -35,10 +35,22 @@ jobs:
         run: npm install
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
-      - name: Validate required secrets
+      - name: Validate Staging endpoint and required secrets
         run: |
-          test -n "$SUPABASE_URL"
-          test -n "$SUPABASE_ANON_KEY"
+          node <<'NODE'
+          const expected = "https://cbyvtehvaojxfcgpelir.supabase.co";
+          const raw = process.env.SUPABASE_URL || "";
+          let parsed;
+          try { parsed = new URL(raw); } catch { throw new Error("SUPABASE_URL is not a valid absolute URL"); }
+          if (raw !== expected || parsed.origin !== expected || parsed.pathname !== "/" || parsed.search || parsed.hash) throw new Error("SUPABASE_URL must exactly match the MYGRAM-STAGING project root URL");
+          if (!process.env.SUPABASE_ANON_KEY) throw new Error("SUPABASE_ANON_KEY is missing");
+          const parts = process.env.SUPABASE_ANON_KEY.split(".");
+          if (parts.length === 3) {
+            const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+            if (payload.ref && payload.ref !== "cbyvtehvaojxfcgpelir") throw new Error("SUPABASE_ANON_KEY belongs to a different Supabase project");
+          }
+          console.log("Staging endpoint validated; key value not displayed.");
+          NODE
           test -n "$MYGRAM_TEST_USER_A_EMAIL"
           test -n "$MYGRAM_TEST_USER_A_PASSWORD"
           test -n "$MYGRAM_TEST_USER_B_EMAIL"
