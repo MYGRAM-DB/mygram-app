@@ -48,10 +48,37 @@ begin
   perform pg_advisory_xact_lock(hashtextextended(v_key, 0));
   select * into v_existing from public.wallet_transactions where idempotency_key=v_key;
   if found then
+    -- A key is bound to the complete original request, not merely its owner/type.
+    -- SQLSTATE 23505 maps to HTTP 409 Conflict through PostgREST.
     if v_existing.initiated_by is distinct from v_sender
        or v_existing.transaction_type <> 'transfer'
-       or v_existing.status <> 'posted' then
-      raise exception 'idempotency key conflict' using errcode='23505';
+       or v_existing.status <> 'posted'
+       or v_existing.reference is distinct from p_reference
+       or not exists (
+         select 1
+           from public.wallet_ledger debit
+           join public.wallets sender_wallet on sender_wallet.id=debit.wallet_id
+          where debit.transaction_id=v_existing.id
+            and debit.entry_kind='debit'
+            and debit.asset_code=p_asset_code
+            and debit.amount_atomic=p_amount_atomic
+            and sender_wallet.user_id=v_sender
+       )
+       or not exists (
+         select 1
+           from public.wallet_ledger credit
+           join public.wallets recipient_wallet on recipient_wallet.id=credit.wallet_id
+          where credit.transaction_id=v_existing.id
+            and credit.entry_kind='credit'
+            and credit.asset_code=p_asset_code
+            and credit.amount_atomic=p_amount_atomic
+            and recipient_wallet.user_id=p_recipient_user_id
+       )
+       or (select count(*) from public.wallet_ledger l
+            where l.transaction_id=v_existing.id and l.asset_code=p_asset_code) <> 2
+       or exists (select 1 from public.wallet_ledger l
+                   where l.transaction_id=v_existing.id and l.asset_code<>p_asset_code) then
+      raise exception 'idempotency key conflict: request payload differs from original' using errcode='23505';
     end if;
     return v_existing.id;
   end if;
