@@ -92,20 +92,28 @@ for i in $(seq 1 25); do
   pids+=("$!")
 done
 success=0
+rejected=0
 for i in $(seq 1 25); do
   if wait "${pids[$((i-1))]}"; then
     success=$((success+1))
   else
-    if ! grep -q 'ERROR:  22003: insufficient balance' /tmp/wallet-race-"$i".log; then
+    if ! grep -Fq 'ERROR:  22003: insufficient balance' /tmp/wallet-race-"$i".log; then
       cat /tmp/wallet-race-"$i".log
       echo "FAIL: request $i did not return SQLSTATE 22003 (insufficient balance)" >&2
       exit 1
     fi
+    # Confirm the verbose PostgreSQL diagnostic explicitly contains SQLSTATE 22003.
+    if ! grep -Eq 'SQLSTATE[[:space:]]+22003|ERROR:[[:space:]]+22003:' /tmp/wallet-race-"$i".log; then
+      cat /tmp/wallet-race-"$i".log
+      echo "FAIL: request $i lacks an explicit SQLSTATE 22003 diagnostic" >&2
+      exit 1
+    fi
+    rejected=$((rejected+1))
     echo "REJECTED request=$i SQLSTATE=22003 reason=insufficient_balance key=overspend-race-$i-000000000"
   fi
 done
 
-if [[ "$success" -ne 1 ]]; then
+if [[ "$success" -ne 1 || "$rejected" -ne 24 ]]; then
   echo "FAIL: expected exactly 1 accepted debit and 24 insufficient-balance rejections; got $success accepted" >&2
   for i in $(seq 1 25); do cat /tmp/wallet-race-"$i".log; done
   exit 1
@@ -139,4 +147,4 @@ begin
 end $$;
 SQL
 
-echo "PASS: opposing transfers, same-key concurrent idempotency, overspend race, nonnegative balances, conservation, balanced ledger (successful race calls: $success; expected rejections: 24; each rejection verified as SQLSTATE 22003)"
+echo "PASS: opposing transfers, same-key concurrent idempotency, overspend race, nonnegative balances, conservation, balanced ledger (successful race calls: $success; verified rejection count: $rejected; each rejection verified as SQLSTATE 22003)"
