@@ -70,7 +70,8 @@ jobs:
             supabase/migrations/20261029001000_draft_atomic_wallet_transfer.sql \
             supabase/migrations/20261029002000_draft_wallet_transfer_rpc_wrapper.sql \
             supabase/migrations/20261029003000_draft_wallet_service_catalog.sql \
-            supabase/migrations/20261029004000_staging_welcome_grant_and_service_settlement.sql
+            supabase/migrations/20261029004000_staging_welcome_grant_and_service_settlement.sql \
+            supabase/migrations/20261029005000_staging_airdrop_decay_and_activity_monitor.sql
           do
             echo "Applying $migration"
             psql -v ON_ERROR_STOP=1 -f "$migration"
