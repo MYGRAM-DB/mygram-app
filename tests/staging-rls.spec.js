@@ -107,6 +107,9 @@ test.describe("MYGRAM Staging RLS isolation", () => {
 
   test("login page can authenticate user A and render the social feed", async ({ page }) => {
     await page.goto(process.env.MYGRAM_STAGING_BASE_URL || "http://127.0.0.1:4173/login.html");
+    // New browsers default to signup unless this device has a remembered account.
+    // Explicitly select login so the required full-name signup field cannot block submission.
+    await page.locator("#loginTab").click();
     await page.locator("#email").fill(emailA);
     await page.locator("#password").fill(passwordA);
     await page.locator("#submitButton").click();
