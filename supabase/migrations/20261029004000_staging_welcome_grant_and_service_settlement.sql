@@ -180,7 +180,7 @@ begin
   insert into public.wallet_transactions(idempotency_key,transaction_type,status,initiated_by,reference,metadata)
   values(v_key,'purchase','pending',v_user,p_service_code,
     jsonb_build_object('service_code',p_service_code,'price_atomic',v_service.price_atomic,
-      'treasury_atomic',v_treasury,'development_vault_atomic',v_dev,'requires_confirmation',v_service.requires_confirmation))
+      'treasury_atomic',v_treasury,'development_vault_atomic',v_dev,'requires_explicit_confirmation',v_service.requires_explicit_confirmation))
   returning id into v_tx;
 
   insert into public.wallet_ledger(transaction_id,wallet_id,entry_kind,amount_atomic,asset_code)
