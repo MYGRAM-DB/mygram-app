@@ -151,10 +151,13 @@ begin
   perform pg_advisory_xact_lock(hashtextextended(v_key,0));
   select * into v_existing from public.wallet_transactions where idempotency_key=v_key;
   if found then
+    -- Reusing a purchase key for another service is a conflict, never a silent replay.
     if v_existing.initiated_by is distinct from v_user
        or v_existing.transaction_type <> 'purchase'
-       or v_existing.status <> 'posted' then
-      raise exception 'idempotency key conflict' using errcode='23505';
+       or v_existing.status <> 'posted'
+       or v_existing.reference is distinct from p_service_code
+       or v_existing.metadata->>'service_code' is distinct from p_service_code then
+      raise exception 'idempotency key conflict: request payload differs from original' using errcode='23505';
     end if;
     return v_existing.id;
   end if;
