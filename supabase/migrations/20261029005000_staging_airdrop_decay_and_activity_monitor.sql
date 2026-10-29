@@ -12,6 +12,10 @@ create table if not exists public.wallet_airdrop_balances (
 );
 alter table public.wallet_airdrop_balances enable row level security;
 revoke all on public.wallet_airdrop_balances from public, anon, authenticated;
+drop policy if exists wallet_airdrop_balance_select_own on public.wallet_airdrop_balances;
+create policy wallet_airdrop_balance_select_own on public.wallet_airdrop_balances
+  for select to authenticated using (user_id=(select auth.uid()));
+grant select on public.wallet_airdrop_balances to authenticated;
 
 create table if not exists public.user_activity_monitor (
   user_id uuid primary key references auth.users(id) on delete restrict,
@@ -43,6 +47,21 @@ create index if not exists wallet_airdrop_ledger_user_created_idx
   on public.wallet_airdrop_ledger(user_id,created_at desc);
 alter table public.wallet_airdrop_ledger enable row level security;
 revoke all on public.wallet_airdrop_ledger from public, anon, authenticated;
+drop policy if exists wallet_airdrop_ledger_select_own on public.wallet_airdrop_ledger;
+create policy wallet_airdrop_ledger_select_own on public.wallet_airdrop_ledger
+  for select to authenticated using (user_id=(select auth.uid()));
+grant select on public.wallet_airdrop_ledger to authenticated;
+
+-- Make a user's own airdrop grant/decay transactions visible through the existing transaction
+-- history policy without exposing system-account entries or other users' history.
+drop policy if exists wallet_transactions_select_own on public.wallet_transactions;
+create policy wallet_transactions_select_own on public.wallet_transactions
+  for select to authenticated using (
+    exists (select 1 from public.wallet_ledger l join public.wallets w on w.id=l.wallet_id
+            where l.transaction_id=wallet_transactions.id and w.user_id=(select auth.uid()))
+    or exists (select 1 from public.wallet_airdrop_ledger al
+                where al.transaction_id=wallet_transactions.id and al.user_id=(select auth.uid()))
+  );
 
 -- The grace period is fixed at 30 days. Decay remains disabled until an operator approves
 -- a rate; no economic rate is silently assumed by this migration.
