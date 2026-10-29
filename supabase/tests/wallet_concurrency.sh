@@ -44,6 +44,37 @@ for i in $(seq 1 20); do
 done
 for pid in "${pids[@]}"; do wait "$pid"; done
 
+# A retry with the exact same payload is safe; reusing the same key with altered
+# amount, recipient, or asset must fail with a conflict and must not post another entry.
+if transfer "$A" "$B" "same-key-concurrent-000001" 8 >/tmp/wallet-idempotency-amount.log 2>&1; then
+  echo "FAIL: same key with changed amount was accepted" >&2; exit 1
+fi
+grep -q 'idempotency key conflict' /tmp/wallet-idempotency-amount.log || {
+  cat /tmp/wallet-idempotency-amount.log; echo "FAIL: changed amount did not return idempotency conflict" >&2; exit 1;
+}
+if transfer "$A" "$A" "same-key-concurrent-000001" 7 >/tmp/wallet-idempotency-recipient.log 2>&1; then
+  echo "FAIL: same key with changed recipient was accepted" >&2; exit 1
+fi
+grep -q 'idempotency key conflict' /tmp/wallet-idempotency-recipient.log || {
+  cat /tmp/wallet-idempotency-recipient.log; echo "FAIL: changed recipient did not return idempotency conflict" >&2; exit 1;
+}
+psql -X -q -v ON_ERROR_STOP=1 <<'SQL'
+update public.wallet_assets set enabled=true where code='DINGRAM';
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',false);
+SQL
+if psql -X -q -v ON_ERROR_STOP=1 <<'SQL' >/tmp/wallet-idempotency-asset.log 2>&1
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',false);
+select public.post_wallet_transfer('same-key-concurrent-000001',
+  '10000000-0000-4000-8000-000000000002','DINGRAM',7,'concurrency-ci');
+SQL
+then
+  echo "FAIL: same key with changed asset was accepted" >&2; exit 1
+fi
+grep -q 'idempotency key conflict' /tmp/wallet-idempotency-asset.log || {
+  cat /tmp/wallet-idempotency-asset.log; echo "FAIL: changed asset did not return idempotency conflict" >&2; exit 1;
+}
+echo "PASS: idempotency payload mismatch rejected (amount, recipient, asset)"
+
 # Reset to a controlled boundary case: A has exactly 500, B receives the conserved remainder.
 # Of 25 concurrent distinct debits of 500, exactly one must succeed and 24 must be rejected.
 psql -v ON_ERROR_STOP=1 <<'SQL'
