@@ -108,7 +108,7 @@ select wallet_private.process_daily_airdrop_decay();
 do $$
 begin
   if (select balance_atomic from public.wallet_airdrop_balances where user_id='10000000-0000-4000-8000-000000000001') <> 2700 then
-    raise exception 'FAIL: expected 10% decay of airdrop balance after 30-day grace';
+    raise exception 'FAIL: expected ten-percent decay of airdrop balance after 30-day grace';
   end if;
   if (select balance_atomic from public.wallets where user_id='10000000-0000-4000-8000-000000000001' and asset_code='MYGRAM_COIN') <> 8800 then
     raise exception 'FAIL: decay modified real wallet balance';
