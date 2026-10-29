@@ -1,13 +1,15 @@
-
 {
   "name": "mygram-app",
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "test": "playwright test",
     "test:e2e": "playwright test",
+    "test:e2e:staging": "playwright test tests/staging-rls.spec.js",
     "test:e2e:report": "playwright show-report"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.0"
+    "@playwright/test": "^1.56.0",
+    "@supabase/supabase-js": "^2.57.0"
   }
 }
