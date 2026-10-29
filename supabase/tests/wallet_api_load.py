@@ -111,7 +111,7 @@ def main():
 
         started = time.perf_counter()
         results = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as pool:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=total) as pool:
             futures = [
                 pool.submit(call, payload(f"load-{total}-{i:05d}-unique-key", 1, "api-load-test"))
                 for i in range(total)
