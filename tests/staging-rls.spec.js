@@ -1,15 +1,17 @@
 const { test, expect } = require("@playwright/test");
 const { createClient } = require("@supabase/supabase-js");
 
-const url = process.env.MYGRAM_STAGING_SUPABASE_URL;
-const key = process.env.MYGRAM_STAGING_SUPABASE_PUBLISHABLE_KEY;
+const url = process.env.SUPABASE_URL;
+const key = process.env.SUPABASE_ANON_KEY;
 const emailA = process.env.MYGRAM_TEST_USER_A_EMAIL;
 const passwordA = process.env.MYGRAM_TEST_USER_A_PASSWORD;
 const emailB = process.env.MYGRAM_TEST_USER_B_EMAIL;
 const passwordB = process.env.MYGRAM_TEST_USER_B_PASSWORD;
+const emailC = process.env.MYGRAM_TEST_USER_C_EMAIL;
+const passwordC = process.env.MYGRAM_TEST_USER_C_PASSWORD;
 
-const ready = Boolean(url && key && emailA && passwordA && emailB && passwordB);
-test.skip(!ready, "Configure staging URL/publishable key and two pre-created test accounts in CI secrets.");
+const ready = Boolean(url && key && emailA && passwordA && emailB && passwordB && emailC && passwordC);
+test.skip(!ready, "Configure SUPABASE_URL, SUPABASE_ANON_KEY, and pre-created test accounts A, B, and C in CI secrets.");
 
 async function signedInClient(email, password) {
   const client = createClient(url, key, {
@@ -24,6 +26,7 @@ test.describe("MYGRAM Staging RLS isolation", () => {
   test("creates a profile through auth trigger and isolates writes between users", async () => {
     const a = await signedInClient(emailA, passwordA);
     const b = await signedInClient(emailB, passwordB);
+    const c = await signedInClient(emailC, passwordC);
     const marker = `staging-rls-${Date.now()}`;
     let postId;
 
@@ -57,11 +60,15 @@ test.describe("MYGRAM Staging RLS isolation", () => {
       expect(visibleErr).toBeNull();
       expect(visiblePost?.content).toBe(marker);
 
-      // Private preferences must be invisible to user B.
+      // Private preferences must be invisible to users B and C.
       const { data: leakedPrefs, error: prefsReadErr } = await b.client
         .from("user_preferences").select("user_id,region").eq("user_id", a.user.id);
       expect(prefsReadErr).toBeNull();
       expect(leakedPrefs).toEqual([]);
+      const { data: leakedPrefsC, error: prefsReadErrC } = await c.client
+        .from("user_preferences").select("user_id,region").eq("user_id", a.user.id);
+      expect(prefsReadErrC).toBeNull();
+      expect(leakedPrefsC).toEqual([]);
 
       // UPDATE/DELETE requests against A's post must affect zero rows for B.
       const { data: changedRows, error: updateErr } = await b.client
@@ -73,6 +80,11 @@ test.describe("MYGRAM Staging RLS isolation", () => {
         .from("posts").delete().eq("id", postId).select("id");
       expect(deleteErr).toBeNull();
       expect(deletedRows).toEqual([]);
+
+      const { data: cChangedRows, error: cUpdateErr } = await c.client
+        .from("posts").update({ content: marker + "-tampered-by-c" }).eq("id", postId).select("id");
+      expect(cUpdateErr).toBeNull();
+      expect(cChangedRows).toEqual([]);
 
       const { data: stillOwnedPost, error: verifyErr } = await a.client
         .from("posts").select("id,content,user_id").eq("id", postId).single();
@@ -89,6 +101,7 @@ test.describe("MYGRAM Staging RLS isolation", () => {
       await a.client.from("user_preferences").delete().eq("user_id", a.user.id);
       await a.client.auth.signOut();
       await b.client.auth.signOut();
+      await c.client.auth.signOut();
     }
   });
 
