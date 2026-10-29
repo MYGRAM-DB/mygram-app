@@ -1,0 +1,104 @@
+name: Wallet staging PostgREST API and load tests
+
+on:
+  push:
+    branches:
+      - "staging/wallet-atomicity-airdrop"
+    paths:
+      - "supabase/migrations/2026102900*.sql"
+      - "supabase/tests/wallet_api_load.py"
+      - ".github/workflows/wallet-staging-api-load.yml"
+  pull_request:
+    paths:
+      - "supabase/migrations/2026102900*.sql"
+      - "supabase/tests/wallet_api_load.py"
+      - ".github/workflows/wallet-staging-api-load.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgrest-api-and-load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: mygram_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d mygram_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      postgrest:
+        image: postgrest/postgrest:v12.2.0
+        env:
+          PGRST_DB_URI: postgres://postgres:postgres@postgres:5432/mygram_test
+          PGRST_DB_SCHEMAS: public
+          PGRST_DB_ANON_ROLE: anon
+          PGRST_JWT_SECRET: "mygram-isolated-ci-jwt-secret-32chars-minimum"
+          PGRST_SERVER_PORT: "3000"
+          PGRST_LOG_LEVEL: info
+        ports:
+          - 3000:3000
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGDATABASE: mygram_test
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      API_URL: http://localhost:3000
+      JWT_SECRET: "mygram-isolated-ci-jwt-secret-32chars-minimum"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bootstrap isolated Supabase-compatible auth primitives
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          create extension if not exists pgcrypto;
+          create role anon nologin;
+          create role authenticated nologin;
+          create schema auth;
+          create table auth.users (
+            id uuid primary key default gen_random_uuid(),
+            email text unique,
+            created_at timestamptz not null default now()
+          );
+          create or replace function auth.uid()
+          returns uuid language sql stable
+          as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
+          grant usage on schema auth to authenticated;
+          grant execute on function auth.uid() to authenticated;
+          SQL
+      - name: Apply wallet draft migrations to disposable PostgreSQL only
+        run: |
+          for migration in \
+            supabase/migrations/20261029000000_draft_wallets_ledger_and_import_schema.sql \
+            supabase/migrations/20261029001000_draft_atomic_wallet_transfer.sql \
+            supabase/migrations/20261029002000_draft_wallet_transfer_rpc_wrapper.sql \
+            supabase/migrations/20261029003000_draft_wallet_service_catalog.sql \
+            supabase/migrations/20261029004000_staging_welcome_grant_and_service_settlement.sql \
+            supabase/migrations/20261029005000_staging_airdrop_decay_and_activity_monitor.sql
+          do
+            echo "Applying $migration"
+            psql -v ON_ERROR_STOP=1 -f "$migration"
+          done
+      - name: Wait for PostgREST to become ready
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent "$API_URL/" >/dev/null; then
+              echo "PostgREST ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "PostgREST failed to become ready" >&2
+          exit 1
+      - name: Test real HTTP 409 conflict mapping and 500/1000 concurrent requests
+        run: |
+          python3 supabase/tests/wallet_api_load.py
