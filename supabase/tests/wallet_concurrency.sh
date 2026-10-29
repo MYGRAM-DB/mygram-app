@@ -44,8 +44,17 @@ for i in $(seq 1 20); do
 done
 for pid in "${pids[@]}"; do wait "$pid"; done
 
-# Race 25 distinct debits of 500 from a wallet holding 10,000: exactly 20 can succeed.
-# Failures due to insufficient balance are expected; all other failures fail the test.
+# Reset to a controlled boundary case: A has exactly 500, B receives the conserved remainder.
+# Of 25 concurrent distinct debits of 500, exactly one must succeed and 24 must be rejected.
+psql -v ON_ERROR_STOP=1 <<'SQL'
+update public.wallets set balance_atomic = case
+  when user_id='10000000-0000-4000-8000-000000000001' then 500
+  when user_id='10000000-0000-4000-8000-000000000002' then 19500
+  else balance_atomic end
+where asset_code='MYGRAM_COIN'
+  and user_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000002');
+SQL
+
 pids=()
 for i in $(seq 1 25); do
   (transfer "$A" "$B" "overspend-race-$i-000000000" 500 >/tmp/wallet-race-"$i".log 2>&1) &
@@ -63,6 +72,12 @@ for i in $(seq 1 25); do
     fi
   fi
 done
+
+if [[ "$success" -ne 1 ]]; then
+  echo "FAIL: expected exactly 1 accepted debit and 24 insufficient-balance rejections; got $success accepted" >&2
+  for i in $(seq 1 25); do cat /tmp/wallet-race-"$i".log; done
+  exit 1
+fi
 
 # Independent invariant checks after all sessions have completed.
 psql -v ON_ERROR_STOP=1 -v expected_success="$success" <<'SQL'
