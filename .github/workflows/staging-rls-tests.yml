@@ -1,0 +1,50 @@
+name: MYGRAM Staging RLS tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [staging-rls-bootstrap]
+    paths:
+      - 'tests/staging-rls.spec.js'
+      - '.github/workflows/staging-rls-tests.yml'
+      - 'package.json'
+      - 'playwright.config.js'
+
+permissions:
+  contents: read
+
+jobs:
+  staging-rls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      MYGRAM_TEST_USER_A_EMAIL: ${{ secrets.MYGRAM_TEST_USER_A_EMAIL }}
+      MYGRAM_TEST_USER_A_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_A_PASSWORD }}
+      MYGRAM_TEST_USER_B_EMAIL: ${{ secrets.MYGRAM_TEST_USER_B_EMAIL }}
+      MYGRAM_TEST_USER_B_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_B_PASSWORD }}
+      MYGRAM_TEST_USER_C_EMAIL: ${{ secrets.MYGRAM_TEST_USER_C_EMAIL }}
+      MYGRAM_TEST_USER_C_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_C_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Validate required secrets
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_ANON_KEY"
+          test -n "$MYGRAM_TEST_USER_A_EMAIL"
+          test -n "$MYGRAM_TEST_USER_A_PASSWORD"
+          test -n "$MYGRAM_TEST_USER_B_EMAIL"
+          test -n "$MYGRAM_TEST_USER_B_PASSWORD"
+          test -n "$MYGRAM_TEST_USER_C_EMAIL"
+          test -n "$MYGRAM_TEST_USER_C_PASSWORD"
+      - name: Run Staging RLS integration test
+        run: npx playwright test tests/staging-rls.spec.js --project=chromium-desktop
