@@ -19,6 +19,10 @@ begin
     raise exception 'cron registration blocked: wallet_private.process_daily_airdrop_decay() is missing';
   end if;
 
+  if not has_function_privilege(current_user, 'wallet_private.process_daily_airdrop_decay()', 'EXECUTE') then
+    raise exception 'cron registration blocked: current scheduler role cannot execute the decay function';
+  end if;
+
   -- Replace any prior job with the same stable name, then schedule daily at 02:17 UTC.
   perform cron.unschedule(jobid)
     from cron.job
