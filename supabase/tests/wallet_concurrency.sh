@@ -20,7 +20,7 @@ SQL
 
 transfer() {
   local sender="$1" recipient="$2" key="$3" amount="$4"
-  psql -X -q -v ON_ERROR_STOP=1 -v sender="$sender" -v recipient="$recipient" -v key="$key" -v amount="$amount" <<'SQL'
+  psql -X -q -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -v sender="$sender" -v recipient="$recipient" -v key="$key" -v amount="$amount" <<'SQL'
 select set_config('request.jwt.claim.sub', :'sender', false);
 select public.post_wallet_transfer(:'key', :'recipient', 'MYGRAM_COIN', :'amount'::numeric, 'concurrency-ci');
 SQL
@@ -96,11 +96,12 @@ for i in $(seq 1 25); do
   if wait "${pids[$((i-1))]}"; then
     success=$((success+1))
   else
-    if ! grep -q 'insufficient balance' /tmp/wallet-race-"$i".log; then
+    if ! grep -q 'ERROR:  22003: insufficient balance' /tmp/wallet-race-"$i".log; then
       cat /tmp/wallet-race-"$i".log
-      echo "FAIL: unexpected error in overspend race request $i" >&2
+      echo "FAIL: request $i did not return SQLSTATE 22003 (insufficient balance)" >&2
       exit 1
     fi
+    echo "REJECTED request=$i SQLSTATE=22003 reason=insufficient_balance key=overspend-race-$i-000000000"
   fi
 done
 
@@ -138,4 +139,4 @@ begin
 end $$;
 SQL
 
-echo "PASS: opposing transfers, same-key concurrent idempotency, overspend race, nonnegative balances, conservation, balanced ledger (successful race calls: $success)"
+echo "PASS: opposing transfers, same-key concurrent idempotency, overspend race, nonnegative balances, conservation, balanced ledger (successful race calls: $success; expected rejections: 24; each rejection verified as SQLSTATE 22003)"
