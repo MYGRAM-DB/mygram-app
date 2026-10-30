@@ -88,7 +88,7 @@ Deno.serve(async (request: Request) => {
 
   let claims: Record<string, unknown>;
   try {
-    const verified = await jwtVerify(match[1], OIDC_JWKS, {
+    const verified = await jwtVerify(oidcToken, OIDC_JWKS, {
       issuer: OIDC_ISSUER,
       audience: OIDC_AUDIENCE,
       algorithms: ["RS256"],
@@ -129,7 +129,7 @@ Deno.serve(async (request: Request) => {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
 
-  const tokenHash = await sha256(match[1]);
+  const tokenHash = await sha256(oidcToken);
   const now = new Date().toISOString();
   const expiry = new Date(Number(claims.exp) * 1000).toISOString();
   await admin.from("qa_run_challenges").delete().lt("expires_at", now);
@@ -150,6 +150,8 @@ Deno.serve(async (request: Request) => {
     { label: "C", email: `${userPrefix}-c@example.com`, password: `${crypto.randomUUID()}Cc7!` },
   ];
   const createdUserIds: string[] = [];
+  const privateProfileFixtureIds: string[] = [];
+  const profileAvatarPaths: string[] = [];
   const clients = new Map<string, SupabaseClient>();
   const channelHandles: Array<{ channel: ReturnType<SupabaseClient["channel"]> }> = [];
   let conversationId: string | null = null;
@@ -193,6 +195,60 @@ Deno.serve(async (request: Request) => {
     const c = signedIn.get("C")!;
     assert(new Set([a.userId, b.userId, c.userId]).size === 3, "AUTH_USERS_NOT_DISTINCT");
     checks.push({ name: "three_independent_real_jwt_sessions", status: "PASS", detail: "A, B, and C authenticated through Supabase Auth password grant." });
+
+    // Real JWT profile and profile-avatar isolation checks are bundled with
+    // the Messenger run so the same ephemeral A/B/C identities cover both gates.
+    for (const [label, session] of [["A", a], ["B", b]] as const) {
+      const { data, error } = await session.client.from("profile_private_details").insert({
+        user_id: session.userId,
+        date_of_birth: "1990-01-01",
+        gender: "prefer_not_to_say",
+        nationality_code: "US",
+      }).select("user_id").single();
+      assert(!error && data?.user_id === session.userId, `OWN_PRIVATE_PROFILE_INSERT_FAILED_${label}`);
+      privateProfileFixtureIds.push(session.userId);
+    }
+
+    const { data: aPrivate, error: aPrivateError } = await a.client.from("profile_private_details")
+      .select("user_id,date_of_birth,gender,nationality_code")
+      .eq("user_id", a.userId);
+    assert(!aPrivateError && aPrivate?.length === 1, "A_CANNOT_READ_OWN_PRIVATE_DETAILS");
+
+    const { data: aCannotSeeBPrivate, error: aCrossPrivateError } = await a.client.from("profile_private_details")
+      .select("user_id")
+      .eq("user_id", b.userId);
+    assert(!aCrossPrivateError && aCannotSeeBPrivate?.length === 0, "A_READ_B_PRIVATE_DETAILS");
+
+    const { data: publicB, error: publicBError } = await a.client.from("public_profiles")
+      .select("*").eq("id", b.userId).single();
+    assert(!publicBError && publicB?.id === b.userId, "SAFE_PUBLIC_PROFILE_PROJECTION_NOT_AVAILABLE");
+    assert(
+      !("study_place" in publicB) &&
+      !("work_place" in publicB) &&
+      !("profile_completed" in publicB),
+      "PUBLIC_PROFILE_VIEW_EXPOSED_PRIVATE_COLUMNS",
+    );
+
+    const { error: directPrivateColumnsError } = await a.client.from("profiles")
+      .select("study_place,work_place,profile_completed")
+      .eq("id", b.userId);
+    assert(directPrivateColumnsError, "BASE_PROFILE_EXPOSED_PRIVATE_COLUMNS_TO_REST");
+    checks.push({ name: "real_jwt_private_profile_isolation", status: "PASS", detail: "A reads its own private row, sees zero rows for B's private details, and only the safe public profile projection is selectable." });
+
+    const avatarPath = `${a.userId}/qa-${runId}-avatar.png`;
+    profileAvatarPaths.push(avatarPath);
+    const { error: avatarUploadError } = await a.client.storage.from("profile-avatars").upload(avatarPath, PNG, {
+      contentType: "image/png",
+      upsert: false,
+    });
+    assert(!avatarUploadError, "A_OWN_PROFILE_AVATAR_UPLOAD_FAILED");
+
+    const { data: ownerAvatar, error: ownerAvatarError } = await a.client.storage.from("profile-avatars").download(avatarPath);
+    assert(!ownerAvatarError && ownerAvatar, "A_CANNOT_READ_OWN_PROFILE_AVATAR");
+
+    const { data: cAvatar, error: cAvatarError } = await c.client.storage.from("profile-avatars").download(avatarPath);
+    assert(cAvatarError && !cAvatar, "C_DOWNLOADED_A_PRIVATE_PROFILE_AVATAR");
+    checks.push({ name: "real_jwt_profile_avatar_storage_isolation", status: "PASS", detail: "A uploads and downloads its own private avatar; C cannot download it." });
 
     const [userLow, userHigh] = [a.userId, b.userId].sort();
     const { data: conversation, error: conversationError } = await a.client
@@ -339,6 +395,14 @@ Deno.serve(async (request: Request) => {
     await Promise.allSettled(channelHandles.map(({ channel }) => channel.unsubscribe()));
 
     const cleanupErrors: string[] = [];
+    if (profileAvatarPaths.length > 0) {
+      const { error } = await admin.storage.from("profile-avatars").remove(profileAvatarPaths);
+      if (error) cleanupErrors.push("PROFILE_AVATAR_STORAGE_DELETE_FAILED");
+    }
+    for (const userId of privateProfileFixtureIds) {
+      const { error } = await admin.from("profile_private_details").delete().eq("user_id", userId);
+      if (error) cleanupErrors.push("PRIVATE_PROFILE_FIXTURE_DELETE_FAILED");
+    }
     if (objectPath) {
       const { error } = await admin.storage.from(BUCKET).remove([objectPath]);
       if (error) cleanupErrors.push("STORAGE_OBJECT_DELETE_FAILED");
@@ -352,6 +416,9 @@ Deno.serve(async (request: Request) => {
       if (error) cleanupErrors.push("EPHEMERAL_AUTH_USER_DELETE_FAILED");
     }
 
+    const remainingPrivateRows = privateProfileFixtureIds.length > 0
+      ? await admin.from("profile_private_details").select("user_id", { count: "exact", head: true }).in("user_id", privateProfileFixtureIds)
+      : { error: null, count: 0 };
     const remainingConversation = await admin.from("messenger_conversations")
       .select("id", { count: "exact", head: true })
       .eq("id", conversationId ?? "00000000-0000-0000-0000-000000000000");
@@ -360,13 +427,14 @@ Deno.serve(async (request: Request) => {
       : { error: null, count: 0 };
     cleanupComplete =
       cleanupErrors.length === 0 &&
+      !remainingPrivateRows.error && (remainingPrivateRows.count ?? 0) === 0 &&
       !remainingConversation.error && (remainingConversation.count ?? 0) === 0 &&
       !remainingObject.error && (remainingObject.count ?? 0) === 0;
     const cleanup = checks.find((check) => check.name === "test_data_cleanup");
     if (cleanup) {
       cleanup.status = cleanupComplete ? "PASS" : "FAIL";
       cleanup.detail = cleanupComplete
-        ? "Temporary conversation, attachment metadata, Storage object and ephemeral Auth users were deleted; database absence checks passed."
+        ? "Ephemeral A/B/C Auth users, private profile fixtures, profile avatar, Messenger conversation, message/attachment rows and Messenger object were removed; database absence checks passed."
         : "The temporary conversation is still present or could not be verified as deleted.";
     }
   }
