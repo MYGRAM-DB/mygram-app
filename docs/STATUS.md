@@ -14,13 +14,13 @@
 |---|---|---|
 | A: Audit & Foundation | PARTIAL | تدقيق GitHub وSupabase؛ اختلافات البيئتين موثقة |
 | B: Core Architecture | PARTIAL | Vite/React/TypeScript shell، سجل المنتجات التسعة، مسارات Hash، مظهر داكن/فاتح وRTL |
-| C: Identity & Auth | PARTIAL | تسجيل بريد أولي موجود؛ onboarding واستكمال الملف لم يُبنيا بعد |
+| C: Identity & Auth | PARTIAL | تسجيل البريد الأولي، توجيه onboarding، نموذج الملف، RPC ذرّية وبيانات خاصة منفصلة؛ لم يُختبر Auth API الحقيقي بعد |
 | D: Social | PARTIAL | مخطط اجتماعي أولي وRLS موجودان؛ الواجهات والعمليات غير مكتملة |
 | E: Messaging | PARTIAL | مخططات منفصلة موجودة في Production؛ إعادة بناء المنتج لم تبدأ |
 | F: Video | NOT IMPLEMENTED | Tube وTikToks غير منفذين |
 | G: AI & Meetings | PARTIAL | وظائف اجتماعات قديمة موجودة في Production؛ MYGRAM AI غير منفذ |
 | H: Wallet | NOT IMPLEMENTED | لا جداول محفظة أو Ledger |
-| I: Tests | PARTIAL | CI run 13 نجح بـnpm ci من القفل، Node 4/4، Playwright 5/5، TypeScript وVite؛ RLS PostgreSQL simulation نجح لهويتين، JWT E2E لا يزال مطلوباً |
+| I: Tests | PARTIAL | CI run 40994126414 أخضر: npm ci، Node 8/8، Playwright 6/6، TypeScript وVite؛ JWT Auth/RLS E2E ما زال مطلوباً |
 | J: Release | BLOCKED | لا نشر Production |
 
 ## مواءمة Staging
@@ -44,7 +44,7 @@
 
 ## ما لم يكتمل
 
-- نموذج onboarding كامل بعد التسجيل.
+- اختبار onboarding عبر Auth حقيقي، ورفع صورة الملف الشخصي.
 - تسجيل الهاتف وOTP، وإعداد SMTP وإرسال البريد الحقيقي.
 - تفرد usernames عبر البيئتين.
 - حماية عرض حقول الموقع العامة في profiles.
@@ -55,8 +55,8 @@
 
 ## المخاطر المفتوحة
 
-1. بناء onboarding باستخدام profiles وprofile_private_details وجدول الدول.
-2. إنشاء اختبار API حقيقي بحسابين في Staging.
+1. اختبار رحلة onboarding وحفظ الملف عبر جلستي Auth/JWT مستقلتين.
+2. اختبار REST لمنع قراءة تفاصيل الحساب الخاص ومنع تغيير حقول إثبات التحقق.
 3. مراجعة إتاحة أعمدة profiles لأن SELECT الحالي يسمح للمستخدمين المصادقين بقراءة صفوف profiles؛ show_living_location ليس حماية على مستوى العمود.
 4. انتقال supported_locales من is_active إلى enabled بآلية متزامنة قبل استعمال العمود الجديد.
 5. استكمال بقية مخطط Staging تدريجياً.
