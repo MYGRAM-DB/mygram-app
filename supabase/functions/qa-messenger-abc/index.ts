@@ -1,8 +1,11 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.118.0";
+import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.9.6";
 
 const PROJECT_REF = "cbyvtehvaojxfcgpelir";
 const BUCKET = "messenger-attachments";
-const TOKEN_TTL_SECONDS = 300;
+const OIDC_ISSUER = "https://token.actions.githubusercontent.com";
+const OIDC_AUDIENCE = "mygram-staging-qa";
+const OIDC_JWKS = createRemoteJWKSet(new URL("https://token.actions.githubusercontent.com/.well-known/jwks"));
 const REALTIME_TIMEOUT_MS = 12000;
 const PNG = Uint8Array.from(atob(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pWQAAAAASUVORK5CYII=",
@@ -75,14 +78,39 @@ async function waitForChannel(
 }
 
 Deno.serve(async (request: Request) => {
-  if (request.method !== "GET") {
+  if (request.method !== "POST") {
     return json({ ok: false, error: "METHOD_NOT_ALLOWED" }, 405);
   }
 
-  const url = new URL(request.url);
-  const challenge = url.searchParams.get("challenge") ?? "";
-  if (!/^[A-Za-z0-9_-]{40,100}$/.test(challenge)) {
-    return json({ ok: false, error: "INVALID_OR_MISSING_ONE_TIME_CHALLENGE" }, 401);
+  const bearer = request.headers.get("authorization") ?? "";
+  const match = bearer.match(/^Bearer\\s+(.+)$/i);
+  if (!match) return json({ ok: false, error: "GITHUB_OIDC_TOKEN_REQUIRED" }, 401);
+
+  let claims: Record<string, unknown>;
+  try {
+    const verified = await jwtVerify(match[1], OIDC_JWKS, {
+      issuer: OIDC_ISSUER,
+      audience: OIDC_AUDIENCE,
+      algorithms: ["RS256"],
+    });
+    claims = verified.payload as Record<string, unknown>;
+  } catch {
+    return json({ ok: false, error: "GITHUB_OIDC_TOKEN_INVALID" }, 401);
+  }
+
+  const allowedWorkflow = "MYGRAM-DB/mygram-app/.github/workflows/ci.yml@";
+  const identityAllowed =
+    claims.repository === "MYGRAM-DB/mygram-app" &&
+    claims.repository_owner === "MYGRAM-DB" &&
+    claims.event_name === "pull_request" &&
+    claims.head_ref === "rebuild/phase-a-architecture" &&
+    claims.base_ref === "main" &&
+    typeof claims.workflow_ref === "string" &&
+    claims.workflow_ref.startsWith(allowedWorkflow) &&
+    claims.workflow === "MYGRAM Build and Quality Gate" &&
+    claims.sub === "repo:MYGRAM-DB/mygram-app:pull_request";
+  if (!identityAllowed) {
+    return json({ ok: false, error: "GITHUB_WORKFLOW_IDENTITY_NOT_ALLOWLISTED" }, 403);
   }
 
   let admin: SupabaseClient;
@@ -101,19 +129,17 @@ Deno.serve(async (request: Request) => {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
 
-  const tokenHash = await sha256(challenge);
+  const tokenHash = await sha256(match[1]);
   const now = new Date().toISOString();
-  const { data: consumed, error: consumeError } = await admin
-    .from("qa_run_challenges")
-    .update({ consumed_at: now })
-    .eq("token_hash", tokenHash)
-    .is("consumed_at", null)
-    .gt("expires_at", now)
-    .select("token_hash")
-    .limit(1);
-
-  if (consumeError || !consumed || consumed.length !== 1) {
-    return json({ ok: false, error: "CHALLENGE_EXPIRED_USED_OR_INVALID" }, 401);
+  const expiry = new Date(Number(claims.exp) * 1000).toISOString();
+  await admin.from("qa_run_challenges").delete().lt("expires_at", now);
+  const { error: replayError } = await admin.from("qa_run_challenges").insert({
+    token_hash: tokenHash,
+    expires_at: expiry,
+    consumed_at: now,
+  });
+  if (replayError) {
+    return json({ ok: false, error: "GITHUB_OIDC_TOKEN_REPLAYED_OR_REJECTED" }, 409);
   }
 
   const runId = crypto.randomUUID();
@@ -312,25 +338,35 @@ Deno.serve(async (request: Request) => {
   } finally {
     await Promise.allSettled(channelHandles.map(({ channel }) => channel.unsubscribe()));
 
+    const cleanupErrors: string[] = [];
     if (objectPath) {
-      await admin.storage.from(BUCKET).remove([objectPath]).catch(() => ({ error: true }));
+      const { error } = await admin.storage.from(BUCKET).remove([objectPath]);
+      if (error) cleanupErrors.push("STORAGE_OBJECT_DELETE_FAILED");
     }
     if (conversationId) {
-      await admin.from("messenger_conversations").delete().eq("id", conversationId);
+      const { error } = await admin.from("messenger_conversations").delete().eq("id", conversationId);
+      if (error) cleanupErrors.push("CONVERSATION_DELETE_FAILED");
     }
     for (const userId of createdUserIds.reverse()) {
-      await admin.auth.admin.deleteUser(userId);
+      const { error } = await admin.auth.admin.deleteUser(userId);
+      if (error) cleanupErrors.push("EPHEMERAL_AUTH_USER_DELETE_FAILED");
     }
 
-    const remaining = await admin.from("messenger_conversations")
+    const remainingConversation = await admin.from("messenger_conversations")
       .select("id", { count: "exact", head: true })
       .eq("id", conversationId ?? "00000000-0000-0000-0000-000000000000");
-    cleanupComplete = !remaining.error && (remaining.count ?? 0) === 0;
+    const remainingObject = objectPath
+      ? await admin.from("messenger_attachments").select("id", { count: "exact", head: true }).eq("object_path", objectPath)
+      : { error: null, count: 0 };
+    cleanupComplete =
+      cleanupErrors.length === 0 &&
+      !remainingConversation.error && (remainingConversation.count ?? 0) === 0 &&
+      !remainingObject.error && (remainingObject.count ?? 0) === 0;
     const cleanup = checks.find((check) => check.name === "test_data_cleanup");
     if (cleanup) {
       cleanup.status = cleanupComplete ? "PASS" : "FAIL";
       cleanup.detail = cleanupComplete
-        ? "Temporary conversation and its cascaded rows were removed; Storage object removal and Auth user deletion were attempted."
+        ? "Temporary conversation, attachment metadata, Storage object and ephemeral Auth users were deleted; database absence checks passed."
         : "The temporary conversation is still present or could not be verified as deleted.";
     }
   }
