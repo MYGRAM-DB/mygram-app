@@ -38,27 +38,32 @@ jobs:
         run: node --check tests/authz.integration.mjs
       - name: Validate Messenger A/B/C integration test syntax
         run: node --check tests/messenger-three-party.integration.mjs
-      - name: Two-user Staging Auth, RLS, and Storage integration
-        if: ${{ vars.MYGRAM_STAGING_AUTHZ_TESTS == 'true' }}
-        env:
-          MYGRAM_STAGING_URL: ${{ vars.MYGRAM_STAGING_URL }}
-          MYGRAM_STAGING_PUBLISHABLE_KEY: ${{ secrets.MYGRAM_STAGING_PUBLISHABLE_KEY }}
-          MYGRAM_TEST_USER_A_EMAIL: ${{ secrets.MYGRAM_TEST_USER_A_EMAIL }}
-          MYGRAM_TEST_USER_A_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_A_PASSWORD }}
-          MYGRAM_TEST_USER_B_EMAIL: ${{ secrets.MYGRAM_TEST_USER_B_EMAIL }}
-          MYGRAM_TEST_USER_B_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_B_PASSWORD }}
-        run: npm run test:integration
-      - name: Three-user Staging Messenger isolation
-        if: ${{ vars.MYGRAM_MESSENGER_ABC_TESTS == 'true' }}
-        env:
-          MYGRAM_STAGING_URL: ${{ vars.MYGRAM_STAGING_URL }}
-          MYGRAM_STAGING_PUBLISHABLE_KEY: ${{ secrets.MYGRAM_STAGING_PUBLISHABLE_KEY }}
-          MYGRAM_MESSENGER_USER_A_EMAIL: ${{ secrets.MYGRAM_MESSENGER_USER_A_EMAIL }}
-          MYGRAM_MESSENGER_USER_A_PASSWORD: ${{ secrets.MYGRAM_MESSENGER_USER_A_PASSWORD }}
-          MYGRAM_MESSENGER_USER_B_EMAIL: ${{ secrets.MYGRAM_MESSENGER_USER_B_EMAIL }}
-          MYGRAM_MESSENGER_USER_B_PASSWORD: ${{ secrets.MYGRAM_MESSENGER_USER_B_PASSWORD }}
-          MYGRAM_MESSENGER_USER_C_EMAIL: ${{ secrets.MYGRAM_MESSENGER_USER_C_EMAIL }}
-          MYGRAM_MESSENGER_USER_C_PASSWORD: ${{ secrets.MYGRAM_MESSENGER_USER_C_PASSWORD }}
-        run: npm run test:messenger:integration
       - name: TypeScript validation and Vite build
         run: npm run build
+
+
+  staging-authz:
+    name: Real JWT, Profile Privacy, Storage, Messenger A/B/C, and Realtime
+    runs-on: ubuntu-latest
+    needs: verify
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Run isolated Staging security suite with GitHub OIDC
+        shell: bash
+        run: |
+          set -euo pipefail
+          OIDC_RESPONSE="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=mygram-staging-qa")"
+          OIDC_TOKEN="$(printf '%s' "$OIDC_RESPONSE" | jq -er '.value')"
+          unset OIDC_RESPONSE
+          curl --fail --silent --show-error \
+            --request POST \
+            "https://cbyvtehvaojxfcgpelir.supabase.co/functions/v1/qa-messenger-abc" \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{}'
+          unset OIDC_TOKEN
