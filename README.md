@@ -44,3 +44,11 @@ npm run dev
 ## وثائق المشروع
 
 ابدأ من [ARCHITECTURE](docs/ARCHITECTURE.md)، [DATABASE](docs/DATABASE.md)، [SECURITY](docs/SECURITY.md)، [AUTH](docs/AUTH.md)، [LOCALIZATION](docs/LOCALIZATION.md)، [TESTING](docs/TESTING.md)، [DEPLOYMENT](docs/DEPLOYMENT.md)، [ROLLBACK](docs/ROLLBACK.md)، [WALLET](docs/WALLET.md)، [STATUS](docs/STATUS.md)، و[SCHEMA DRIFT](docs/SCHEMA_DRIFT.md).
+
+
+## حالة الهوية
+- التسجيل الأولي بالبريد وكلمة المرور فقط.
+- onboarding بعد المصادقة للحسابات غير المكتملة.
+- حفظ الملف عبر RPC ذرّية في Staging، مع فصل البيانات الخاصة وتفضيلات الموقع.
+- التحقق الهاتفي وSMTP الحقيقي ورفع الصورة واختبار Auth API الحقيقي ما زالت غير مكتملة.
+- راجع `docs/STATUS.md` و`docs/TESTING.md` للحالة والبوابات المفتوحة.
