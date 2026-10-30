@@ -37,7 +37,7 @@
 ## إصلاح Realtime الأخير
 
 - السبب المثبت: جدول messenger_messages كان يفتقد trigger باسم messenger_messages_broadcast_insert، وجدول messenger_attachments كان يفتقد trigger باسم messenger_attachments_broadcast_insert. لذلك لم يصل بث INSERT إلى المشترك B رغم نجاح إنشاء الرسالة وفتح WebSocket.
-- أضيف الملف supabase/migrations/20261030211600_restore_messenger_private_broadcast_triggers.sql إلى فرع إعادة البناء.
+- أضيف الملف supabase/migrations/20261030212710_restore_messenger_private_broadcast_triggers.sql إلى فرع إعادة البناء.
 - طُبقت migration على MYGRAM-STAGING فقط.
 - تحقق SQL بعد التطبيق من وجود المشغلين ودوالهما.
 - لم تُفتح صلاحيات التنفيذ للمستخدمين؛ دوال trigger في mygram_private مع SECURITY DEFINER وsearch_path فارغ وREVOKE عن PUBLIC/anon/authenticated.
