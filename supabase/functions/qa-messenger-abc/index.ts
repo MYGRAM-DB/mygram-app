@@ -196,6 +196,33 @@ Deno.serve(async (request: Request) => {
     assert(new Set([a.userId, b.userId, c.userId]).size === 3, "AUTH_USERS_NOT_DISTINCT");
     checks.push({ name: "three_independent_real_jwt_sessions", status: "PASS", detail: "A, B, and C authenticated through Supabase Auth password grant." });
 
+    const { data: ownProfileState, error: profileStateError } = await a.client.rpc("get_my_profile_state");
+    assert(!profileStateError && ownProfileState?.id === a.userId, "A_PROFILE_STATE_RPC_DID_NOT_RETURN_OWN_ID");
+
+    const { data: publicProfileB, error: publicProfileError } = await a.client
+      .from("public_profiles").select("*").eq("id", b.userId).single();
+    assert(!publicProfileError && publicProfileB?.id === b.userId, "SAFE_PUBLIC_PROFILE_VIEW_NOT_AVAILABLE");
+    assert(
+      !("study_place" in publicProfileB) &&
+      !("work_place" in publicProfileB) &&
+      !("profile_completed" in publicProfileB),
+      "PUBLIC_PROFILE_PROJECTION_CONTAINS_PRIVATE_COLUMNS",
+    );
+    checks.push({ name: "real_jwt_profile_state_and_public_projection", status: "PASS", detail: "A's profile-state RPC returns only A's identity; B's safe public projection excludes private study/work/completion fields." });
+
+    const avatarPath = `${a.userId}/qa-${runId}-avatar.png`;
+    profileAvatarPaths.push(avatarPath);
+    const { error: avatarUploadError } = await a.client.storage.from("profile-avatars").upload(avatarPath, PNG, {
+      contentType: "image/png",
+      upsert: false,
+    });
+    assert(!avatarUploadError, "A_OWN_PROFILE_AVATAR_UPLOAD_FAILED");
+    const { data: ownerAvatar, error: ownerAvatarError } = await a.client.storage.from("profile-avatars").download(avatarPath);
+    assert(!ownerAvatarError && ownerAvatar, "A_CANNOT_READ_OWN_PROFILE_AVATAR");
+    const { data: cAvatar, error: cAvatarError } = await c.client.storage.from("profile-avatars").download(avatarPath);
+    assert(cAvatarError && !cAvatar, "C_DOWNLOADED_A_PRIVATE_PROFILE_AVATAR");
+    checks.push({ name: "real_jwt_profile_avatar_storage_isolation", status: "PASS", detail: "A uploads and downloads its own synthetic avatar; C cannot download it." });
+
     // Real JWT profile and profile-avatar isolation checks are bundled with
     // the Messenger run so the same ephemeral A/B/C identities cover both gates.
     for (const [label, session] of [["A", a], ["B", b]] as const) {
