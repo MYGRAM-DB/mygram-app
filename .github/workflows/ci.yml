@@ -34,5 +34,15 @@ jobs:
         run: npm test
       - name: Browser end-to-end tests
         run: npm run test:e2e
+      - name: Two-user Staging Auth, RLS, and Storage integration
+        if: ${{ vars.MYGRAM_STAGING_AUTHZ_TESTS == 'true' }}
+        env:
+          MYGRAM_STAGING_URL: ${{ vars.MYGRAM_STAGING_URL }}
+          MYGRAM_STAGING_PUBLISHABLE_KEY: ${{ secrets.MYGRAM_STAGING_PUBLISHABLE_KEY }}
+          MYGRAM_TEST_USER_A_EMAIL: ${{ secrets.MYGRAM_TEST_USER_A_EMAIL }}
+          MYGRAM_TEST_USER_A_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_A_PASSWORD }}
+          MYGRAM_TEST_USER_B_EMAIL: ${{ secrets.MYGRAM_TEST_USER_B_EMAIL }}
+          MYGRAM_TEST_USER_B_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_B_PASSWORD }}
+        run: npm run test:integration
       - name: TypeScript validation and Vite build
         run: npm run build
