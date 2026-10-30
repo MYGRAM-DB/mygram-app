@@ -36,6 +36,8 @@ jobs:
         run: npm run test:e2e
       - name: Validate integration test syntax
         run: node --check tests/authz.integration.mjs
+      - name: Validate Messenger A/B/C integration test syntax
+        run: node --check tests/messenger-three-party.integration.mjs
       - name: Two-user Staging Auth, RLS, and Storage integration
         if: ${{ vars.MYGRAM_STAGING_AUTHZ_TESTS == 'true' }}
         env:
@@ -46,5 +48,17 @@ jobs:
           MYGRAM_TEST_USER_B_EMAIL: ${{ secrets.MYGRAM_TEST_USER_B_EMAIL }}
           MYGRAM_TEST_USER_B_PASSWORD: ${{ secrets.MYGRAM_TEST_USER_B_PASSWORD }}
         run: npm run test:integration
+      - name: Three-user Staging Messenger isolation
+        if: ${{ vars.MYGRAM_MESSENGER_ABC_TESTS == 'true' }}
+        env:
+          MYGRAM_STAGING_URL: ${{ vars.MYGRAM_STAGING_URL }}
+          MYGRAM_STAGING_PUBLISHABLE_KEY: ${{ secrets.MYGRAM_STAGING_PUBLISHABLE_KEY }}
+          MYGRAM_MESSENGER_USER_A_EMAIL: ${{ secrets.MYGRAM_MESSENGER_USER_A_EMAIL }}
+          MYGRAM_MESSENGER_USER_A_PASSWORD: ${{ secrets.MYGRAM_MESSENGER_USER_A_PASSWORD }}
+          MYGRAM_MESSENGER_USER_B_EMAIL: ${{ secrets.MYGRAM_MESSENGER_USER_B_EMAIL }}
+          MYGRAM_MESSENGER_USER_B_PASSWORD: ${{ secrets.MYGRAM_MESSENGER_USER_B_PASSWORD }}
+          MYGRAM_MESSENGER_USER_C_EMAIL: ${{ secrets.MYGRAM_MESSENGER_USER_C_EMAIL }}
+          MYGRAM_MESSENGER_USER_C_PASSWORD: ${{ secrets.MYGRAM_MESSENGER_USER_C_PASSWORD }}
+        run: npm run test:messenger:integration
       - name: TypeScript validation and Vite build
         run: npm run build
