@@ -251,7 +251,7 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
 
     return () => {
       active = false;
-      void supabase.removeChannel(channel);
+      void channel.unsubscribe();
     };
   }, [selectedId, loadMessages, loadConversations]);
 
@@ -305,6 +305,10 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
           .single();
         if (insertError) throw insertError;
         conversationId = created.id;
+      }
+
+      if (!conversationId) {
+        throw new Error("Messenger conversation creation returned no id.");
       }
 
       setNewUsername("");
