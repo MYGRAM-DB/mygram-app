@@ -26,9 +26,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.16.0
-      - name: Generate dependency lock
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-      - name: Install from generated lock
+      - name: Install from committed lockfile
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
@@ -38,10 +36,3 @@ jobs:
         run: npm run test:e2e
       - name: TypeScript validation and Vite build
         run: npm run build
-      - name: Upload lockfile for repository pinning
-        uses: actions/upload-artifact@v4
-        with:
-          name: MYGRAM-generated-package-lock
-          path: package-lock.json
-          if-no-files-found: error
-          retention-days: 7
