@@ -2,9 +2,9 @@
 
 This snapshot supersedes the historical status notes below where values differ. Full evidence and the per-table drift inventory are in [AUDIT-20261031.md](./AUDIT-20261031.md).
 
-- PR #54: Open / Draft / not merged; 130 commits, 61 changed files, 7,920 additions.
-- main: d75fbdb6bf6f47ae70ffd1e975eaf9ba12ee7a61 (empty tree); rebuild HEAD after audit documentation: f25397a99f35ed0bfdad3733c4e83d26ec45ceea.
-- Run #98 and Run #99 passed both CI jobs; Run #99 verified the migration filename correction. Run #100 is queued against the current documentation HEAD.
+- PR #54: Open / Draft / not merged; 134 commits, 61 changed files, 8,010 additions.
+- main: d75fbdb6bf6f47ae70ffd1e975eaf9ba12ee7a61 (empty tree); rebuild HEAD at this status snapshot: 45d2cd7029c71b1d7203a33a2687fd73265eeb9a.
+- Run #98, Run #99 and Run #101 passed both CI jobs. Run #99 verified the migration filename correction; Run #101 passed after documentation updates. Run #103 is running against the product-status correction and its regression test.
 - Public schema counts: Production 51 tables / 46 migrations / 144 RLS policies / 18 public functions / 30 triggers / 5 Edge Functions. Staging 15 / 17 / 32 / 5 / 5 / 1.
 - Staging has 60 locale rows and 205 country rows, but no translation_catalog. Production has 2,820 translation_catalog rows.
 - SECURITY DEFINER inventory: Production 13, with 3 authenticated-executable meeting RPCs; Staging 4, with complete_mygram_profile authenticated-executable.
