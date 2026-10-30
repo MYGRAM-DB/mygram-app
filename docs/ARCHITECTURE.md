@@ -2,27 +2,25 @@
 
 ## 1. الهدف
 
-بناء منظومة واحدة تضم تسعة منتجات مستقلة وظيفياً. يشترك المستخدم في هوية MYGRAM واحدة، لكن تسجيل الدخول الموحد **لا يمنح المنتج صلاحية قراءة بيانات منتج آخر**. كل منتج يملك واجهته ومساراته وقواعد الوصول إلى موارده.
+بناء منظومة واحدة تضم تسعة منتجات مستقلة وظيفياً. يشترك المستخدم في هوية MYGRAM واحدة، لكن تسجيل الدخول الموحد لا يمنح المنتج صلاحية قراءة بيانات منتج آخر. لكل منتج واجهته ومساراته وقواعد الوصول إلى موارده.
 
-## 2. المنتجات التسعة
+## 2. المنتجات التسعة وحالة Staging
 
-| المنتج | المسؤولية الأساسية | المجال الحالي في قاعدة البيانات |
+| المنتج | المسؤولية الأساسية | الحالة الحالية |
 |---|---|---|
-| MYGRAM AI | المحادثات الذكية، أدوات الكتابة والتحليل والمحتوى | غير موجود حالياً كنظام محادثات AI متكامل |
-| MYGRAM FB | موجز اجتماعي ومنشورات وتعليقات وتفاعلات ومجتمعات | Staging: `posts`, `post_comments`, `post_reactions`؛ جداول المجتمعات ليست جزءاً من مخطط Staging الحالي |
-| MYGRAM INSTA | تجربة المحتوى المرئي والصور والقصص والريلز | Staging لا يضم حالياً إلا `posts` العامة؛ القصص والريلز ليست منفذة هنا |
-| MYGRAM MESSENGER | مراسلة MYGRAM الفردية والجماعية وملفاتها ومزايا المحادثة | غير منفذ في Staging حالياً؛ لا توجد جداول `chats` أو `chat_members` أو `chat_messages` أو `direct_messages` أو `messaging_*` |
-| WHATSMYGRAM | مراسلة مستقلة مرتبطة بالهاتف | غير منفذ في Staging حالياً |
-| MYGRAM TWITTY | تدوينات قصيرة وردود وإعادة نشر ووسوم | لا توجد جداول نطاق مستقلة مثبتة حالياً |
-| MYGRAM TUBE | فيديو طويل وقنوات واشتراكات وقوائم تشغيل | لا توجد جداول نطاق مثبتة حالياً |
-| MYGRAM TIKTOKS | فيديو قصير عمودي وموجز توصيات | لا توجد جداول نطاق مثبتة حالياً |
-| MYGRAM MEETING | اجتماعات ومشاركون وأدوار ورسائل ومحاضر | لا توجد جداول نطاق اجتماعات في Staging الحالي |
+| MYGRAM AI | المحادثات الذكية، أدوات الكتابة والتحليل والمحتوى | غير منفذ في Staging |
+| MYGRAM FB | موجز اجتماعي ومنشورات وتعليقات وتفاعلات ومجتمعات | posts/comments/reactions موجودة؛ المنتج غير مكتمل |
+| MYGRAM INSTA | الصور والقصص والريلز | غير منفذ كمنتج في Staging |
+| MYGRAM MESSENGER | مراسلة MYGRAM الفردية والجماعية والملفات ومزايا المحادثة | شريحة المحادثات المباشرة A/B موجودة في Staging مع RLS وStorage وRealtime وواجهة أولية |
+| WHATSMYGRAM | مراسلة مستقلة مرتبطة بالهاتف | غير منفذ في Staging؛ يجب أن يبقى مستقلاً عن Messenger |
+| MYGRAM TWITTY | تدوينات قصيرة وردود وإعادة نشر ووسوم | غير منفذ في Staging |
+| MYGRAM TUBE | فيديو طويل وقنوات واشتراكات وقوائم تشغيل | غير منفذ في Staging |
+| MYGRAM TIKTOKS | فيديو قصير عمودي وموجز توصيات | غير منفذ كمنتج في Staging |
+| MYGRAM MEETING | اجتماعات ومشاركون وأدوار ورسائل ومحاضر | غير منفذ في Staging |
 
-**ملاحظة حدود المنتج:** واجهة MYGRAM Chat المستقلة في النسخة التاريخية ليست منتجاً عاشراً في هذا الأمر التنفيذي. تُراجع وتُنقل مزاياها ضمن MYGRAM MESSENGER كوضع أو مساحة محادثة داخل المنتج، مع الحفاظ على فصل الجداول والسياسات المطلوبة. WHATSMYGRAM يبقى منتجاً مستقلاً.
+ملاحظة حدود المنتج: واجهة MYGRAM Chat المستقلة في النسخة التاريخية ليست منتجاً عاشراً. تُراجع وتُنقل مزاياها ضمن MYGRAM MESSENGER مع الحفاظ على فصل السياسات المطلوبة. WHATSMYGRAM يبقى منتجاً مستقلاً.
 
 ## 3. الخدمات المشتركة
-
-تُنفّذ مرة واحدة وتُستهلك من المنتجات عبر عقود واضحة:
 
 - الهوية والجلسات والحسابات.
 - ملفات المستخدمين وإعدادات الخصوصية.
@@ -38,67 +36,61 @@
 
 ## 4. حدود المنتجات
 
-1. لكل منتج مسار مستقل تحت مساحة أسماء ثابتة، مثل `/products/fb` و`/products/messenger`.
+1. لكل منتج مسار مستقل تحت مساحة أسماء ثابتة، مثل /products/fb و/products/messenger.
 2. لا يستخدم منتج جدولاً خاصاً بمنتج آخر مباشرة إلا من خلال خدمة مشتركة أو سياسة مشاركة موثقة.
 3. لا يُعتمد معرف المنتج أو مصدر الرسالة الذي يرسله العميل وحده لتحديد الصلاحية. يجب التحقق من العضوية في قاعدة البيانات.
 4. لا تُدمج جداول WHATSMYGRAM مع جداول MESSENGER.
-5. لا تُنشأ منظومة هوية ثانية. `auth.users.id` هو المعرف الثابت.
-6. تُعتمد `public.profiles` كواجهة الملف العام. `public.users` جدول توافق قديم يخضع للتدقيق قبل إيقاف استعماله، ولا يُنشأ له بديل جديد.
-7. `public.messages` جدول قديم. لا يُستخدم في وظائف جديدة قبل تحديد سبب وجوده ومراجعته.
+5. لا تُنشأ منظومة هوية ثانية. auth.users.id هو المعرف الثابت.
+6. تُعتمد public.profiles كواجهة الملف العام. public.users جدول توافق قديم يخضع للتدقيق قبل إيقاف استعماله، ولا يُنشأ له بديل جديد.
+7. public.messages جدول قديم. لا يُستخدم في وظائف جديدة قبل تحديد سبب وجوده ومراجعته.
 8. لا تُضاف جداول للمحفظة أو عملات قبل مواصفات WALLET المعتمدة.
 
-## 5. تصور المكونات
+## 5. بنية Messenger المباشرة في Staging
 
-```text
+- messenger_conversations: محادثة مباشرة بطرفين، مع user_low/user_high بترتيب ثابت ومنع تكرار الزوج.
+- messenger_participants: ينشأ صف عضوية الطرفين بواسطة Trigger داخلي في schema غير مكشوف للـData API. العميل يستطيع القراءة فقط.
+- messenger_messages: الرسائل النصية ورسائل الوسائط. sender_id يطابق auth.uid()، والرسالة لا يمكن تعديلها أو حذفها من العميل في النسخة الحالية.
+- messenger_attachments: metadata للمرفق، مرتبطة برسالة ومحادثة محددتين.
+- messenger-attachments: Storage bucket خاصة بحد 25 MiB وMIME allow-list.
+- Realtime: قناة خاصة باسم messenger:<conversation-id>:messages. سياسة realtime.messages تسمح بالاستقبال للعضوين فقط. البث ينشأ من Database Trigger، ولا يسمح للعميل بإرسال Broadcast حر إلى القناة.
+- الواجهة: src/components/MessengerWorkspace.tsx، وتُحمّل عبر مسار منتج MYGRAM MESSENGER.
+
+### حدود شريحة Messenger الحالية
+
+هذه ليست بعد منظومة مراسلة كاملة. غير المنفذ: المجموعات، أرشفة المحادثة لكل طرف، حذف الرسائل/تعديلها، إيصالات القراءة، الكتابة الآن، الحظر وطلبات المراسلة، البحث، المكالمات الصوتية/المرئية، والمزامنة عبر الأجهزة.
+
+## 6. تصور المكونات
+
 MYGRAM Platform
-├── Identity & Account (Supabase Auth + profiles)
-├── Shared Platform Services
-│   ├── Preferences / Privacy / Relationships
-│   ├── Locale / Country / Phone metadata
-│   ├── Storage / Notifications / Search
-│   ├── Moderation / Reports / Audit
-│   └── API & Integration Layer
-├── Product Experiences
-│   ├── AI
-│   ├── FB
-│   ├── INSTA
-│   ├── MESSENGER
-│   ├── WHATSMYGRAM
-│   ├── TWITTY
-│   ├── TUBE
-│   ├── TIKTOKS
-│   └── MEETING
-└── Financial Domain (isolated; NOT IMPLEMENTED yet)
-    ├── Wallets
-    ├── Ledger
-    ├── Transactions
-    └── Treasury / Rewards
-```
+- Identity & Account (Supabase Auth + profiles)
+- Shared Platform Services: Preferences, Privacy, Relationships, Locale, Country, Phone metadata, Storage, Notifications, Search, Moderation, Reports, Audit, API
+- Product Experiences: AI, FB, INSTA, MESSENGER, WHATSMYGRAM, TWITTY, TUBE, TIKTOKS, MEETING
+- Financial Domain: Wallets, Ledger, Transactions, Treasury / Rewards (NOT IMPLEMENTED)
 
-## 6. التقنية المعتمدة حالياً
+## 7. التقنية المعتمدة حالياً
 
-- المستودع والنسخ: GitHub، والفرع الأساسي `main`.
-- الواجهة: React 19.3.1 + TypeScript 7.0.2 + Vite 8.3.5.
-- مصادقة وقاعدة بيانات وتخزين وRealtime: Supabase.
-- النشر المستهدف: GitHub Pages كواجهة ثابتة بعد بناء `dist/`، مع Hash routing لتجنب الاعتماد على rewrite server.
-- الاختبارات: Node built-in test suite في مرحلة التأسيس، ثم Playwright Desktop/Mobile وRLS/Integration قبل قبول أي منتج.
-- لا يُفترض أن GitHub Pages يشغّل APIs أو مهام خادم. العمليات السرية تكون في Supabase Edge Functions أو خدمة خادم موثقة.
+- الواجهة: React + TypeScript + Vite.
+- الهوية وقاعدة البيانات والتخزين وRealtime: Supabase.
+- الاستضافة المستهدفة: GitHub Pages بعد بناء dist/ واستخدام Hash routing.
+- الاختبارات: Node built-in، Playwright، RLS/REST/Storage/Realtime integration.
+- لا يُفترض أن GitHub Pages يشغّل APIs أو مهام خادم. العمليات السرية تكون في Edge Functions أو خدمة خادم موثقة.
+- جداول public الجديدة تحتاج RLS وصلاحيات Data API صريحة؛ لا يُفترض أنها أصبحت مكشوفة تلقائياً.
 
-## 7. نموذج التكامل
+## 8. نموذج الأمن والتكامل
 
 - العميل يستخدم Publishable Key فقط، وتُطبق RLS على القراءة والكتابة.
-- Edge Function تستخدم JWT verification افتراضياً، وتتحقق من المستخدم والموارد قبل العمليات الحساسة.
-- لا يُمرّر Service Role Key إلى المتصفح.
+- لا يُمرّر Service Role Key أو Secret Key إلى المتصفح أو CI الاختباري.
+- Edge Functions تستخدم JWT verification افتراضياً.
 - تُستخدم معاملات Postgres ودوال ذرية للعمليات التي تتطلب اتساقاً.
-- تُستخدم Realtime للأحداث التي ثبتت صلاحياتها، مع إعادة تحميل آمن عند فقد الاتصال.
-- التخزين الخاص لا يُحوّل إلى Public URL. تُستخدم signed URLs قصيرة العمر بعد إثبات العضوية.
+- Realtime يستخدم private channels مع RLS على realtime.messages.
+- Storage الخاص لا يتحول إلى Public URL. تُستخدم signed URLs قصيرة العمر بعد إثبات العضوية.
+- العضوية الفعلية في المحادثة هي التي تمنح الوصول، لا معرفة conversation_id.
 
-## 8. الحالة الحالية
+## 9. الحالة الحالية
 
-- `main` يحتوي commit تفريغ نظيف وشجرة ملفات فارغة عند بداية مرحلة التدقيق.
-- نسخة سابقة من 110 ملفات وواجهات HTML/JS موجودة في تاريخ Git عبر PR مغلق غير مدمج؛ هي مرجع تحليل لا إصدار معتمد.
-- على فرع إعادة البناء أُضيف هيكل واجهة أولي، ومسارات Hash، وسجل المنتجات التسعة، ومظهر داكن/فاتح، وبداية ربط Supabase Auth عبر البريد عند ضبط متغيرات البيئة.
-- واجهة الهيكل الحالية عربية فقط؛ دعم 60 لغة كاملاً غير منفذ.
-- هذا الهيكل ليس منتجاً اجتماعياً مكتملاً. الوظائف داخل المنتجات لا تزال قيد التنفيذ.
-- جرد Staging الحالي: 8 جداول عامة. ويظل Production منفصلاً ولا يُستخدم لإثبات جاهزية Staging.
-- المنتج المالي غير موجود في مخطط Staging الحالي.
+- فرع إعادة البناء مستقل؛ PR #54 مفتوح كمسودة وغير مدمج.
+- Staging يضم حالياً 12 جدولاً عاماً و10 migrations.
+- 205 دول مدعومة، و14 لغة مسجلة فقط.
+- شريحة Messenger المباشرة نُفذت في Staging واختُبرت بمحاكاة ثلاث هويات claims داخل Transaction/Rollback. اختبار Auth JWT وRealtime WebSocket الحقيقي يبقى بوابة منفصلة.
+- Production لم يتغير.
+- دعم 60 لغة كاملاً، WHATSMYGRAM، المنتجات المرئية والفيديو والاجتماعات والذكاء الاصطناعي والمحفظة غير مكتملة.
