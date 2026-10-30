@@ -85,7 +85,7 @@ export default function App() {
     let active = true;
     setProfileCheckBusy(true);
     setProfileCheckError("");
-    void supabase.from("profiles").select("profile_completed").eq("id", user.id).maybeSingle()
+    void supabase.from("my_profile_state").select("profile_completed").eq("id", user.id).maybeSingle()
       .then(({ data, error }) => {
         if (!active) return;
         if (error) {
