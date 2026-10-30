@@ -59,6 +59,14 @@ test("signup form stays disabled until Supabase client configuration is supplied
   await expect(page.getByRole("heading", { name: "الدخول إلى MYGRAM" })).toBeVisible();
   await expect(page.getByText("اتصال Supabase غير مُعد").first()).toBeVisible();
   await page.getByRole("button", { name: "مستخدم جديد؟ أنشئ حساباً" }).click();
-  await expect(page.locator('input[name="fullName"]')).toBeDisabled();
+  await expect(page.locator('input[name="email"]')).toBeDisabled();
+  await expect(page.locator('input[name="firstName"]')).toHaveCount(0);
   await expect(page.getByRole("button", { name: "إنشاء حساب" })).toBeDisabled();
+});
+
+
+test("onboarding route requires an authenticated session", async ({ page }) => {
+  await page.goto("/#/onboarding");
+  await expect(page).toHaveURL(/#\/auth$/);
+  await expect(page.getByRole("heading", { name: "الدخول إلى MYGRAM" })).toBeVisible();
 });
