@@ -42,12 +42,17 @@
 
 ## 5. ملفات المستخدمين
 
-- public.profiles هو جدول الأساس الداخلي؛ تم سحب صلاحية SELECT المباشرة منه عن anon وauthenticated. سياسة RLS على الجدول تقصر SELECT على صاحب الصف كحاجز دفاعي إضافي.\n- public.public_profiles هو View عام آمن للمستخدمين المصادقين: يعرض الهوية والاسم والنبذة والصورة والاهتمامات والجنسية العامة، ويُرجع بلد/منطقة/مدينة الإقامة NULL ما لم يوافق صاحب الملف. لا يتضمن study_place أو work_place أو profile_completed.\n- public.my_profile_state يعرض id وprofile_completed للحساب الحالي فقط عبر auth.uid().\n- فحص Staging داخل دور authenticated أكد: القراءة المباشرة من profiles مرفوضة؛ public_profiles يعرض 3 صفوف عامة؛ my_profile_state يعرض صفاً واحداً للحساب الحالي؛ حقول الدراسة والعمل غير موجودة في الإسقاط العام؛ ومعلومات السكن غير ظاهرة دون موافقة.\n- App.tsx يقرأ حالة الإكمال من my_profile_state، وMessengerWorkspace يقرأ المستخدمين من public_profiles.
+- public.profiles هو جدول الأساس الداخلي. لا توجد صلاحية SELECT جدولية للمستخدم المصادق، وتُمنح صلاحية الأعمدة العامة فقط لغرض الإسقاط العام.
+- public.public_profiles هو View بصلاحية SECURITY INVOKER وsecurity_barrier. يعمل بامتيازات المستدعي ويحترم RLS، ويعرض حقول الهوية والاسم والنبذة والصورة والاهتمامات والجنسية العامة وحقول الإقامة عند الموافقة.
+- GRANT للمستخدم authenticated محصور بأعمدة الإسقاط العام؛ لا يمكنه قراءة study_place أو work_place أو profile_completed من الجدول الأساسي. عمود show_living_location ظاهر كقيمة Boolean لازمة لتصفية الإقامة، بينما حقول الإقامة الفعلية تُرجع NULL عندما لا يوافق صاحب الملف.
+- أزيل public.my_profile_state view لأنه كان يعمل بصلاحيات مالك العرض. استُبدل بـRPC public.get_my_profile_state بصلاحية SECURITY INVOKER، تستدعي helper داخل mygram_private بصلاحية SECURITY DEFINER وتعيد حالة الحساب الحالي فقط عبر auth.uid(). EXECUTE ممنوح لـauthenticated فقط ومرفوض لـanon وPUBLIC.
+- App.tsx يستخدم get_my_profile_state RPC، وMessengerWorkspace يستخدم public_profiles.
+- فحص Staging بدور authenticated أكد أن public_profiles يعرض 3 صفوف، وأن get_my_profile_state يعيد id وحالة الإكمال للحساب الحالي فقط. جرت تجربة حسابين مختلفين وأعاد كل منهما هويته هو. محاولة قراءة study_place من جدول profiles رُفضت بـ42501.
+- بعد Migration 20261030193759 اختفت نتيجتا Advisor من نوع security_definer_view. بقي تحذير complete_mygram_profile المقيد عمداً، وتحذير auth_leaked_password_protection المرتبط بخطة المشروع.
 - profile_private_details وحقول التفضيلات نطاق أكثر حساسية، مع سياسات صفوف تربط الوصول بـauth.uid().
-- تم التحقق مباشرة من أن authenticated لا يملك UPDATE على العمودين verified_contact_method وcontact_verified_at، ولا يملك anon ذلك أيضاً.
+- تم التحقق مباشرة من أن authenticated لا يملك UPDATE على verified_contact_method وcontact_verified_at، ولا يملك anon ذلك أيضاً.
 - منح INSERT/UPDATE على profile_private_details محدود بأعمدة البيانات غير المرتبطة بإثبات التحقق؛ لا توجد صلاحية جدولية عامة للكتابة على كل الأعمدة.
-- تم إغلاق خطر القراءة المباشرة من profiles في Staging عبر Migration 20261030171814_secure_public_profile_projection: سُحبت SELECT من الجدول الأساسي عن anon وauthenticated، وأضيف View public_profiles يعرض الأعمدة العامة فقط ويعيد حقول السكن NULL ما لم يوافق صاحب الملف عبر show_living_location. وأضيف View my_profile_state لإظهار profile_completed للحساب الحالي فقط. لا يحتوي الإسقاط العام على study_place أو work_place أو profile_completed.\n- التحقق بدور authenticated أكد أن SELECT المباشر على profiles مرفوض، وأن public_profiles متاح، وأن my_profile_state يعيد صفاً واحداً للمستخدم نفسه. يجب اختبار REST/JWT الفعلي لاحقاً قبل الدمج.
-- يلزم معالجة تعارضات أسماء المستخدمين قبل تثبيت ضمان تفرد موحد في Production.
+- يلزم اختبار REST/JWT الفعلي قبل الدمج النهائي، رغم نجاح فحوص قاعدة البيانات بدور authenticated.
 
 ## 6. ضوابط RPC استكمال الملف
 

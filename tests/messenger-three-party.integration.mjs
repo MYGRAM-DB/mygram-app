@@ -175,6 +175,10 @@ const messageFilter = new URLSearchParams({ select: "id,sender_id", conversation
 const participantFilter = new URLSearchParams({ select: "user_id", conversation_id: `eq.${conversationId}` });
 const attachmentFilter = new URLSearchParams({ select: "id,object_path", conversation_id: `eq.${conversationId}` });
 
+await expectRows(a, `/rest/v1/messenger_conversations?${conversationFilter}`, 1, "A conversation read");
+await expectRows(a, `/rest/v1/messenger_participants?${participantFilter}`, 2, "A participant list");
+await expectRows(a, `/rest/v1/messenger_messages?${messageFilter}`, 2, "A message history");
+await expectRows(a, `/rest/v1/messenger_attachments?${attachmentFilter}`, 1, "A attachment metadata read");
 await expectRows(b, `/rest/v1/messenger_conversations?${conversationFilter}`, 1, "B conversation read");
 await expectRows(b, `/rest/v1/messenger_participants?${participantFilter}`, 2, "B participant list");
 await expectRows(b, `/rest/v1/messenger_messages?${messageFilter}`, 2, "B message history");
@@ -186,6 +190,8 @@ await expectRows(c, `/rest/v1/messenger_messages?${messageFilter}`, 0, "C messag
 await expectRows(c, `/rest/v1/messenger_attachments?${attachmentFilter}`, 0, "C attachment metadata denial");
 console.log("PASS: B can read the shared conversation; C sees zero conversations, participants, messages, and attachments.");
 
+const aDownload = await api(a, `/storage/v1/object/authenticated/messenger-attachments/${objectPath}`);
+assert.equal(aDownload.response.status, 200, "A must download its private attachment.");
 const bDownload = await api(b, `/storage/v1/object/authenticated/messenger-attachments/${objectPath}`);
 assert.equal(bDownload.response.status, 200, "B must download the private attachment.");
 const cDownload = await api(c, `/storage/v1/object/authenticated/messenger-attachments/${objectPath}`);
@@ -209,12 +215,28 @@ const selfAdd = await api(c, "/rest/v1/messenger_participants", {
 });
 assert.ok([401, 403].includes(selfAdd.response.status), `C added itself to A/B membership: HTTP ${selfAdd.response.status}`);
 
+const messageUpdate = await api(c, `/rest/v1/messenger_messages?id=eq.${messageAId}`, {
+  method: "PATCH",
+  body: JSON.stringify({ body: "C must not edit A's message." }),
+});
+assert.ok([401, 403].includes(messageUpdate.response.status), `C edited an A/B message: HTTP ${messageUpdate.response.status}`);
+
+const messageDelete = await api(c, `/rest/v1/messenger_messages?id=eq.${messageAId}`, {
+  method: "DELETE",
+});
+assert.ok([401, 403].includes(messageDelete.response.status), `C deleted an A/B message: HTTP ${messageDelete.response.status}`);
+
+const participantDelete = await api(c, `/rest/v1/messenger_participants?conversation_id=eq.${conversationId}&user_id=eq.${a.user.id}`, {
+  method: "DELETE",
+});
+assert.ok([401, 403].includes(participantDelete.response.status), `C removed A from A/B membership: HTTP ${participantDelete.response.status}`);
+
 const fakeConversation = await api(c, "/rest/v1/messenger_conversations", {
   method: "POST",
   body: JSON.stringify({ user_low: userLow, user_high: userHigh, created_by: c.user.id }),
 });
-assert.ok([401, 403].includes(fakeConversation.response.status), `C created a conversation without being one of its members: HTTP ${fakeConversation.response.status}`);
-console.log("PASS: C cannot download the attachment, spoof A as sender, add itself as a participant, or create an A/B conversation.");
+assert.ok([400, 401, 403].includes(fakeConversation.response.status), `C created a conversation without being one of its members: HTTP ${fakeConversation.response.status}`);
+console.log("PASS: C cannot download the attachment, spoof A as sender, add/remove members, edit/delete messages, or create an A/B conversation.");
 
 async function realtimeJoin(session) {
   const client = createClient(baseUrl, apiKey, {
