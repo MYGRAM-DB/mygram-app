@@ -6,6 +6,7 @@ export type AppRoute =
   | { page: "product"; slug: string }
   | { page: "settings" }
   | { page: "auth" }
+  | { page: "onboarding" }
   | { page: "not-found" };
 
 function subscribe(callback: () => void) {
@@ -27,6 +28,7 @@ export function routeFromPath(path: string): AppRoute {
   if (clean === "/products") return { page: "products" };
   if (clean === "/settings") return { page: "settings" };
   if (clean === "/auth") return { page: "auth" };
+  if (clean === "/onboarding") return { page: "onboarding" };
   const match = clean.match(/^\/products\/([a-z0-9-]+)$/);
   if (match) return { page: "product", slug: match[1] };
   return { page: "not-found" };
