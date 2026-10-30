@@ -113,8 +113,11 @@ const crossProfileUpdate = await request(`/rest/v1/profiles?id=eq.${b.user.id}`,
   headers: { Prefer: "return=representation" },
   body: JSON.stringify({ first_name: "Compromised" }),
 });
-assert.ok(crossProfileUpdate.response.ok, `Cross-account profile update request failed unexpectedly: ${JSON.stringify(crossProfileUpdate.body)}`);
-assert.equal(crossProfileUpdate.body?.length, 0, "Account A modified Account B's profile.");
+assert.ok(
+  [401, 403].includes(crossProfileUpdate.response.status)
+    || (crossProfileUpdate.response.ok && crossProfileUpdate.body?.length === 0),
+  `Account A modified Account B's profile or the request failed unexpectedly: HTTP ${crossProfileUpdate.response.status} ${JSON.stringify(crossProfileUpdate.body)}`,
+);
 
 const verificationTamper = await request(`/rest/v1/profile_private_details?user_id=eq.${a.user.id}`, a.token, {
   method: "PATCH",
