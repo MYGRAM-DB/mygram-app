@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   pin-lockfile:
-    if: github.actor == 'MYGRAM-DB' && github.ref == 'refs/heads/rebuild/phase-a-architecture' && startsWith(github.event.head_commit.message, 'chore: bootstrap lockfile')
+    if: github.ref == 'refs/heads/rebuild/phase-a-architecture'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
