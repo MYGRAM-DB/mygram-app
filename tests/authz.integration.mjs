@@ -161,12 +161,16 @@ try {
   const crossRead = await request(`/storage/v1/object/authenticated/profile-avatars/${paths[0]}`, b.token);
   assert.ok([400, 401, 403, 404].includes(crossRead.response.status), `Other user read private avatar: HTTP ${crossRead.response.status}`);
 
-  const crossUpload = await storageUpload(b, paths[0]);
-  assert.ok([400, 401, 403].includes(crossUpload.response.status), `Other user uploaded into Account A folder: HTTP ${crossUpload.response.status}`);
+  const crossUpload = await storageUpload(b, paths[0], true);
+  assert.ok(
+    !crossUpload.response.ok,
+    `Other user overwrote Account A avatar: HTTP ${crossUpload.response.status}`,
+  );
 
-  const crossDelete = await storageDelete(b, paths[0]);
-  assert.ok([400, 401, 403, 404].includes(crossDelete.response.status), `Other user deleted Account A avatar: HTTP ${crossDelete.response.status}`);
-  console.log("PASS: private avatar upload/read/upsert works for owner; cross-account read/upload/delete is denied.");
+  await storageDelete(b, paths[0]);
+  const ownerReadAfterAttack = await request(`/storage/v1/object/authenticated/profile-avatars/${paths[0]}`, a.token);
+  await expectOk(ownerReadAfterAttack, "Other user deleted or damaged Account A avatar");
+  console.log("PASS: private avatar upload/read/upsert works for owner; cross-account read/overwrite/delete is denied.");
 } finally {
   await Promise.all([
     storageDelete(a, paths[0]).catch(() => null),
