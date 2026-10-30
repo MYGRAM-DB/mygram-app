@@ -42,9 +42,10 @@
 - profile_private_details
 - supported_countries
 
-Migration history أصبح 6، وآخر إصدارين:
+Migration history أصبح 7، وآخر ثلاثة إصدارات:
 - 20261030022611_align_staging_core_schema_phase_1
 - 20261030023659_create_private_profile_details_and_stage_countries
+- 20261030024521_add_secure_profile_completion_rpc
 
 المرحلة الأولى أضافت حقول onboarding والتفضيلات وعلاقة التعليق الأب وحدود النص وفهارس FK. المرحلة الثانية أنشأت جدول التفاصيل الخاصة وجدول الدول.
 
@@ -104,3 +105,11 @@ Staging لديه CHECK لصيغة username ^[a-zA-Z0-9_]{3,30}$ وفهرس uniqu
 ## 10. انحراف Staging
 
 التفاصيل الدقيقة موثقة في SCHEMA_DRIFT.md. المرحلة الحالية لا تشمل بقية جداول التواصل والمراسلة والفيديو والاجتماعات، ولا الترجمة أو Edge Functions.
+
+
+### RPC استكمال الملف
+- `complete_mygram_profile` تحفظ ملف المستخدم والتفاصيل الخاصة وتفضيلات الموقع في معاملة واحدة.
+- `SECURITY DEFINER` مع `search_path = ''`، والمراجع مؤهلة بالمخطط.
+- سُحبت صلاحية EXECUTE من PUBLIC وanon ومُنحت authenticated فقط.
+- لا يقبل الإجراء user_id من العميل؛ يستخدم `auth.uid()`.
+- هذه إضافة Staging فقط. اختبار REST باستخدام JWT حقيقيين بحسابين لم يكتمل بعد.
