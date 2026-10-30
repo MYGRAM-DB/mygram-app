@@ -1,3 +1,4 @@
+import { isValidUsername, normalizeUsername } from "./lib/profile-validation.js";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { products, getProductBySlug, type ProductDefinition } from "./config/products";
 import { navigate, routeFromPath, useHashPath } from "./lib/navigation";
@@ -162,7 +163,7 @@ export default function App() {
     const data = new FormData(event.currentTarget);
     const firstName = String(data.get("firstName") ?? "").trim();
     const lastName = String(data.get("lastName") ?? "").trim();
-    const username = String(data.get("username") ?? "").trim().toLowerCase();
+    const username = normalizeUsername(String(data.get("username") ?? ""));
     const dateOfBirth = String(data.get("dateOfBirth") ?? "");
     const gender = String(data.get("gender") ?? "") || null;
     const nationalityCode = String(data.get("nationalityCode") ?? "") || null;
@@ -179,7 +180,7 @@ export default function App() {
       setOnboardingMessage("اكتب الاسم الأول واسم العائلة، بحد أقصى 60 حرفاً لكل منهما.");
       return;
     }
-    if (!/^[a-z0-9_]{3,30}$/.test(username)) {
+    if (!isValidUsername(username)) {
       setOnboardingMessage("اسم المستخدم يجب أن يتكون من 3 إلى 30 حرفاً إنجليزياً صغيراً أو رقماً أو _.");
       return;
     }
