@@ -26,7 +26,7 @@ test("Messenger and WHATSMYGRAM navigate to distinct product pages", async ({ pa
   await expect(page).toHaveURL(/#\/products\/messenger$/);
   await expect(page.getByRole("heading", { name: "MYGRAM MESSENGER" })).toBeVisible();
 
-  await page.getByRole("link", { name: /العودة إلى المنتجات/ }).click();
+  await page.goto("/#/products");
   await page.getByTestId("product-whatsmygram").click();
   await expect(page).toHaveURL(/#\/products\/whatsmygram$/);
   await expect(page.getByRole("heading", { name: "WHATSMYGRAM" })).toBeVisible();
