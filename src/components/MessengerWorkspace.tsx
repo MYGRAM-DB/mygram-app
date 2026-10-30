@@ -132,7 +132,7 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
     const otherIds = [...new Set(rows.map((row) => row.user_low === user.id ? row.user_high : row.user_low))];
     const conversationIds = rows.map((row) => row.id);
     const [profilesResult, messagesResult] = await Promise.all([
-      supabase.from("profiles").select("id,username,first_name,last_name,avatar_url").in("id", otherIds),
+      supabase.from("public_profiles").select("id,username,first_name,last_name,avatar_url").in("id", otherIds),
       supabase.from("messenger_messages")
         .select("conversation_id,body,message_type,created_at")
         .in("conversation_id", conversationIds)
@@ -273,7 +273,7 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
     setInfo("");
     try {
       const { data: target, error: profileError } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("id,username,first_name,last_name,avatar_url")
         .eq("username", username)
         .maybeSingle();
