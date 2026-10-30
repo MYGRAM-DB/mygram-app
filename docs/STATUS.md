@@ -27,9 +27,10 @@
 
 - Migration 20261030022611_align_staging_core_schema_phase_1 أضافت حقول الملف والتفضيلات وعلاقة الردود وحدود النص.
 - Migration 20261030023659_create_private_profile_details_and_stage_countries أنشأت تفاصيل الملف الخاصة وجدول الدول المرجعي.
-- Staging يضم 8 جداول عامة و6 migrations.
+- Staging يضم 8 جداول عامة و7 migrations.
 - جدول الدول يحتوي 205 سجلات مرجعية، كلها مفعّلة، مع أسماء عربية/إنجليزية ورموز اتصال صالحة.
-- profile_private_details مفعّل عليه RLS وبياناته صفرية، وحقول إثبات البريد/الهاتف ليست قابلة للكتابة من المتصفح.
+- profile_private_details مفعّل عليه RLS؛ بعد اختبار تكامل مؤقت تم تنظيف الصفوف التجريبية والتحقق من عودة الجدول إلى صفر صفوف. حقول إثبات البريد/الهاتف ليست قابلة للكتابة من المتصفح.
+- Migration 20261030024521_add_secure_profile_completion_rpc أضافت RPC ذرّية لاستكمال الملف؛ SECURITY DEFINER مع search_path فارغ، التنفيذ لـauthenticated فقط، والهوية من auth.uid().
 - سياسات الجداول الستة الأساسية لم تتغير في المرحلتين.
 - تبقى 14 لغة فقط، ولا يوجد Translation Catalog أو Edge Functions.
 
