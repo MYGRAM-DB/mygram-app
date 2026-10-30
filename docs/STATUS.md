@@ -48,7 +48,7 @@
 - GitHub Actions Run #91 (run id 41121506466): verify job نجح؛ staging-authz فشل بـHTTP 500.
 - سجلات Supabase أظهرت أن إنشاء A/B/C وتسجيل دخولهم عبر Auth نجح، وقراءة الملف العام ورفع/تنزيل صورة A ومنع C نجحت، وإنشاء محادثة ورسالة A نجح. فشل الاختبار عند انتظار بث الرسالة إلى B.
 - تم تنظيف حسابات A/B/C المؤقتة، والصورة، والمحادثة؛ فحص ما بعد التنظيف أعاد صفراً.
-- GitHub Actions Run #92 (run id 41131151663) على commit 24f0285065d029ccdaa08964e708edbb976359e3: verify job نجح، وكان staging-authz queued عند آخر تحديث.
+- GitHub Actions Run #92 (run id 41131151663) على commit 24f0285065d029ccdaa08964e708edbb976359e3: verify job نجح، واختبار Staging نجح 11/11 مع cleanup_complete=true. A وB اشتركا في Realtime ووصل بث رسالة A إلى B؛ C رُفض بـCHANNEL_ERROR؛ اختبارات REST وStorage ومنع انتحال المرسل وإضافة العضوية نجحت.
 - اختبارات Playwright الحالية تختبر واجهة التأسيس والتنقل والمظهر وحالة عدم إعداد Supabase؛ لا تثبت تسجيل الدخول الفعلي أو واجهات المنتجات المكتملة.
 - اختبار Auth/JWT منفصل للحسابين لم يُثبت بعد عبر Auth API/REST/Storage؛ ملف الاختبار موجود لكن workflow الحالي لا يشغله كمسار مستقل.
 
