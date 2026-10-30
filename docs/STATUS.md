@@ -1,3 +1,20 @@
+# CURRENT VERIFIED SNAPSHOT | 2026-10-31
+
+This snapshot supersedes the historical status notes below where values differ. Full evidence and the per-table drift inventory are in [AUDIT-20261031.md](./AUDIT-20261031.md).
+
+- PR #54: Open / Draft / not merged; 125 commits, 60 changed files.
+- main: d75fbdb6bf6f47ae70ffd1e975eaf9ba12ee7a61 (empty tree); rebuild HEAD after migration filename correction: ea3448b01c3a23fb304c2daea13925de7bfc34a7.
+- Run #98 passed both CI jobs on the previous HEAD. Run #99 is running against the corrected branch HEAD.
+- Public schema counts: Production 51 tables / 46 migrations / 144 RLS policies / 18 public functions / 30 triggers / 5 Edge Functions. Staging 15 / 17 / 32 / 5 / 5 / 1.
+- Staging has 60 locale rows and 205 country rows, but no translation_catalog. Production has 2,820 translation_catalog rows.
+- SECURITY DEFINER inventory: Production 13, with 3 authenticated-executable meeting RPCs; Staging 4, with complete_mygram_profile authenticated-executable.
+- All public tables observed have RLS enabled. Three Staging service-only tables have FORCE RLS and no client policies, with anon/authenticated table access revoked.
+- Production Storage buckets differ materially from Staging: Production has public mygram-media and private mygram-private-messages; Staging has private profile-avatars and messenger-attachments.
+- Both GitHub branches report protected=false. The current GitHub connection cannot write branch protection settings. Repository owner action is required.
+- No Production changes, merge, or public deployment were performed.
+
+## Historical status notes
+
 # MYGRAM Execution Status
 
 تاريخ التحديث: 2026-10-30 21:30 UTC
