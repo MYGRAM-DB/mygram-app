@@ -12,7 +12,7 @@
 
 | المرحلة | الحالة | الملاحظات |
 |---|---|---|
-| A: Audit & Foundation | PARTIAL | تدقيق GitHub وSupabase وتوثيق خط الأساس في PR #54 |
+| A: Audit & Foundation | PARTIAL | تدقيق GitHub وSupabase؛ تم توثيق انحراف Production/Staging في SCHEMA_DRIFT.md وPR #54 |
 | B: Core Architecture | PARTIAL | Vite/React/TypeScript shell، لوحة المنتجات التسعة، مسارات Hash، مظهر داكن/فاتح وRTL |
 | C: Identity & Auth | PARTIAL | تهيئة Supabase Auth بالبريد عند ضبط المتغيرات؛ لا تحقق بريد حي أو OTP |
 | D: Social | PARTIAL | مخطط قاعدة اجتماعي سابق موجود؛ واجهات إعادة البناء والعمليات غير مكتملة |
@@ -20,7 +20,7 @@
 | F: Video | NOT IMPLEMENTED | Tube وTikToks غير منفذين؛ Reels القديمة لا تعني اكتمال المنتج |
 | G: AI & Meetings | PARTIAL | Meetings functions ومخططات موجودة في Production؛ MYGRAM AI غير منفذ |
 | H: Wallet | NOT IMPLEMENTED | لا جداول محفظة أو Ledger |
-| I: Comprehensive Tests | PARTIAL | اختبارات Node لسجل المنتجات وTypeScript/Vite build في CI؛ Playwright وRLS E2E لم تبدأ |
+| I: Comprehensive Tests | PARTIAL | 4 اختبارات Node + TypeScript + Vite build نجحت في CI run #2؛ Playwright وRLS E2E لم تبدأ |
 | J: Release | BLOCKED | لا نشر Production في هذه المرحلة |
 
 ## ما يعمل في الهيكل الحالي
@@ -45,7 +45,7 @@
 
 ## المخاطر المفتوحة
 
-1. تثبيت package-lock المولد بعد نجاح CI.
+1. تثبيت package-lock المولد من Artifact بعد نجاح CI؛ لا يزال غير ملتزم في المستودع.
 2. إعداد متغيرات Supabase في بيئة البناء دون وضع Service Role Key بالعميل.
 3. بناء استكمال الملف الشخصي بعد تثبيت contract واضح ومراجعة قيود usernames.
 4. ترحيل Staging من مخططها الحالي المحدود إلى schema متوافق.

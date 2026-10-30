@@ -41,4 +41,4 @@ npm run dev
 
 ## وثائق المشروع
 
-ابدأ من [ARCHITECTURE](docs/ARCHITECTURE.md)، [DATABASE](docs/DATABASE.md)، [SECURITY](docs/SECURITY.md)، [AUTH](docs/AUTH.md)، [LOCALIZATION](docs/LOCALIZATION.md)، [TESTING](docs/TESTING.md)، [DEPLOYMENT](docs/DEPLOYMENT.md)، [ROLLBACK](docs/ROLLBACK.md)، [WALLET](docs/WALLET.md)، و[STATUS](docs/STATUS.md).
+ابدأ من [ARCHITECTURE](docs/ARCHITECTURE.md)، [DATABASE](docs/DATABASE.md)، [SECURITY](docs/SECURITY.md)، [AUTH](docs/AUTH.md)، [LOCALIZATION](docs/LOCALIZATION.md)، [TESTING](docs/TESTING.md)، [DEPLOYMENT](docs/DEPLOYMENT.md)، [ROLLBACK](docs/ROLLBACK.md)، [WALLET](docs/WALLET.md)، و[STATUS](docs/STATUS.md)، و[SCHEMA DRIFT](docs/SCHEMA_DRIFT.md).

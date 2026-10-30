@@ -21,6 +21,19 @@ function Status({ product }: { product: ProductDefinition }) {
   return <span className={`pill ${product.status}`}>{product.status === "partial" ? "بنية أولية موجودة" : "لم يبدأ التنفيذ"}</span>;
 }
 
+function ProductCard({ product }: { product: ProductDefinition }) {
+  return <a className="product-card" href={`#/products/${product.slug}`} data-testid={`product-${product.slug}`}>
+    <span className={`product-icon ${product.accent}`}>{product.icon}</span>
+    <span className="product-copy"><b>{product.name}</b><small>{product.subtitle}</small></span>
+    <Status product={product}/>
+    <span className="arrow">↗</span>
+  </a>;
+}
+
+function NotFound() {
+  return <section className="panel not-found"><h1>الصفحة غير موجودة</h1><a className="button primary" href="#/">العودة للرئيسية</a></section>;
+}
+
 export default function App() {
   const [theme, setTheme] = useState<Theme>(readTheme);
   const [user, setUser] = useState<MygramUser | null>(null);
