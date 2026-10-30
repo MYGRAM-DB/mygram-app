@@ -1,53 +1,76 @@
-# Staging Auth/RLS/Storage Integration Test
+# Staging Auth / RLS / Storage / Messenger Integration Tests
 
-The automated suite in tests/authz.integration.mjs currently covers two dedicated, email-confirmed QA users in MYGRAM-STAGING for identity, private profile data, verification-field protection, and avatar object authorization.
+All integration tests are Staging-only. Never place passwords, secret keys, or service-role keys in source files or chat.
 
-## GitHub Actions configuration
+## Existing two-user suite
 
-Set repository variables:
-- MYGRAM_STAGING_AUTHZ_TESTS=true
-- MYGRAM_STAGING_URL=https://<staging-project-ref>.supabase.co
+File: tests/authz.integration.mjs
 
-Set repository Actions secrets:
+Required repository variable:
+- MYGRAM_STAGING_URL
+
+Required repository Actions secrets:
 - MYGRAM_STAGING_PUBLISHABLE_KEY
 - MYGRAM_TEST_USER_A_EMAIL
 - MYGRAM_TEST_USER_A_PASSWORD
 - MYGRAM_TEST_USER_B_EMAIL
 - MYGRAM_TEST_USER_B_PASSWORD
 
-Never use a service-role or secret key in this test. The two QA users must be separate, confirmed, and reserved for this test. The suite updates their profile fields and creates then deletes temporary private avatar objects. Do not point these variables at Production.
+Enable by setting repository variable:
+- MYGRAM_STAGING_AUTHZ_TESTS=true
 
-## What it verifies
+The suite signs in two independent confirmed accounts, checks distinct JWT identities, completes each profile, tests private profile details and verification-field protection, and exercises private profile avatar Storage upload/read/upsert and cross-user denials. It cleans temporary avatar objects through the Storage API.
 
-- Two password sign-ins resolve to distinct user IDs and access JWTs.
-- Each account completes its own profile through complete_mygram_profile.
-- Private profile details cannot be read or modified by the other account.
-- Profile updates cannot cross user ownership.
-- verified_contact_method and contact_verified_at cannot be written by a browser JWT.
-- A user can upload, read, and upsert their own private avatar.
-- The other user cannot read, upload into, or delete that avatar.
-- Temporary Storage objects are removed in a finally block.
+## Three-user Messenger suite
 
-## Three-user Messenger isolation gate (not yet executable in Staging)
+File: tests/messenger-three-party.integration.mjs
 
-A catalog inspection of every application schema in MYGRAM-STAGING on 2026-10-30 found no chat, message, conversation, participant, thread, or inbox tables and no Messenger RLS policies. Therefore no A/B/C conversation test has been run, and no passing result is claimed.
+Required repository variable:
+- MYGRAM_STAGING_URL=https://cbyvtehvaojxfcgpelir.supabase.co
 
-After the Messenger schema and policies are migrated to Staging, add a dedicated three-identity test using three separate confirmed QA accounts and real Auth API JWTs:
+Required repository Actions secrets:
+- MYGRAM_STAGING_PUBLISHABLE_KEY
+- MYGRAM_MESSENGER_USER_A_EMAIL
+- MYGRAM_MESSENGER_USER_A_PASSWORD
+- MYGRAM_MESSENGER_USER_B_EMAIL
+- MYGRAM_MESSENGER_USER_B_PASSWORD
+- MYGRAM_MESSENGER_USER_C_EMAIL
+- MYGRAM_MESSENGER_USER_C_PASSWORD
 
-1. A creates a direct conversation with B; the conversation membership contains A and B only.
-2. A and B can list, read, and send messages in that conversation.
-3. C cannot list or read the conversation, retrieve messages by conversation ID, read attachment metadata or download attachments, mutate messages, change membership, or subscribe to the private Realtime channel.
-4. Negative operations must be verified through REST, Storage, and Realtime APIs, not only SQL simulation.
-5. Keep all test conversations and media in a dedicated Staging QA namespace and clean them up through supported APIs.
+Enable by setting repository variable:
+- MYGRAM_MESSENGER_ABC_TESTS=true
 
-Acceptance criteria: A and B succeed; every C access path is denied or returns no rows; attempts to spoof sender_id or add C without an authorized membership flow are rejected. This gate remains blocked until the Messenger tables, foreign keys, RLS policies, and Realtime channel authorization exist in Staging.
+The test is hard-locked to the MYGRAM-STAGING project ref and uses only the Staging Publishable Key plus three separate confirmed QA accounts. It does not use service_role or secret API keys.
 
-## What it does not verify
+### What it verifies
 
-The suite does not read email inboxes. SMTP delivery, signup confirmation-link receipt, and password-reset delivery require a separate mailbox-backed test. The current test users must already be confirmed in Staging.
+1. A, B, and C authenticate through Supabase Auth and resolve to three different user IDs.
+2. A creates or reuses a direct conversation with B; the participant trigger creates exactly the two members.
+3. A and B each send a message and both can read the conversation, membership, and message history.
+4. A uploads a private file to the conversation; B can download it and read its metadata.
+5. C sees zero rows for the conversation, participants, messages, and attachment metadata, even when querying by the known conversation ID.
+6. C cannot download the private attachment.
+7. C cannot spoof A's sender ID, add itself to the membership table, or create a conversation whose members are A and B.
+8. A and B can join the private Realtime topic. C must fail to subscribe.
+
+### QA fixture behavior
+
+The three accounts must be dedicated Staging QA accounts. The suite creates or reuses one direct A/B conversation, uses fixed client message IDs, and uploads a stable fixture object path. It intentionally keeps this stable fixture in Staging so repeated CI runs do not create additional conversations, messages, or attachment objects. Do not use personal/Production accounts.
+
+## SQL rollback probe
+
+The Staging database was also tested using SET LOCAL ROLE authenticated with separate simulated JWT claims, all inside one transaction followed by ROLLBACK. This verified membership RLS and denial rules without leaving data. It is not a replacement for the three real JWT sessions or a real Realtime WebSocket test.
+
+## Not covered
+
+- SMTP delivery, confirmation email receipt, and password-reset email delivery. These require a mailbox-backed test.
+- SMS/phone OTP delivery.
+- Group conversation policy, message edits/deletes, read receipts, typing presence, voice/video calls, and client UI cross-device verification.
+- Production deployment or production data.
 
 ## Local execution
 
     npm run test:integration
+    npm run test:messenger:integration
 
-Run only against Staging and only with dedicated QA accounts.
+Run only against Staging and only with the dedicated QA accounts. Never point these variables at Production.
