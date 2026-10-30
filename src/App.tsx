@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { products, getProductBySlug, type ProductDefinition } from "./config/products";
 import { navigate, routeFromPath, useHashPath } from "./lib/navigation";
 import { isSupabaseConfigured, supabase, type MygramUser } from "./lib/supabase";
+import { MessengerWorkspace } from "./components/MessengerWorkspace";
 
 type Theme = "dark" | "light";
 type AuthMode = "signin" | "signup";
@@ -315,7 +316,20 @@ export default function App() {
           ) : route.page === "products" ? (
             <section className="products-page"><div className="eyebrow">المنتجات التسعة</div><h1>مساحات MYGRAM</h1><p className="muted">اختر منتجاً لعرض نطاقه وحالة تنفيذه. وجود البنية الخلفية لا يعني اكتمال الواجهة أو الوظيفة.</p><div className="product-list">{products.map((item) => <ProductCard key={item.id} product={item}/>)}</div></section>
           ) : route.page === "product" ? (
-            product ? <section className="panel detail"><a className="back" href="#/products">← العودة إلى المنتجات</a><span className={`product-icon large ${product.accent}`}>{product.icon}</span><div className="eyebrow">حالة المنتج</div><h1>{product.name}</h1><p className="muted">{product.subtitle}</p><p className="description">{product.description}</p><Status product={product}/><div className="notice">{product.status === "partial" ? "توجد أجزاء من قاعدة البيانات أو الخدمات السابقة، لكن واجهة المنتج الجديدة واختباراته لم تكتمل." : "هذا المنتج لم يبدأ تنفيذه بعد."}</div><small className="security-note">لا تُعتبر أي ميزة مكتملة قبل الاختبار والتحقق.</small></section> : <NotFound/>
+            product ? (
+              product.slug === "messenger" ? (
+                user ? <MessengerWorkspace user={user}/> : (
+                  <section className="panel detail">
+                    <div className="eyebrow">MYGRAM MESSENGER</div>
+                    <h1>محادثاتك الخاصة تبدأ هنا</h1>
+                    <p className="description">سجّل الدخول لفتح Messenger. لا تُعرض أي محادثة قبل التحقق من عضويتك فيها.</p>
+                    <a className="button primary" href="#/auth">تسجيل الدخول</a>
+                  </section>
+                )
+              ) : (
+                <section className="panel detail"><a className="back" href="#/products">← العودة إلى المنتجات</a><span className={`product-icon large ${product.accent}`}>{product.icon}</span><div className="eyebrow">حالة المنتج</div><h1>{product.name}</h1><p className="muted">{product.subtitle}</p><p className="description">{product.description}</p><Status product={product}/><div className="notice">{product.status === "partial" ? "توجد أجزاء من قاعدة البيانات أو الخدمات السابقة، لكن واجهة المنتج الجديدة واختباراته لم تكتمل." : "هذا المنتج لم يبدأ تنفيذه بعد."}</div><small className="security-note">لا تُعتبر أي ميزة مكتملة قبل الاختبار والتحقق.</small></section>
+              )
+            ) : <NotFound/>
           ) : route.page === "not-found" ? <NotFound/> : (
             <>
               <section className="hero panel">
