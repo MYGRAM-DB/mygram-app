@@ -17,10 +17,10 @@
 | F: Video | NOT IMPLEMENTED | Tube وTikToks والريلز كمنتجات مكتملة غير منفذة |
 | G: AI & Meetings | NOT IMPLEMENTED IN STAGING | لا توجد منظومة MYGRAM AI أو Meetings جديدة في Staging |
 | H: Wallet | NOT IMPLEMENTED | لا جداول Wallet أو Ledger أو معاملات مالية |
-| I: Tests | PARTIAL | CI Run #60 ناجح قبل واجهة MYGRAM FB؛ Run #71 فشل بسبب محدد Playwright ملتبس في رابط تسجيل الدخول، والإصلاح أُرسل في commit جديد ولم يُختبر بعد. اختبارات Auth/JWT وMessenger A/B/C الحقيقية ما زالت متخطاة لغياب أسرار QA |
+| I: Tests | PARTIAL | CI Run #77 ناجح على HEAD fdd2f36f5772d1ca53bd379fed63a6dbf0625759: 8 اختبارات Node، و7 Playwright، وفحصي صياغة اختبارات التكامل، TypeScript وVite build. Run #71 فشل بسبب محدد Playwright ملتبس وتم إصلاحه؛ Run #74 وRun #77 نجحا. اختبارا Auth/JWT وMessenger A/B/C الحقيقيان ما زالا Skipped لأن Actions Variables/Secrets الخاصة بحسابات QA لم تُهيّأ. |
 | J: Release | BLOCKED | لا دمج PR #54 ولا نشر Production |
 
-## مواءمة Staging الحالية
+## وثائق التنفيذ والتفعيل\n\n- docs/MASTER-EXECUTION-PLAN.md: خريطة بناء المنتجات التسعة والخدمات المشتركة ولغات البرمجة والمعمارية وبوابات القبول.\n- docs/TEST-ACTIVATION.md: خطوات تهيئة أسرار GitHub وتشغيل اختبارات JWT الحقيقية دون وضع كلمات مرور في المحادثة.\n\n## مواءمة Staging الحالية
 
 - المشروع: MYGRAM-STAGING (cbyvtehvaojxfcgpelir)، حالته ACTIVE_HEALTHY.
 - قاعدة البيانات: PostgreSQL 17.
@@ -33,7 +33,7 @@
 - لا توجد Edge Functions منشورة حالياً في Staging.
 - لا توجد تغييرات Production. لم يتم نسخ بيانات Production إلى Staging.
 
-## MYGRAM FB: ما تم بناؤه\n\n- واجهة موجز نصي في src/components/SocialFeedWorkspace.tsx مرتبطة بالمسار /products/fb.\n- إنشاء منشور نصي حتى 5000 حرف، عرض آخر 50 منشوراً، عرض أسماء أصحابها عبر public_profiles، التعليق حتى 2000 حرف، وثمانية تفاعلات: like/love/haha/care/wow/sad/angry/fire.\n- حذف المنشور وتعليق المستخدم لنفسه فقط وفق RLS. لا يوجد دعم لرفع الصور/الفيديو في هذه الواجهة بعد.\n- تحقق SQL ثلاثي الهويات داخل Transaction/Rollback: B قرأ منشور A وتعليقاً وتفاعلاً؛ C لم يتمكن من تعديل منشور A أو حذف تعليق/تفاعل B؛ لم تُترك بيانات اختبار دائمة.\n\n## MYGRAM MESSENGER: ما تم بناؤه
+## MYGRAM FB: ما تم بناؤه\n\n- واجهة موجز نصي في src/components/SocialFeedWorkspace.tsx مرتبطة بالمسار /products/fb.\n- إنشاء منشور نصي حتى 5000 حرف، عرض آخر 50 منشوراً، عرض أسماء أصحابها عبر public_profiles، التعليق حتى 2000 حرف، وثمانية تفاعلات: like/love/haha/care/wow/sad/angry/fire.\n- حذف المنشور وتعليق المستخدم لنفسه فقط وفق RLS. لا يوجد دعم لرفع الصور/الفيديو في هذه الواجهة بعد.\n- تحقق SQL ثلاثي الهويات داخل Transaction/Rollback: B قرأ منشور A وتعليقاً وتفاعلاً؛ C لم يتمكن من تعديل منشور A أو حذف تعليق/تفاعل B؛ لم تُترك بيانات اختبار دائمة.\n\n## MYGRAM FB: ما تم بناؤه\n\n- واجهة موجز نصي في src/components/SocialFeedWorkspace.tsx مرتبطة بالمسار /products/fb.\n- إنشاء منشور نصي حتى 5000 حرف، عرض آخر 50 منشوراً، عرض أسماء أصحابها عبر public_profiles، التعليق حتى 2000 حرف، وثمانية تفاعلات: like/love/haha/care/wow/sad/angry/fire.\n- حذف المنشور وتعليق المستخدم لنفسه فقط وفق RLS. لا يوجد دعم لرفع الصور/الفيديو في هذه الواجهة بعد.\n- تحقق SQL بثلاث هويات داخل Transaction/Rollback: B قرأ منشور A وتعليقاً وتفاعلاً؛ C لم يتمكن من تعديل منشور A أو حذف تعليق/تفاعل B؛ لم تُترك بيانات اختبار دائمة.\n\n## MYGRAM MESSENGER: ما تم بناؤه
 
 - messenger_conversations: محادثة مباشرة ذات طرفين، مع ترتيب ثابت لمعرفي العضوين ومنع تكرار زوج المحادثة.
 - messenger_participants: العضوية تُنشأ داخل Trigger موثوق، والعميل يملك القراءة فقط ولا يستطيع إضافة نفسه أو غيره.
@@ -67,7 +67,7 @@
 - تحقق بعد ROLLBACK أكد بقاء صفر محادثات، صفر أعضاء، صفر رسائل، صفر ميتاداتا مرفقات، وصفر كائنات في bucket Messenger.
 - هذا اختبار قاعدة بيانات بمحاكاة claims وليس اختبار REST/Auth API أو Storage API أو WebSocket حقيقي. بقيت بوابة WebSocket/Realtime الفعلية غير محسومة.
 
-## اختبارات التكامل المضافة ولم تُشغّل بعد
+## اختبارات التكامل المضافة وحالتها\n\n- CI Run #77 نجح على HEAD fdd2f36f5772d1ca53bd379fed63a6dbf0625759.\n- Run #77: npm test = 8/8، Playwright = 7/7، فحص صياغة authz.integration.mjs وmessenger-three-party.integration.mjs ناجح، TypeScript وVite production build ناجحان.\n- Run #77 تخطّى فقط خطوات الاختبار الفعلي لحسابي Auth وثلاثة حسابات Messenger لأنها غير مفعّلة/غير مهيأة بأسرارها.\n\n## اختبارات التكامل المضافة وحالة تفعيلها
 
 - tests/authz.integration.mjs: اختبار حسابين فعليين عبر Auth API وREST وStorage.
 - tests/messenger-three-party.integration.mjs: اختبار A/B/C عبر ثلاث جلسات JWT، REST، Storage، ومحاولة الانضمام إلى قناة Realtime خاصة.
@@ -78,7 +78,7 @@
 
 ## Auth / Profile / Storage الحالي
 
-- Migration 20261030171814_secure_public_profile_projection ألغت القراءة المباشرة من public.profiles لـanon وauthenticated، وأنشأت public_profiles لعرض الحقول المسموح بها فقط مع حجب بيانات السكن إلا عند موافقة صاحب الملف، وmy_profile_state لحالة إكمال ملف المستخدم الحالي فقط. اختبار SQL بدور authenticated أكد منع القراءة المباشرة، وظهور 3 ملفات عامة آمنة، وصف حالة واحد للحساب الحالي، وعدم ظهور حقول الدراسة/العمل أو بيانات السكن دون موافقة. الواجهة الجديدة تستخدم هذين الـView بدل الجدول الأساسي.
+- Migration 20261030171814_secure_public_profile_projection ألغت القراءة المباشرة من public.profiles لـanon وauthenticated، وأنشأت public.public_profiles لعرض الحقول المسموح بها فقط مع حجب بيانات السكن إلا عند موافقة صاحب الملف، وpublic.my_profile_state لحالة إكمال ملف المستخدم الحالي فقط. التطبيق يقرأ حالة onboarding عبر RPC public.get_my_profile_state المقيدة بـauth.uid()، ويقرأ الملفات العامة من public_profiles. اختبار SQL بدور authenticated أكد منع القراءة المباشرة، وظهور 3 ملفات عامة آمنة، وصف حالة واحد للحساب الحالي، وعدم ظهور حقول الدراسة/العمل أو بيانات السكن دون موافقة.
 - حقول إثبات البريد والهاتف verified_contact_method وcontact_verified_at غير قابلة للتحديث من anon أو authenticated حسب column privileges.
 - complete_mygram_profile دالة SECURITY DEFINER مع search_path فارغ، EXECUTE لـauthenticated فقط، والهوية مستمدة من auth.uid().
 - تنبيه Advisor على الدالة أعلاه موثق؛ يبقى اختبار REST/JWT شرطاً قبل الدمج.
