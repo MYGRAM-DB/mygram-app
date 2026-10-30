@@ -26,3 +26,10 @@ test("Messenger and WHATSMYGRAM remain independent products", () => {
   assert.ok(messenger && whatsmygram);
   assert.notEqual(messenger.slug, whatsmygram.slug);
 });
+
+test("only products with a working Staging workspace are marked partial", () => {
+  assert.deepEqual(
+    products.filter((p) => p.status === "partial").map((p) => p.id).sort(),
+    ["fb", "messenger"],
+  );
+});
