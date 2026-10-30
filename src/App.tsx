@@ -95,8 +95,7 @@ export default function App() {
         setProfileCheckBusy(false);
         if (!completed && route.page !== "onboarding") navigate("/onboarding");
         if (completed && route.page === "onboarding") navigate("/");
-      })
-      .catch(() => {
+      }, () => {
         if (active) {
           setProfileCheckError("تعذر الاتصال للتحقق من اكتمال الملف الشخصي.");
           setProfileCheckBusy(false);
@@ -116,8 +115,7 @@ export default function App() {
         if (error) setOnboardingMessage("تعذر تحميل قائمة الدول. أعد تحميل الصفحة.");
         else setCountries((data ?? []) as CountryOption[]);
         setCountriesBusy(false);
-      })
-      .catch(() => {
+      }, () => {
         if (active) {
           setOnboardingMessage("تعذر تحميل قائمة الدول. تحقق من الاتصال ثم أعد المحاولة.");
           setCountriesBusy(false);
