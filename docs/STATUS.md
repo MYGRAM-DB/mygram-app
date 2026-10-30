@@ -16,11 +16,11 @@ PHASE B: FOUNDATION SHELL IMPLEMENTED
 | B: Core Architecture | PARTIAL | Vite/React/TypeScript shell، سجل المنتجات التسعة، مسارات Hash، مظهر داكن/فاتح وRTL |
 | C: Identity & Auth | PARTIAL | تسجيل البريد الأولي، توجيه onboarding، نموذج الملف، RPC ذرّية وبيانات خاصة منفصلة؛ اختبار جلستي JWT عبر Auth API ما زال مطلوباً |
 | D: Social | PARTIAL | مخطط اجتماعي أولي وRLS موجودان؛ الواجهات والعمليات غير مكتملة |
-| E: Messaging | PARTIAL | مخططات منفصلة موجودة في Production؛ إعادة بناء المنتج لم تبدأ |
+| E: Messaging | NOT IMPLEMENTED IN STAGING | لا توجد جداول محادثات أو رسائل أو أعضاء محادثة في Staging؛ اختبار عزل A/B/C غير قابل للتنفيذ قبل ترحيل المخطط والسياسات |
 | F: Video | NOT IMPLEMENTED | Tube وTikToks غير منفذين |
 | G: AI & Meetings | PARTIAL | وظائف اجتماعات قديمة موجودة في Production؛ MYGRAM AI غير منفذ |
 | H: Wallet | NOT IMPLEMENTED | لا جداول محفظة أو Ledger |
-| I: Tests | PARTIAL | CI Run #45 أخضر على HEAD 0d78b6056e600a98836722bb26bfab240d037c4a للاختبارات الأساسية والبناء؛ خطوة JWT/Storage الآلية تخطّتها CI لعدم تهيئة أسرار QA |
+| I: Tests | PARTIAL | CI Run #46 أخضر على HEAD 4a710d5039f1b9319498ead8a83da4ce7b81d5f1 للاختبارات الأساسية والبناء؛ خطوة JWT/Storage الآلية تخطّتها CI لعدم تهيئة أسرار QA |
 | J: Release | BLOCKED | لا نشر Production |
 
 ## مواءمة Staging
@@ -35,6 +35,7 @@ PHASE B: FOUNDATION SHELL IMPLEMENTED
 - لا توجد bucket عامة في Staging.
 - توجد ثلاثة مستخدمين Auth مؤكدَي البريد. لم تُغيّر كلمات مرورهم أو بياناتهم الدائمة خلال فحوص المحاكاة.
 - تبقى 14 لغة فقط، ولا يوجد Translation Catalog أو Edge Functions.
+- جرد مخطط قاعدة البيانات في 2026-10-30 لم يجد أي جدول تطبيقي باسم أو مجال chat/message/conversation/participant/thread/inbox في Staging. لم يتم الرجوع إلى Production أو نسخه لهذا الفحص.
 
 ## نتائج RLS وStorage المحاكية (2026-10-30)
 
@@ -51,6 +52,13 @@ PHASE B: FOUNDATION SHELL IMPLEMENTED
 - فحص column privileges أكد أن anon وauthenticated لا يستطيعان تحديث verified_contact_method أو contact_verified_at.
 - اختبار REST آلي بحسابين مستقلين موجود في tests/authz.integration.mjs، لكنه لم يُشغّل بعد لأنه يتطلب أسرار حسابَي QA داخل GitHub Actions.
 
+## اختبار محادثات A/B/C
+
+- طلب التحقق: ينشئ A محادثة مباشرة مع B، ثم يحاول C تعداد المحادثات وقراءة المحادثة والرسائل والمرفقات والاشتراك في Realtime أو الانضمام إلى المحادثة.
+- نتيجة فحص Staging: لا توجد حالياً جداول محادثات/رسائل/أعضاء أو سياسات RLS تخص Messenger؛ لذلك لم يُنفذ اختبار محادثة وهمي ولم تُسجل نتيجة PASS.
+- بوابة التنفيذ: ترحيل مخطط Messenger إلى Staging، تعريف membership-based RLS على كل من conversation وmessages وattachments، حماية Realtime/Storage، ثم تشغيل اختبار ثلاث هويات JWT حقيقية A وB وC.
+- معايير النجاح: A وB يستطيعان الوصول إلى محادثتهما؛ C لا يرى سجل المحادثة أو الرسائل أو المرفقات ولا يستطيع تعديل العضوية أو الاشتراك في قناة Realtime الخاصة بها.
+
 ## ما لم يكتمل
 
 - تشغيل اختبار Auth API بجلسَتي JWT فعليتين باستخدام حسابَي QA مؤكدَي البريد.
@@ -58,6 +66,7 @@ PHASE B: FOUNDATION SHELL IMPLEMENTED
 - رحلة UI الفعلية لتسجيل الدخول واستكمال الملف عبر حسابَي QA.
 - رفع صورة الملف الشخصي فعلياً عبر Storage API من واجهة MYGRAM وربطها بالملف.
 - اختبار Storage upload/read/upsert/delete عبر JWT حقيقيين.
+- تنفيذ مخطط Messenger وسياسات المحادثات في Staging ثم اختبار A/B/C عبر ثلاث هويات حقيقية.
 - تسجيل الهاتف وOTP.
 - تفرد usernames عبر البيئتين.
 - حماية عرض حقول الموقع العامة في profiles.
@@ -76,10 +85,10 @@ PHASE B: FOUNDATION SHELL IMPLEMENTED
 1. اختبار رحلة Auth/JWT فعلية بحسابين مستقلين.
 2. اختبار REST لمنع قراءة تفاصيل الحساب الخاص ومنع تغيير حقول إثبات التحقق.
 3. اختبار Storage upload/read/upsert/delete للمالك وغير المالك عبر JWT.
-4. اختبار SMTP/رسائل التأكيد والاستعادة عبر صندوق بريد حقيقي.
-5. مراجعة إتاحة أعمدة profiles لأن SELECT الحالي يسمح للمستخدمين المصادقين بقراءة صفوف profiles؛ show_living_location ليس حماية على مستوى العمود.
-6. انتقال supported_locales من is_active إلى enabled بآلية متزامنة قبل استعمال العمود الجديد.
-7. استكمال بقية مخطط Staging تدريجياً.
-8. إعداد SMS/LiveKit/AI لاحقاً بأسرار منفصلة.
-9. معالجة تعارضات usernames في Production ضمن مسار مستقل دون تغيير تلقائي.
+4. تنفيذ مخطط Messenger وRLS واختبار عزل المحادثات بثلاثة حسابات.
+5. اختبار SMTP/رسائل التأكيد والاستعادة عبر صندوق بريد حقيقي.
+6. مراجعة إتاحة أعمدة profiles لأن SELECT الحالي يسمح للمستخدمين المصادقين بقراءة صفوف profiles؛ show_living_location ليس حماية على مستوى العمود.
+7. انتقال supported_locales من is_active إلى enabled بآلية متزامنة قبل استعمال العمود الجديد.
+8. استكمال بقية مخطط Staging تدريجياً.
+9. إعداد SMS/LiveKit/AI لاحقاً بأسرار منفصلة.
 10. تغطية اللغات والمنتجات والاختبارات المتكاملة.
