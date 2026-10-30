@@ -83,8 +83,8 @@ Deno.serve(async (request: Request) => {
   }
 
   const bearer = request.headers.get("authorization") ?? "";
-  const bearerParts = bearer.trim().split(/\\s+/);
-  const oidcToken = bearerParts[0]?.toLowerCase() === "bearer" ? bearerParts.slice(1).join(" ") : "";
+  const bearerParts = bearer.trim().split(" ");
+  const oidcToken = bearerParts[0]?.toLowerCase() === "bearer" ? bearerParts.slice(1).join(" ").trim() : "";
   if (!oidcToken) return json({ ok: false, error: "GITHUB_OIDC_TOKEN_REQUIRED" }, 401);
 
   let claims: Record<string, unknown>;
@@ -109,7 +109,9 @@ Deno.serve(async (request: Request) => {
     typeof claims.workflow_ref === "string" &&
     claims.workflow_ref.startsWith(allowedWorkflow) &&
     claims.workflow === "MYGRAM Build and Quality Gate" &&
-    claims.sub === "repo:MYGRAM-DB/mygram-app:pull_request";
+    String(claims.repository_id) === "1429829602" &&
+    String(claims.repository_owner_id) === "346374775" &&
+    claims.sub === "repo:MYGRAM-DB@346374775/mygram-app@1429829602:pull_request";
   if (!identityAllowed) {
     return json({ ok: false, error: "GITHUB_WORKFLOW_IDENTITY_NOT_ALLOWLISTED" }, 403);
   }
