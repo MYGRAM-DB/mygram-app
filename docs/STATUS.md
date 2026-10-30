@@ -4,39 +4,54 @@
 
 ## الحالة العامة
 
-<badge>PHASE A: AUDIT BASELINE RECORDED</badge>
+<badge>PHASE B: FOUNDATION SHELL IMPLEMENTED</badge>
 
-هذا لا يعني أن التطبيق مكتمل. لا يوجد كود تطبيق على `main` عند بداية المراجعة.
+هذا لا يعني أن المنتجات أو الوظائف الأساسية مكتملة.
 
 ## المراحل
 
 | المرحلة | الحالة | الملاحظات |
 |---|---|---|
-| A: Audit & Foundation | PARTIAL | تدقيق GitHub وSupabase وتوثيق خط الأساس؛ يلزم استمرار مراجعة المخطط والسياسات |
-| B: Core Architecture | PARTIAL | خريطة المعمارية والوثائق الأولية أنشئت؛ الكود والمكونات المشتركة لم تبدأ |
-| C: Identity & Auth | PARTIAL | Supabase Auth وprofiles موجودان؛ تحقق البريد والهاتف الحقيقي غير مثبت |
-| D: Social | PARTIAL | بعض الجداول الاجتماعية موجودة، ولا توجد واجهة تطبيق حالية على main |
-| E: Messaging | PARTIAL | جداول منفصلة لـMessenger وWHATSMYGRAM موجودة؛ E2E من مستخدمين حقيقيين غير مثبت |
-| F: Video | PARTIAL | Reels وStorage موجودان؛ Tube وTikToks غير مكتملين |
-| G: AI & Meetings | PARTIAL | Meetings functions موجودة؛ MYGRAM AI غير مكتمل ومكالمات المزود تحتاج تحقق |
+| A: Audit & Foundation | PARTIAL | تدقيق GitHub وSupabase وتوثيق خط الأساس في PR #54 |
+| B: Core Architecture | PARTIAL | Vite/React/TypeScript shell، لوحة المنتجات التسعة، مسارات Hash، مظهر داكن/فاتح وRTL |
+| C: Identity & Auth | PARTIAL | تهيئة Supabase Auth بالبريد عند ضبط المتغيرات؛ لا تحقق بريد حي أو OTP |
+| D: Social | PARTIAL | مخطط قاعدة اجتماعي سابق موجود؛ واجهات إعادة البناء والعمليات غير مكتملة |
+| E: Messaging | PARTIAL | مخططات منفصلة لـMessenger وWHATSMYGRAM موجودة؛ لا واجهة مراسلة جديدة أو E2E |
+| F: Video | NOT IMPLEMENTED | Tube وTikToks غير منفذين؛ Reels القديمة لا تعني اكتمال المنتج |
+| G: AI & Meetings | PARTIAL | Meetings functions ومخططات موجودة في Production؛ MYGRAM AI غير منفذ |
 | H: Wallet | NOT IMPLEMENTED | لا جداول محفظة أو Ledger |
-| I: Comprehensive Tests | BLOCKED | لا تطبيق على main لاختباره حالياً؛ يلزم إعادة بناء suite |
-| J: Release | BLOCKED | لا نشر Production من هذا الأساس الفارغ |
+| I: Comprehensive Tests | PARTIAL | اختبارات Node لسجل المنتجات وTypeScript/Vite build في CI؛ Playwright وRLS E2E لم تبدأ |
+| J: Release | BLOCKED | لا نشر Production في هذه المرحلة |
+
+## ما يعمل في الهيكل الحالي
+
+- التنقل بين الرئيسية والمنتجات والإعدادات.
+- عرض تسعة منتجات من سجل موحد مع حالة تنفيذ صريحة.
+- تغيير المظهر بين Dark وLight.
+- تهيئة عميل Supabase Auth بالبريد إذا تم إعداد `VITE_SUPABASE_URL` و`VITE_SUPABASE_PUBLISHABLE_KEY`.
+- إنشاء الحساب/تسجيل الدخول بالبريد عبر Supabase Auth عند إعداد البيئة.
+- تمييز واضح عند عدم إعداد Supabase دون إرسال طلبات غير مضبوطة.
+- واجهة عربية RTL في نسخة التأسيس.
+
+## ما لم يكتمل
+
+- دعم 60 لغة كاملة.
+- التسجيل الهاتفي وOTP.
+- استكمال الملف الشخصي وتفرد اسم المستخدم.
+- صفحات ووظائف المنتجات التسعة.
+- Playwright E2E وRLS/Integration tests.
+- إعداد SMTP أو SMS أو خدمات الاتصالات الحقيقية.
+- نظام المحفظة والدفتر المالي.
 
 ## المخاطر المفتوحة
 
-1. إعادة بناء التطبيق دون الكتابة فوق بيانات Production.
-2. ترحيل Staging من مخططها الحالي المحدود إلى schema متوافق.
-3. تدقيق تكرار usernames والحقول الفارغة قبل اعتماد قيد تفرد مطبّع.
-4. اختبارات سلبية/إيجابية لثلاثة RPCs SECURITY DEFINER.
-5. مراجعة صلاحيات دوال private helper.
-6. معالجة خمسة foreign keys بدون فهارس.
+1. تثبيت package-lock المولد بعد نجاح CI.
+2. إعداد متغيرات Supabase في بيئة البناء دون وضع Service Role Key بالعميل.
+3. بناء استكمال الملف الشخصي بعد تثبيت contract واضح ومراجعة قيود usernames.
+4. ترحيل Staging من مخططها الحالي المحدود إلى schema متوافق.
+5. اختبارات سلبية/إيجابية لثلاثة RPCs SECURITY DEFINER.
+6. معالجة خمسة foreign keys بدون فهارس بعد مراجعة الأثر.
 7. إثبات تغطية الترجمة لجميع واجهات المنتجات.
 8. تجهيز مزودي SMTP وSMS وTURN وLiveKit وAI عند اعتماد الخدمات.
 9. تصميم Wallet قانونياً ومحاسبياً قبل أي كتابة مالية.
-
-## أحدث دليل
-
-- Main HEAD عند بدء المراجعة: `d75fbdb6bf6f47ae70ffd1e975eaf9ba12ee7a61`.
-- فرع العمل لهذا التأسيس: `rebuild/phase-a-architecture`.
-- لم تُجرَ تغييرات على قاعدة البيانات في هذه المرحلة.
+10. إنشاء Playwright journeys لمستخدمين منفصلين، ثم اختبار الوظائف المتكاملة.
