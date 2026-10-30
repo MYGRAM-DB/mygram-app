@@ -9,14 +9,14 @@
 | المنتج | المسؤولية الأساسية | المجال الحالي في قاعدة البيانات |
 |---|---|---|
 | MYGRAM AI | المحادثات الذكية، أدوات الكتابة والتحليل والمحتوى | غير موجود حالياً كنظام محادثات AI متكامل |
-| MYGRAM FB | موجز اجتماعي ومنشورات وتعليقات وتفاعلات ومجتمعات | `posts`, `post_comments`, `post_reactions`, `communities`, `community_members`, `community_posts` |
-| MYGRAM INSTA | تجربة المحتوى المرئي والصور والقصص والريلز | `posts`, `stories`, `reels`, `reel_comments`, `reel_reactions`؛ حدود INSTA تحتاج فصلاً وظيفياً موثقاً |
-| MYGRAM MESSENGER | مراسلة MYGRAM الفردية والجماعية وملفاتها ومزايا المحادثة | `direct_messages`, `chats`, `chat_members`, `chat_messages`, وجداول `messaging_*` |
-| WHATSMYGRAM | مراسلة مستقلة مرتبطة بالهاتف | `whatsmygram_chats`, `whatsmygram_chat_members`, `whatsmygram_messages`, `whatsmygram_call_signals` |
+| MYGRAM FB | موجز اجتماعي ومنشورات وتعليقات وتفاعلات ومجتمعات | Staging: `posts`, `post_comments`, `post_reactions`؛ جداول المجتمعات ليست جزءاً من مخطط Staging الحالي |
+| MYGRAM INSTA | تجربة المحتوى المرئي والصور والقصص والريلز | Staging لا يضم حالياً إلا `posts` العامة؛ القصص والريلز ليست منفذة هنا |
+| MYGRAM MESSENGER | مراسلة MYGRAM الفردية والجماعية وملفاتها ومزايا المحادثة | غير منفذ في Staging حالياً؛ لا توجد جداول `chats` أو `chat_members` أو `chat_messages` أو `direct_messages` أو `messaging_*` |
+| WHATSMYGRAM | مراسلة مستقلة مرتبطة بالهاتف | غير منفذ في Staging حالياً |
 | MYGRAM TWITTY | تدوينات قصيرة وردود وإعادة نشر ووسوم | لا توجد جداول نطاق مستقلة مثبتة حالياً |
 | MYGRAM TUBE | فيديو طويل وقنوات واشتراكات وقوائم تشغيل | لا توجد جداول نطاق مثبتة حالياً |
-| MYGRAM TIKTOKS | فيديو قصير عمودي وموجز توصيات | `reels` موجودة، لكن لا تثبت وحدها وجود منتج TIKTOKS مكتمل |
-| MYGRAM MEETING | اجتماعات ومشاركون وأدوار ورسائل ومحاضر | `meetings`, `meeting_participants`, `meeting_messages`, `meeting_transcripts`, `meeting_minutes`, `meeting_chair_transfers` |
+| MYGRAM TIKTOKS | فيديو قصير عمودي وموجز توصيات | لا توجد جداول نطاق مثبتة حالياً |
+| MYGRAM MEETING | اجتماعات ومشاركون وأدوار ورسائل ومحاضر | لا توجد جداول نطاق اجتماعات في Staging الحالي |
 
 **ملاحظة حدود المنتج:** واجهة MYGRAM Chat المستقلة في النسخة التاريخية ليست منتجاً عاشراً في هذا الأمر التنفيذي. تُراجع وتُنقل مزاياها ضمن MYGRAM MESSENGER كوضع أو مساحة محادثة داخل المنتج، مع الحفاظ على فصل الجداول والسياسات المطلوبة. WHATSMYGRAM يبقى منتجاً مستقلاً.
 
@@ -100,5 +100,5 @@ MYGRAM Platform
 - على فرع إعادة البناء أُضيف هيكل واجهة أولي، ومسارات Hash، وسجل المنتجات التسعة، ومظهر داكن/فاتح، وبداية ربط Supabase Auth عبر البريد عند ضبط متغيرات البيئة.
 - واجهة الهيكل الحالية عربية فقط؛ دعم 60 لغة كاملاً غير منفذ.
 - هذا الهيكل ليس منتجاً اجتماعياً مكتملاً. الوظائف داخل المنتجات لا تزال قيد التنفيذ.
-- Production يحتوي 51 جدولاً عاماً وStaging يحتوي 6 جداول فقط.
-- المنتج المالي غير موجود في مخطط Production الحالي.
+- جرد Staging الحالي: 8 جداول عامة. ويظل Production منفصلاً ولا يُستخدم لإثبات جاهزية Staging.
+- المنتج المالي غير موجود في مخطط Staging الحالي.
