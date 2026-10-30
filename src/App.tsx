@@ -5,6 +5,7 @@ import { isSupabaseConfigured, supabase, type MygramUser } from "./lib/supabase"
 
 type Theme = "dark" | "light";
 type AuthMode = "signin" | "signup";
+type CountryOption = { code: string; name_ar: string; name_en: string; calling_code: string | null };
 
 function readTheme(): Theme {
   try {
@@ -41,6 +42,12 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [authMode, setAuthMode] = useState<AuthMode>("signin");
   const [authMessage, setAuthMessage] = useState("");
+  const [profileCheckBusy, setProfileCheckBusy] = useState(false);
+  const [profileCheckError, setProfileCheckError] = useState("");
+  const [onboardingBusy, setOnboardingBusy] = useState(false);
+  const [onboardingMessage, setOnboardingMessage] = useState("");
+  const [countries, setCountries] = useState<CountryOption[]>([]);
+  const [countriesBusy, setCountriesBusy] = useState(false);
   const path = useHashPath();
   const route = useMemo(() => routeFromPath(path), [path]);
   const product = route.page === "product" ? getProductBySlug(route.slug) : undefined;
@@ -65,37 +72,158 @@ export default function App() {
     return () => { active = false; subscription.unsubscribe(); };
   }, []);
 
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setProfileCheckBusy(false);
+      if (route.page === "onboarding") navigate("/auth");
+      return;
+    }
+    if (!supabase) return;
+    let active = true;
+    setProfileCheckBusy(true);
+    setProfileCheckError("");
+    void supabase.from("profiles").select("profile_completed").eq("id", user.id).maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          setProfileCheckError("تعذر التحقق من حالة الملف الشخصي. أعد تحميل الصفحة أو سجّل الدخول مجدداً.");
+          setProfileCheckBusy(false);
+          return;
+        }
+        const completed = data?.profile_completed === true;
+        setProfileCheckBusy(false);
+        if (!completed && route.page !== "onboarding") navigate("/onboarding");
+        if (completed && route.page === "onboarding") navigate("/");
+      })
+      .catch(() => {
+        if (active) {
+          setProfileCheckError("تعذر الاتصال للتحقق من اكتمال الملف الشخصي.");
+          setProfileCheckBusy(false);
+        }
+      });
+    return () => { active = false; };
+  }, [authLoading, user?.id, route.page]);
+
+  useEffect(() => {
+    if (route.page !== "onboarding" || !user || !supabase) return;
+    let active = true;
+    setCountriesBusy(true);
+    void supabase.from("supported_countries").select("code,name_ar,name_en,calling_code")
+      .eq("enabled", true).order("name_ar")
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) setOnboardingMessage("تعذر تحميل قائمة الدول. أعد تحميل الصفحة.");
+        else setCountries((data ?? []) as CountryOption[]);
+        setCountriesBusy(false);
+      })
+      .catch(() => {
+        if (active) {
+          setOnboardingMessage("تعذر تحميل قائمة الدول. تحقق من الاتصال ثم أعد المحاولة.");
+          setCountriesBusy(false);
+        }
+      });
+    return () => { active = false; };
+  }, [route.page, user?.id]);
+
   async function submitAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!supabase || authBusy) return;
     const data = new FormData(event.currentTarget);
-    const email = String(data.get("email") ?? "").trim();
+    const email = String(data.get("email") ?? "").trim().toLowerCase();
     const password = String(data.get("password") ?? "");
-    const fullName = String(data.get("fullName") ?? "").trim();
-    if (!email || password.length < 8 || (authMode === "signup" && fullName.length < 2)) {
-      setAuthMessage("تحقق من البيانات المدخلة ثم أعد المحاولة.");
+    if (!email || password.length < 8) {
+      setAuthMessage("أدخل بريداً إلكترونياً صحيحاً وكلمة مرور لا تقل عن 8 أحرف.");
       return;
     }
     setAuthBusy(true);
     setAuthMessage("");
     try {
       if (authMode === "signup") {
-        const { data: result, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: fullName } },
-        });
+        const { data: result, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        if (result.session) navigate("/");
-        else setAuthMessage("تم إرسال طلب التسجيل. تحقق من بريدك إذا كان تأكيد البريد مفعّلاً.");
+        if (result.session) navigate("/onboarding");
+        else setAuthMessage("تم إنشاء طلب الحساب. افتح رسالة تأكيد البريد، ثم سجّل الدخول لإكمال ملفك الشخصي.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         navigate("/");
       }
-    } catch {
-      setAuthMessage("تعذر إتمام العملية. تحقق من البيانات وإعدادات Auth ثم أعد المحاولة.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      setAuthMessage(message.includes("already registered")
+        ? "هذا البريد مسجّل مسبقاً. سجّل الدخول بدلاً من إنشاء حساب جديد."
+        : "تعذر إتمام العملية. تحقق من البيانات وإعدادات Auth ثم أعد المحاولة.");
     } finally { setAuthBusy(false); }
+  }
+
+  async function submitOnboarding(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!supabase || !user || onboardingBusy) return;
+
+    const data = new FormData(event.currentTarget);
+    const firstName = String(data.get("firstName") ?? "").trim();
+    const lastName = String(data.get("lastName") ?? "").trim();
+    const username = String(data.get("username") ?? "").trim().toLowerCase();
+    const dateOfBirth = String(data.get("dateOfBirth") ?? "");
+    const gender = String(data.get("gender") ?? "") || null;
+    const nationalityCode = String(data.get("nationalityCode") ?? "") || null;
+    const currentCountryCode = String(data.get("currentCountryCode") ?? "") || null;
+    const region = String(data.get("region") ?? "").trim() || null;
+    const cityName = String(data.get("cityName") ?? "").trim() || null;
+    const contactPhone = String(data.get("contactPhone") ?? "").trim() || null;
+    const bio = String(data.get("bio") ?? "").trim();
+    const interests = String(data.get("interests") ?? "")
+      .split(",").map((item) => item.trim()).filter(Boolean).slice(0, 20);
+    const shareLocation = data.get("shareLocation") === "on";
+
+    if (firstName.length < 1 || firstName.length > 60 || lastName.length < 1 || lastName.length > 60) {
+      setOnboardingMessage("اكتب الاسم الأول واسم العائلة، بحد أقصى 60 حرفاً لكل منهما.");
+      return;
+    }
+    if (!/^[a-z0-9_]{3,30}$/.test(username)) {
+      setOnboardingMessage("اسم المستخدم يجب أن يتكون من 3 إلى 30 حرفاً إنجليزياً صغيراً أو رقماً أو _.");
+      return;
+    }
+    if (!dateOfBirth || dateOfBirth > new Date().toISOString().slice(0, 10)) {
+      setOnboardingMessage("أدخل تاريخ ميلاد صحيحاً غير موجود في المستقبل.");
+      return;
+    }
+
+    setOnboardingBusy(true);
+    setOnboardingMessage("");
+    try {
+      const { error } = await supabase.rpc("complete_mygram_profile", {
+        p_first_name: firstName,
+        p_last_name: lastName,
+        p_username: username,
+        p_date_of_birth: dateOfBirth,
+        p_gender: gender,
+        p_nationality_code: nationalityCode,
+        p_contact_phone: contactPhone,
+        p_current_country_code: currentCountryCode,
+        p_region: region,
+        p_city_name: cityName,
+        p_bio: bio,
+        p_interests: interests,
+        p_share_location: shareLocation,
+      });
+      if (error) {
+        if (error.code === "23505" || error.message.includes("USERNAME_TAKEN")) {
+          setOnboardingMessage("اسم المستخدم محجوز. اختر اسماً آخر.");
+        } else if (error.message.includes("INVALID_USERNAME")) {
+          setOnboardingMessage("صيغة اسم المستخدم غير صحيحة.");
+        } else {
+          setOnboardingMessage("تعذر حفظ الملف. راجع البيانات وحاول مرة أخرى.");
+        }
+        return;
+      }
+      navigate("/");
+    } catch {
+      setOnboardingMessage("تعذر الاتصال لحفظ الملف الشخصي. بياناتك لم تُعتمد، أعد المحاولة.");
+    } finally {
+      setOnboardingBusy(false);
+    }
   }
 
   async function signOut() {
@@ -128,14 +256,13 @@ export default function App() {
         </header>
 
         <div className="page">
-          {authLoading ? <div className="loading" role="status">جارٍ التحقق من الجلسة…</div> :
+          {authLoading || profileCheckBusy ? <div className="loading" role="status">جارٍ التحقق من الجلسة والملف الشخصي…</div> :
           route.page === "auth" ? (
             <section className="panel auth-panel">
               <div className="eyebrow">الحساب</div><h1>الدخول إلى MYGRAM</h1>
-              <p>استخدم بريدك الإلكتروني وكلمة المرور. التحقق الهاتفي غير مفعّل في هذه النسخة التأسيسية.</p>
+              <p>أنشئ حسابك بالبريد وكلمة المرور، ثم أكمل معلومات ملفك الشخصي في خطوة منفصلة. التحقق الهاتفي غير مفعّل بعد.</p>
               {!isSupabaseConfigured && <div className="notice"><b>اتصال Supabase غير مُعد</b><span>أضف VITE_SUPABASE_URL وVITE_SUPABASE_PUBLISHABLE_KEY إلى متغيرات بيئة البناء. لن تُرسل طلبات قبل إعدادها.</span></div>}
               <form onSubmit={submitAuth}>
-                {authMode === "signup" && <label>الاسم الكامل<input name="fullName" autoComplete="name" minLength={2} maxLength={100} required disabled={!isSupabaseConfigured || authBusy}/></label>}
                 <label>البريد الإلكتروني<input name="email" type="email" autoComplete="email" required maxLength={254} disabled={!isSupabaseConfigured || authBusy}/></label>
                 <label>كلمة المرور<input name="password" type="password" autoComplete={authMode === "signup" ? "new-password" : "current-password"} minLength={8} required disabled={!isSupabaseConfigured || authBusy}/></label>
                 <button className="button primary full" type="submit" disabled={!isSupabaseConfigured || authBusy}>{authBusy ? "جارٍ التنفيذ…" : authMode === "signup" ? "إنشاء حساب" : "متابعة"}</button>
@@ -144,6 +271,38 @@ export default function App() {
               <button className="text-btn" type="button" onClick={() => setAuthMode(authMode === "signup" ? "signin" : "signup")}>{authMode === "signup" ? "لديك حساب؟ سجّل الدخول" : "مستخدم جديد؟ أنشئ حساباً"}</button>
               <small className="security-note">لا تضع Service Role Key في الواجهة الأمامية.</small>
             </section>
+          ) : route.page === "onboarding" ? (
+            !user || !supabase ? (
+              <section className="panel onboarding-panel"><h1>استكمال الملف الشخصي</h1><p>سجّل الدخول أولاً للمتابعة.</p><a className="button primary" href="#/auth">الانتقال إلى تسجيل الدخول</a></section>
+            ) : (
+              <section className="panel onboarding-panel">
+                <div className="eyebrow">خطوة بعد إنشاء الحساب</div>
+                <h1>أهلاً بك في MYGRAM</h1>
+                <p className="muted">أكمل ملفك مرة واحدة. تاريخ الميلاد وبيانات الاتصال تحفظ في مساحة خاصة بحسابك، ولا يتم نشرها في ملفك العام.</p>
+                {profileCheckError && <div className="notice" role="alert">{profileCheckError}</div>}
+                <form className="onboarding-form" onSubmit={submitOnboarding}>
+                  <div className="form-grid">
+                    <label>الاسم الأول<input name="firstName" autoComplete="given-name" minLength={1} maxLength={60} required disabled={onboardingBusy}/></label>
+                    <label>اسم العائلة<input name="lastName" autoComplete="family-name" minLength={1} maxLength={60} required disabled={onboardingBusy}/></label>
+                    <label>اسم المستخدم<input name="username" autoComplete="username" minLength={3} maxLength={30} pattern="[A-Za-z0-9_]{3,30}" required disabled={onboardingBusy} dir="ltr" placeholder="your_name"/><small>3 إلى 30 حرفاً أو رقماً أو شرطة سفلية، وسيتم حفظه بحروف صغيرة.</small></label>
+                    <label>تاريخ الميلاد<input name="dateOfBirth" type="date" required max={new Date().toISOString().slice(0,10)} disabled={onboardingBusy}/></label>
+                    <label>الجنس (اختياري)<select name="gender" defaultValue="" disabled={onboardingBusy}><option value="">أفضل عدم التحديد الآن</option><option value="female">أنثى</option><option value="male">ذكر</option><option value="nonbinary">غير ثنائي</option><option value="prefer_not_to_say">أفضل عدم الإفصاح</option></select></label>
+                    <label>الجنسية (اختياري)<select name="nationalityCode" defaultValue="" disabled={onboardingBusy || countriesBusy}><option value="">اختر الجنسية</option>{countries.map((country) => <option key={country.code} value={country.code}>{country.name_ar} · {country.name_en}</option>)}</select></label>
+                    <label>بلد الإقامة (اختياري)<select name="currentCountryCode" defaultValue="" disabled={onboardingBusy || countriesBusy}><option value="">اختر بلد الإقامة</option>{countries.map((country) => <option key={country.code} value={country.code}>{country.name_ar} · {country.calling_code ?? ""}</option>)}</select></label>
+                    <label>المنطقة / المحافظة<input name="region" maxLength={100} disabled={onboardingBusy}/></label>
+                    <label>المدينة<input name="cityName" maxLength={100} disabled={onboardingBusy}/></label>
+                    <label>رقم هاتف للتواصل (غير متحقق)<input name="contactPhone" type="tel" autoComplete="tel" maxLength={30} disabled={onboardingBusy} dir="ltr" placeholder="+961..."/></label>
+                  </div>
+                  <label className="wide-field">نبذة عنك<textarea name="bio" maxLength={500} rows={3} disabled={onboardingBusy}/></label>
+                  <label className="wide-field">الهوايات والاهتمامات، افصل بينها بفاصلة<input name="interests" maxLength={1000} disabled={onboardingBusy} placeholder="السفر، التقنية، الرياضة"/></label>
+                  <label className="consent-field"><input name="shareLocation" type="checkbox" disabled={onboardingBusy}/> أسمح باستخدام منطقة ومدينة الإقامة في التوصيات المحلية. لا يمنح ذلك إذناً بنشر عنواني.</label>
+                  {countriesBusy && <p className="muted" role="status">جارٍ تحميل قائمة الدول…</p>}
+                  {onboardingMessage && <p className="auth-message" role="status">{onboardingMessage}</p>}
+                  <button className="button primary full" type="submit" disabled={onboardingBusy || countriesBusy || countries.length === 0}>{onboardingBusy ? "جارٍ حفظ الملف…" : "حفظ واستكمال الدخول"}</button>
+                </form>
+                <small className="security-note">يُحفظ الملف والتفاصيل الخاصة والتفضيلات بعملية واحدة. إثبات البريد أو الهاتف يتم في تدفق تحقق منفصل.</small>
+              </section>
+            )
           ) : route.page === "settings" ? (
             <section className="settings-page">
               <div className="eyebrow">الإعدادات</div><h1>إعدادات التجربة</h1>
