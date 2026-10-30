@@ -1,0 +1,39 @@
+name: Bootstrap MYGRAM dependency lockfile
+
+on:
+  push:
+    branches:
+      - rebuild/phase-a-architecture
+
+permissions:
+  contents: read
+
+jobs:
+  pin-lockfile:
+    if: github.actor == 'MYGRAM-DB' && github.ref == 'refs/heads/rebuild/phase-a-architecture' && startsWith(github.event.head_commit.message, 'chore: bootstrap lockfile')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: rebuild/phase-a-architecture
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - name: Generate the lockfile without running package scripts
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Commit the generated lockfile to this branch only
+        run: |
+          git add package-lock.json
+          if git diff --cached --quiet; then
+            echo "package-lock.json is already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: pin npm dependency lockfile"
+          git push origin HEAD:rebuild/phase-a-architecture
