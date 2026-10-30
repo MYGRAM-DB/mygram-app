@@ -1,17 +1,48 @@
 # CURRENT VERIFIED SNAPSHOT | 2026-10-31
 
-This snapshot supersedes the historical status notes below where values differ. Full evidence and the per-table drift inventory are in [AUDIT-20261031.md](./AUDIT-20261031.md).
+## تصحيح السجل التنفيذي | 2026-10-31
 
-- PR #54: Open / Draft / not merged; 134 commits, 61 changed files, 8,010 additions.
-- main: d75fbdb6bf6f47ae70ffd1e975eaf9ba12ee7a61 (empty tree); rebuild HEAD at this status snapshot: 45d2cd7029c71b1d7203a33a2687fd73265eeb9a.
-- Run #98, Run #99 and Run #101 passed both CI jobs. Run #99 verified the migration filename correction; Run #101 passed after documentation updates. Run #103 is running against the product-status correction and its regression test.
-- Public schema counts: Production 51 tables / 46 migrations / 144 RLS policies / 18 public functions / 30 triggers / 5 Edge Functions. Staging 15 / 17 / 32 / 5 / 5 / 1.
-- Staging has 60 locale rows and 205 country rows, but no translation_catalog. Production has 2,820 translation_catalog rows.
-- SECURITY DEFINER inventory: Production 13, with 3 authenticated-executable meeting RPCs; Staging 4, with complete_mygram_profile authenticated-executable.
-- All public tables observed have RLS enabled. Three Staging service-only tables have FORCE RLS and no client policies, with anon/authenticated table access revoked.
-- Production Storage buckets differ materially from Staging: Production has public mygram-media and private mygram-private-messages; Staging has private profile-avatars and messenger-attachments.
-- Both GitHub branches report protected=false. The current GitHub connection cannot write branch protection settings. Repository owner action is required.
-- No Production changes, merge, or public deployment were performed.
+> هذا التصحيح هو المرجع الزمني الأحدث لهذا المستند، ويعلو على أي حالة أقدم أدناه.
+
+- **HEAD الذي اجتاز Run #104:** `a837aee766da87a3a050fcdde6f01e90eba41dc1`.
+- **Run #104:** [41139860543]( https://github.com/MYGRAM-DB/mygram-app/actions/runs/41139860543 )، الحالة النهائية **SUCCESS**، والوظيفتان الرئيسيتان ناجحتان:
+  1. `Typecheck, unit tests, Playwright, and production build`: success. شملت الخطوات تثبيت الاعتماديات من lockfile، Playwright Chromium، اختبارات سجل المنتجات، اختبارات المتصفح، وفحص TypeScript وبناء Vite.
+  2. `Real JWT, Profile Privacy, Storage, Messenger A/B/C, and Realtime`: success. نُفذت بوابة Staging الأمنية الحقيقية عبر GitHub OIDC.
+- هذا يثبت نجاح Run #104 على SHA أعلاه، ولا يعني أن اختبار Auth المستقل `tests/authz.integration.mjs` أصبح بوابة مستقلة؛ خطوة هذا الملف في الوظيفة الأولى ما زالت تحقق الصياغة فقط.
+- PR #54 ما زال **Open / Draft / غير مدمج**. لا دمج ولا نشر عام.
+- `main` و`rebuild/phase-a-architecture` ما زالا بحاجة إلى تفعيل حماية الفروع والتحقق منها. لم تُجرَ أي أتمتة إدارية أو تغييرات حماية في هذه الجولة.
+- لا تغييرات على Production، ولا migrations أو تغييرات Auth/Storage/Edge Functions عليه.
+- عند إضافة هذا التصحيح التوثيقي إلى الفرع، سينشأ HEAD توثيقي أحدث من SHA الذي اجتاز Run #104؛ لذلك يجب أن يعمل CI مجدداً على HEAD الناتج قبل اعتماد ذلك HEAD. لا ننسب نجاح Run #104 إلى commit لم يُختبر بعد.
+
+---
+
+
+## Current repository state
+
+- Repository: `MYGRAM-DB/mygram-app`.
+- `main`: `d75fbdb6bf6f47ae70ffd1e975eaf9ba12ee7a61` (clean rebuild baseline).
+- Rebuild branch: `rebuild/phase-a-architecture`.
+- Last code/test baseline verified by Run #104: `a837aee766da87a3a050fcdde6f01e90eba41dc1`.
+- PR #54: Open / Draft / not merged. Keep it Draft.
+- Run #104: both jobs succeeded; see [Actions run 104](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41139860543).
+- Branch protection: not yet enabled/verified; owner action required.
+- Production: read-only; no changes.
+- Release: blocked by policy and outstanding gates. Gate A remains OPEN.
+
+## Open P1 gates
+
+1. GitHub branch protection for `main` and the rebuild branch, followed by verification.
+2. Independent two-account AuthZ integration test as an actual CI gate. Existing syntax validation is not execution.
+3. Profile privacy contract: actual GRANT/RLS/column/view/API audit and A/B/C runtime coverage.
+4. Avatar delivery contract: private original plus short-lived signed URL only for authorized viewers; test owner/allowed/denied.
+5. Identity journey: password recovery, SMTP confirmation, avatar onboarding, session expiry/logout and username validation.
+6. Migration filename/history validator and complete schema drift reconciliation.
+7. Locale resource foundation and missing-key/RTL-LTR tests. Sixty locale rows are not sixty complete translations.
+8. Rollback and restore evidence.
+
+## Owner action
+
+The repository owner must configure and verify branch rules in GitHub Settings. The current connection has not changed administrative protection settings. No browser automation was run.
 
 ## Historical status notes
 
