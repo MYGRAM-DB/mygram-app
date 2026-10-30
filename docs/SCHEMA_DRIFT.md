@@ -1,21 +1,22 @@
 # تقرير اختلاف مخططات Production وStaging
 
-**تاريخ الفحص:** 2026-10-30  
-**نوع الفحص:** قراءة فقط. لم تُنفذ أي كتابة أو Migration أو تغيير سياسة.
+**تاريخ خط الأساس:** 2026-10-30  
+**آخر تحديث:** بعد Migration Staging رقم `20261030022611`  
+**النطاق:** مقارنة بنية وسلوك المخططين، مع فصل تغييرات Staging اللاحقة عن Production.
 
-## 1. ملخص الانحراف
+## 1. ملخص البيئتين
 
 | المؤشر | Production: MYGRAM-DB | Staging: MYGRAM-STAGING |
 |---|---:|---:|
-| جداول public | 51 | 6 |
-| Migration history | 45 | 4 |
+| جداول public عند خط الأساس | 51 | 6 |
+| Migration history بعد المرحلة الأولى | 45 | 5 |
 | Edge Functions | 5 | 0 |
 | اللغات | 60 | 14 |
 | الدول | 205 | لا يوجد جدول |
 | صفوف الترجمة | 2,820 | لا يوجد جدول |
-| الحسابات في Auth وقت الفحص | 3 | 3 |
+| حسابات Auth المرصودة | 3 | 3 |
 
-البيئتان على PostgreSQL 17.11، لكنهما **غير متطابقتين بنيوياً أو وظيفياً**. لا يجوز توجيه الواجهة الجديدة إلى Staging واعتبارها ممثلة للإنتاج قبل معالجة هذا الانحراف.
+البيئتان على PostgreSQL 17.11، لكنهما **لا تزالان غير متطابقتين بنيوياً أو وظيفياً**. Migration المرحلة الأولى قاربت الجداول الأساسية المشتركة فقط؛ ولا تجعل Staging نسخة كاملة من Production.
 
 ## 2. جداول Production غير الموجودة في Staging
 
@@ -28,62 +29,91 @@
 - الدول والترجمة: `supported_countries`, `translation_cache`, `translation_catalog`, `translation_usage`
 - إدارة المنصة: `platform_feature_registry`, `platform_spaces`
 
-## 3. اختلافات في الجداول المشتركة
+لا تُنشأ هذه الجداول دفعة واحدة أو قبل مراجعة migrations الأصلية واعتماد الاعتماديات والمفاتيح والسياسات الخاصة بكل مجموعة وظيفية.
+
+## 3. المرحلة الأولى المطبقة على Staging فقط
+
+**Migration:** `20261030022611_align_staging_core_schema_phase_1`  
+**Version:** `20261030022611`  
+**Git path:** `supabase/migrations/20261030022611_align_staging_core_schema_phase_1.sql`
+
+تم تسجيلها بنجاح في Migration history الخاص بـStaging. أضافت فقط أعمدة وقيوداً وفهارس لا تتلف البيانات القائمة:
+
+- `profiles`: حقول الاسم الأول/العائلة، إكمال الملف، الدراسة والعمل، الجنسية وبلد/مدينة الإقامة وإظهار الموقع.
+- `profiles.username`: أضيف قيد UNIQUE عادي عند غيابه، مع الاحتفاظ بقيد الصيغة الموجود وفهرس التفرد على `lower(username)` الموجود في Staging.
+- `user_preferences`: حقول الكشف التلقائي، المنطقة الزمنية، ومصدر اكتشاف اللغة/الدولة وموافقة الموقع، مع قيود تحقق مماثلة لـProduction.
+- `supported_locales`: إضافة `enabled` و`updated_at` وملء `enabled` من `is_active`. لم تحذف أعمدة Staging الخاصة `english_name`, `is_active`, `sort_order`.
+- `posts`: إضافة حد نصي أقصى 5000 حرف، مع الاحتفاظ بقيود Staging الإضافية على المحتوى والوسائط.
+- `post_comments`: إضافة `parent_comment_id` ومفتاحه الأجنبي إلى التعليق الأب، ورفع حد النص من 1000 إلى 2000 حرف، مع الاحتفاظ بـ`updated_at`.
+- إضافة فهارس `post_comments(parent_comment_id)`, `post_comments(user_id)`, `post_reactions(user_id)` لتغطية عمليات المفاتيح الأجنبية.
+
+### التحقق بعد Migration
+
+- تأكد وجود الأعمدة والقيود الجديدة في Staging.
+- بقيت صفوف الملفات الشخصية 3، والصفوف في المنشورات والتعليقات والتفاعلات والتفضيلات صفراً، واللغات 14.
+- بقيت أعمدة وقيود Staging الإضافية موجودة.
+- بقي RLS مفعلاً على الجداول الستة الأساسية.
+- لم تتغير تعريفات سياسات RLS أو إعدادات Auth أو Storage أو Edge Functions.
+- اختفى تنبيه فحص الأداء الخاص بالمفاتيح الأجنبية غير المفهرسة؛ بقيت ملاحظات Unused Index، ولا تعني ضرورة حذف الفهارس في بيئة قليلة البيانات.
+- ظهر تحذير Leaked Password Protection المعطل، وهو قيد معروف في خطة Free ومتروك كما اتُّفق عليه.
+
+### اختلاف انتقالي يجب عدم تجاهله
+
+سياسة القراءة العامة لـ`supported_locales` في Staging ما زالت تعتمد `is_active = true`، بينما أضيف `enabled` كعمود توافق وتمت تعبئته من `is_active` مرة واحدة. لا تعتمد الواجهة أو أي كتابة مستقبلية على `enabled` باعتباره المصدر النهائي قبل تنفيذ dual-write/trigger أو انتقال مستقل يختبر السياسة. حالياً، استمر باستخدام `is_active` في Staging حتى ذلك الانتقال.
+
+## 4. الفروقات المتبقية في الجداول المشتركة
 
 ### profiles
-- Production يتضمن حقول onboarding/الموقع الإضافية: `first_name`, `last_name`, `profile_completed`, `study_place`, `work_place`, `public_nationality_code`, `public_living_country_code`, `public_living_region`, `public_living_city`, `show_living_location`.
-- Production لديه UNIQUE على `username`، لكنه لا يثبت وحده التفرد بعد توحيد حالة الأحرف.
-- Staging لديه CHECK على صيغة username `^[a-zA-Z0-9_]{3,30}$`، بينما لا يظهر هذا القيد ضمن تعريف Production الذي تمت مراجعته.
-- لا يجوز تشغيل onboarding أو username availability على Staging باعتبارها مطابقة لـProduction.
+- الحقول الإضافية الأساسية في Production أضيفت إلى Staging.
+- Staging يحتفظ بقيد صيغة username `^[a-zA-Z0-9_]{3,30}$`، غير الموجود في تعريف Production الذي تمت مراجعته.
+- Staging لديه فهرس فريد على `lower(username)` إضافة إلى UNIQUE عادي، ما يوفر تفرداً غير حساس لحالة الأحرف في Staging. Production لا يثبت هذا الضمان، وفحصه السابق وجد تعارضات lower-case وصفّين باسم فارغ/NULL.
+- لا تعتبر نجاح تحقق username في Staging دليلاً على حل تعارضات Production. لا تُعدّل بيانات Production أو قيوده ضمن هذا العمل.
 
 ### posts
-- Production: `content` إلزامي، مع CHECK لطول لا يتجاوز 5000.
-- Staging: `content` له default نص فارغ، و`updated_at` موجود.
-- الوسائط: Production يستخدم `media_url` و`media_type` مع قيد image/video؛ Staging يسمح image/video/audio/file.
-- يلزم توحيد contract المنتج قبل توصيل واجهة نشر مشتركة.
+- حد المحتوى الأعلى 5000 حرف متوافق.
+- Staging لا يزال لديه `content` مع default نص فارغ و`updated_at`.
+- Staging يحتفظ بقيود إضافية تسمح بوسائط audio/file وتفرض محتوى نصياً أو وسيطاً. يجب اعتماد عقد وسائط المنتج قبل إزالة أي اختلاف.
 
 ### post_comments
-- Production يسمح `parent_comment_id` للتعليقات المتداخلة، ويضع حدّاً يصل إلى 2000 حرف.
-- Staging لا يحتوي `parent_comment_id` ويضع حداً يصل إلى 1000 حرف، ولديه `updated_at`.
-- لذلك لا يجوز تفعيل الردود المتداخلة في Staging قبل migration واختبارها.
+- أضيف دعم التعليقات المتداخلة وحد 2000 حرف.
+- Staging لا يزال لديه عمود `updated_at` غير موجود في تعريف Production الذي تمت مراجعته.
 
 ### supported_locales
-- Production policy تقرأ `enabled`، بينما مخطط Staging يعرض `is_active`.
-- Production policy اسمها `supported_locales_read_enabled`، وStaging policy اسمها `Public can read active supported locales`.
-- يجب مراجعة تعريف الجدول والسياسة الفعلية قبل توحيدها. لا تفترض الواجهة اسم عمود واحداً عبر البيئتين.
+- أضيف `enabled` و`updated_at` إلى Staging مع الحفاظ على الحقول القديمة.
+- سياسة القراءة لا تزال تفحص `is_active`؛ انظر تحذير الانتقال في القسم 3.
+- Staging يحتوي 14 لغة مقابل 60 في Production.
 
-## 4. سياسات RLS التي تمت مراجعتها
+### user_preferences
+- أضيفت الحقول والقيود التي كانت ناقصة.
+- Staging لا يزال يحتوي حقول تشغيل إضافية مثل `share_location`, `auto_detect_language`, `auto_detect_region`, `timezone_name`, `location_consent_at`; يلزم مراجعة الاستخدام قبل اعتبار العقد متطابقاً تماماً.
 
-على الجداول المشتركة الستة، كلا البيئتين لديهما سياسات مستخدم موثقة للقراءة والكتابة، مع اختلافات في أسماء السياسات. سياسات profiles وposts وcomments وreactions تسمح بالقراءة للمستخدم المصادق، وتقيّد الكتابة/التحديث/الحذف بملكية الصف. user_preferences مقيدة بملكية user_id. supported_locales متاحة للقراءة العامة للسجلات المفعلة.
+## 5. سياسات RLS
 
-هذه مراجعة نص السياسات فقط وليست إثباتاً لاختبارات منع الوصول بين مستخدمين. يلزم RLS integration tests بحسابين مستقلين، بما فيها محاولات UPDATE مع تبديل owner وقراءة سجلات مستخدم آخر.
+على الجداول المشتركة الستة، ظلت تعريفات السياسات كما كانت قبل Migration. RLS ما زال مفعلاً. سياسات القراءة في posts/comments/reactions تسمح للمستخدم المصادق بقراءة السجلات؛ وعمليات الكتابة والتحديث والحذف مقيدة بملكية `user_id`. user_preferences مقيدة بملكية `user_id`. profiles تسمح بقراءة الحسابات المصادقة، وتقيّد الإدراج والتحديث بملكية `id`. supported_locales ما زالت قراءة عامة للسجلات النشطة عبر `is_active`.
 
-## 5. Edge Functions
+هذه مراجعة تعريفات وليست إثباتاً عملياً للعزل. المرحلة التالية هي اختبار السماح والمنع باستخدام حسابي Staging مستقلين، من دون تبديل سياسات RLS قبل ظهور نتائج الاختبار.
 
-Production يحتوي:
-- `livekit-token` (JWT verification مفعّل)
-- `turn-credentials` (JWT verification مفعّل)
-- `translate-text` (JWT verification مفعّل)
-- `meetings-token` (JWT verification مفعّل)
-- `meeting-ai-minutes` (JWT verification مفعّل)
+## 6. Edge Functions والبيانات
 
-Staging لا يحتوي Edge Functions. لا تُنسخ أسرار أو إعدادات مزودات من Production تلقائياً؛ أنشئ Secrets مستقلة لـStaging بعد مراجعة المصدر والاستخدام والصلاحيات.
+- Production يحتوي خمس Edge Functions: `livekit-token`, `turn-credentials`, `translate-text`, `meetings-token`, `meeting-ai-minutes`.
+- Staging لا يحتوي Edge Functions حتى الآن.
+- لم يتم نسخ بيانات Production إلى Staging.
+- لا تزال أعداد Staging 3 Auth/Profiles و14 لغة، وصفر منشورات وتعليقات وتفاعلات وتفضيلات وقت التحقق بعد Migration.
+- لا تُنسخ أسرار Production تلقائياً. أنشئ secrets منفصلة بعد مراجعة كل Function عند الوصول إلى مرحلتها.
 
-## 6. قرار التنفيذ
+## 7. القرارات والقيود
 
-1. إبقاء كل التغييرات الحالية على GitHub branch فقط.
-2. عدم تنفيذ migration على Production.
-3. بناء Migration plan من سجل Production وStaging، مع التمييز بين migrations المشتركة والاختلافات المقصودة.
-4. تطبيق schema migrations على Staging تدريجياً، ثم التحقق من الأعمدة والقيود والفهارس والسياسات.
-5. نشر Edge Functions إلى Staging بنسخ مراجعة وأسرار منفصلة.
-6. تنفيذ RLS tests وAuth tests وStorage tests على Staging.
-7. لا تُنسخ بيانات المستخدمين الحقيقية من Production إلى Staging.
-8. بعد اكتمال الاختبارات، يُعاد فحص الانحراف ويجب أن تكون الفروق المتبقية موثقة ومقصودة.
+1. لا Migration ولا DDL ولا DML على Production.
+2. لا حذف جداول أو أعمدة Staging الزائدة قبل جرد استخداماتها.
+3. لا نسخ بيانات مستخدمين حقيقيين إلى Staging.
+4. لا تغيير RLS/Auth/Storage/Edge Functions ضمن Migration المرحلة الأولى.
+5. لا يعتبر نجاح Migration أو CI دليلاً على جاهزية المنتج.
+6. يجب أن توثق كل مرحلة migration ونتائج فحوص الأعمدة والقيود والفهارس والسياسات والبيانات.
 
-## 7. ما لم يحدث
+## 8. ما لم يُنفذ
 
-- لم تُنفذ أي DDL أو DML.
-- لم تتغير RLS أو grants أو Auth providers.
-- لم تُحذف أو تُعدل أي بيانات.
-- لم تُنشر أي Edge Function.
-- هذا التقرير snapshot بتاريخ الفحص، ويجب تحديثه قبل أول migration.
+- لم تُنشأ بقية جداول Production المفقودة في Staging.
+- لم تُنقل اللغات الستون أو الدول الـ205 أو سجلات الترجمة.
+- لم تُنشر Edge Functions إلى Staging.
+- لم تتغير سياسات RLS أو إعدادات Auth وStorage.
+- لم يحدث أي تعديل على Production.
