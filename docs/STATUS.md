@@ -14,13 +14,13 @@ PHASE B: FOUNDATION SHELL IMPLEMENTED
 |---|---|---|
 | A: Audit & Foundation | PARTIAL | تدقيق GitHub وSupabase؛ اختلافات البيئتين موثقة |
 | B: Core Architecture | PARTIAL | Vite/React/TypeScript shell، سجل المنتجات التسعة، مسارات Hash، مظهر داكن/فاتح وRTL |
-| C: Identity & Auth | PARTIAL | تسجيل البريد الأولي، توجيه onboarding، نموذج الملف، RPC ذرّية وبيانات خاصة منفصلة؛ اختبار JWT حقيقي لم يُشغّل بعد |
+| C: Identity & Auth | PARTIAL | تسجيل البريد الأولي، توجيه onboarding، نموذج الملف، RPC ذرّية وبيانات خاصة منفصلة؛ اختبار جلستي JWT عبر Auth API ما زال مطلوباً |
 | D: Social | PARTIAL | مخطط اجتماعي أولي وRLS موجودان؛ الواجهات والعمليات غير مكتملة |
 | E: Messaging | PARTIAL | مخططات منفصلة موجودة في Production؛ إعادة بناء المنتج لم تبدأ |
 | F: Video | NOT IMPLEMENTED | Tube وTikToks غير منفذين |
 | G: AI & Meetings | PARTIAL | وظائف اجتماعات قديمة موجودة في Production؛ MYGRAM AI غير منفذ |
 | H: Wallet | NOT IMPLEMENTED | لا جداول محفظة أو Ledger |
-| I: Tests | PARTIAL | CI Run #36 أخضر على HEAD السابق لتغييرات الاختبار الحالية؛ اختبار JWT/Storage أضيف ولم يُشغّل بعد |
+| I: Tests | PARTIAL | CI Run #45 أخضر على HEAD 0d78b6056e600a98836722bb26bfab240d037c4a للاختبارات الأساسية والبناء؛ خطوة JWT/Storage الآلية تخطّتها CI لعدم تهيئة أسرار QA |
 | J: Release | BLOCKED | لا نشر Production |
 
 ## مواءمة Staging
@@ -33,24 +33,31 @@ PHASE B: FOUNDATION SHELL IMPLEMENTED
 - Migration 20261030024521 أضافت RPC ذرّية لاستكمال الملف؛ SECURITY DEFINER مع search_path فارغ، التنفيذ لـauthenticated فقط، والهوية من auth.uid().
 - Migration 20261030030822 أنشأت bucket خاصة profile-avatars بحد 5 MiB وأربع سياسات تربط العمليات بمجلد auth.uid().
 - لا توجد bucket عامة في Staging.
+- توجد ثلاثة مستخدمين Auth مؤكدَي البريد. لم تُغيّر كلمات مرورهم أو بياناتهم الدائمة خلال فحوص المحاكاة.
 - تبقى 14 لغة فقط، ولا يوجد Translation Catalog أو Edge Functions.
 
-## نتائج RLS الأولية
+## نتائج RLS وStorage المحاكية (2026-10-30)
 
-- اختبار داخل PostgreSQL بدور authenticated وهويتين مختلفتين نجح لملكية profiles/posts/comments/reactions وخصوصية user_preferences.
-- تمت قراءة posts/comments/reactions للحساب الثاني كما تسمح السياسات.
-- مُنع الحساب الثاني من تعديل/حذف/إدراج سجلات باسم المالك.
-- انتهى الاختبار بـROLLBACK ولم تبق صفوف اصطناعية.
-- هذه محاكاة claim على مستوى قاعدة البيانات، وليست اختبار جلستي دخول JWT عبر Auth API.
-- فحص Staging أكد أن authenticated لا يستطيع تحديث verified_contact_method أو contact_verified_at.
-- أضيف اختبار REST آلي بحسابين مستقلين لتغطية التفاصيل الخاصة وحقول الإثبات وStorage، لكنه ينتظر حسابي QA مستقلين في أسرار GitHub Actions.
+- استخدمت معاملة PostgreSQL مؤقتة مع SET LOCAL ROLE authenticated وclaims مختلفة لحسابين Staging موجودين، ثم نفذت ROLLBACK.
+- RPC complete_mygram_profile نجحت لكل هوية محاكاة وأنشأت صفوف الملف الخاص والتفضيلات داخل المعاملة فقط.
+- الحساب A قرأ تفاصيله الخاصة وتفضيلاته؛ لم تظهر له صفوف الحساب B الخاصة أو تفضيلاته.
+- الحسابان المصادقان استطاعا قراءة صفّي الملف العامين، وفق سياسة profiles الحالية.
+- الحساب B لم يستطع تعديل بيانات الملف الخاص للحساب A أو منشور A؛ عدد الصفوف المعدّلة في كل محاولة كان صفراً.
+- الحساب A لم يستطع حذف تعليق أو تفاعل الحساب B؛ عدد الصفوف المحذوفة في كل محاولة كان صفراً.
+- اختُبر Storage على مستوى صفوف storage.objects: المالك استطاع رؤية صف كائن تجريبي، والحساب الآخر لم يستطع رؤيته أو تحديثه. أُلغيت المعاملة.
+- محاولة الحذف المباشر من storage.objects رفضها مشغّل Supabase الوقائي (الحذف يجب أن يتم عبر Storage API). لم يُجرَ حذف مباشر.
+- تحقق لاحق بعد ROLLBACK أكد بقاء 3 مستخدمي Auth مؤكدين، وصفر صفوف اختبار دائمة في profile_private_details وuser_preferences وposts وpost_comments وpost_reactions وprofile-avatars.
+- هذه محاكاة claims وصلاحيات قاعدة البيانات وليست اختبار جلستي دخول JWT عبر Auth API، وليست رفع ملف ثنائي فعلي عبر Storage API أو من واجهة MYGRAM.
+- فحص column privileges أكد أن anon وauthenticated لا يستطيعان تحديث verified_contact_method أو contact_verified_at.
+- اختبار REST آلي بحسابين مستقلين موجود في tests/authz.integration.mjs، لكنه لم يُشغّل بعد لأنه يتطلب أسرار حسابَي QA داخل GitHub Actions.
 
 ## ما لم يكتمل
 
-- تجهيز حسابي QA مستقلين مؤكدَي البريد وتشغيل الاختبار الآلي عبر JWT.
+- تشغيل اختبار Auth API بجلسَتي JWT فعليتين باستخدام حسابَي QA مؤكدَي البريد.
 - اختبار signup وتأكيد البريد وتسليم SMTP إلى صندوق وارد حقيقي.
-- رحلة UI الفعلية لتسجيل الدخول واستكمال الملف عبر حسابي QA.
-- رفع صورة الملف الشخصي من واجهة MYGRAM وربطها بالملف.
+- رحلة UI الفعلية لتسجيل الدخول واستكمال الملف عبر حسابَي QA.
+- رفع صورة الملف الشخصي فعلياً عبر Storage API من واجهة MYGRAM وربطها بالملف.
+- اختبار Storage upload/read/upsert/delete عبر JWT حقيقيين.
 - تسجيل الهاتف وOTP.
 - تفرد usernames عبر البيئتين.
 - حماية عرض حقول الموقع العامة في profiles.
