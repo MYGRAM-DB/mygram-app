@@ -34,6 +34,8 @@ jobs:
         run: npm test
       - name: Browser end-to-end tests
         run: npm run test:e2e
+      - name: Validate integration test syntax
+        run: node --check tests/authz.integration.mjs
       - name: Two-user Staging Auth, RLS, and Storage integration
         if: ${{ vars.MYGRAM_STAGING_AUTHZ_TESTS == 'true' }}
         env:
