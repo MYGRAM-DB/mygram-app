@@ -89,8 +89,8 @@ MYGRAM Platform
 ## 9. فصل الملف العام عن حالة الحساب الخاصة\n\n- public.profiles هو جدول الأساس الداخلي، ولا يقرأه عميل anon أو authenticated مباشرة في Staging.\n- public.public_profiles هو الإسقاط الآمن للملف العام؛ يعرض الاسم واسم المستخدم والنبذة والصورة والاهتمامات والجنسية العامة، ويعيد حقول السكن فارغة إلا عند الموافقة. لا يعرض بيانات الدراسة أو العمل ولا حالة إكمال الملف.\n- public.my_profile_state يعرض حالة إكمال الملف للحساب الحالي فقط.\n- إكمال الملف والكتابة على البيانات الأساسية يمران عبر complete_mygram_profile فقط، مع اشتقاق هوية المستخدم من auth.uid().\n\n## 10. الحالة الحالية
 
 - فرع إعادة البناء مستقل؛ PR #54 مفتوح كمسودة وغير مدمج.
-- Staging يضم حالياً 12 جدولاً عاماً و11 migrations، إضافة إلى View للملف العام وView لحالة الملف الخاصة.
+- Staging يضم حالياً 12 جدولاً عاماً و11 migrations، إضافة إلى public_profiles وmy_profile_state views ودالة قراءة الحالة المقيدة بالهوية.
 - 205 دول مدعومة، و14 لغة مسجلة فقط.
-- شريحة Messenger المباشرة نُفذت في Staging واختُبرت بمحاكاة ثلاث هويات claims داخل Transaction/Rollback. اختبار Auth JWT وRealtime WebSocket الحقيقي يبقى بوابة منفصلة. فصل الملف العام عن الخاص أضيف واختُبر بمحاكاة دور authenticated داخل معاملة قراءة فقط.
+- شريحة Messenger المباشرة نُفذت في Staging واختُبرت بمحاكاة ثلاث هويات claims داخل Transaction/Rollback. اختبار Auth JWT وRealtime WebSocket الحقيقي يبقى بوابة منفصلة. شريحة MYGRAM FB النصية أضيفت إلى الواجهة واختُبرت صلاحياتها بثلاث claims داخل Transaction/Rollback. CI Run #77 نجح: 8 Node، و7 Playwright، وفحصا صياغة التكامل، TypeScript وVite build؛ JWT/Storage/Realtime الحقيقي متخطى لعدم إعداد الأسرار.
 - Production لم يتغير.
 - دعم 60 لغة كاملاً، WHATSMYGRAM، المنتجات المرئية والفيديو والاجتماعات والذكاء الاصطناعي والمحفظة غير مكتملة.
