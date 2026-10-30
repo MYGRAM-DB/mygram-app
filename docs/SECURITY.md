@@ -15,9 +15,9 @@
 - جميع الجداول العامة الـ51 في Production عليها RLS.
 - لا يُسمح لـanon بقراءة جداول المحتوى والرسائل الخاصة وفق جرد GRANT الحالي؛ قوائم الدول واللغات وكتالوج الترجمة لها قراءة عامة مقصودة.
 - لا توجد سياسة عامة بديلة تلغي الحاجة إلى فحص سياسات كل جدول.
-- جميع الجداول العامة الثمانية الحالية في Staging عليها RLS.
+- جميع الجداول العامة الـ12 الحالية في Staging عليها RLS.
 - Production يحتوي حاوية mygram-media العامة وحاوية mygram-private-messages الخاصة وفق جرد Production السابق؛ لا تُستخدم هذه الحاويات لاختبارات Staging.
-- Staging يحتوي حاوية profile-avatars خاصة فقط. لا توجد حاويات عامة في Staging.
+- Staging يحتوي حاويتين خاصتين: profile-avatars وmessenger-attachments. لا توجد حاويات عامة في Staging.
 - حاوية profile-avatars تحد حجم الملف إلى 5 MiB وتقبل JPEG وPNG وWebP وAVIF فقط.
 
 ## 3. مراجعة SECURITY DEFINER
@@ -42,7 +42,7 @@
 
 ## 5. ملفات المستخدمين
 
-- profiles يحتوي حقول العرض العامة؛ سياسة SELECT الحالية تسمح للمستخدمين المصادقين بقراءة الصفوف العامة.
+- public.profiles هو جدول الأساس الداخلي؛ تم سحب صلاحية SELECT المباشرة منه عن anon وauthenticated. سياسة RLS على الجدول تقصر SELECT على صاحب الصف كحاجز دفاعي إضافي.\n- public.public_profiles هو View عام آمن للمستخدمين المصادقين: يعرض الهوية والاسم والنبذة والصورة والاهتمامات والجنسية العامة، ويُرجع بلد/منطقة/مدينة الإقامة NULL ما لم يوافق صاحب الملف. لا يتضمن study_place أو work_place أو profile_completed.\n- public.my_profile_state يعرض id وprofile_completed للحساب الحالي فقط عبر auth.uid().\n- فحص Staging داخل دور authenticated أكد: القراءة المباشرة من profiles مرفوضة؛ public_profiles يعرض 3 صفوف عامة؛ my_profile_state يعرض صفاً واحداً للحساب الحالي؛ حقول الدراسة والعمل غير موجودة في الإسقاط العام؛ ومعلومات السكن غير ظاهرة دون موافقة.\n- App.tsx يقرأ حالة الإكمال من my_profile_state، وMessengerWorkspace يقرأ المستخدمين من public_profiles.
 - profile_private_details وحقول التفضيلات نطاق أكثر حساسية، مع سياسات صفوف تربط الوصول بـauth.uid().
 - تم التحقق مباشرة من أن authenticated لا يملك UPDATE على العمودين verified_contact_method وcontact_verified_at، ولا يملك anon ذلك أيضاً.
 - منح INSERT/UPDATE على profile_private_details محدود بأعمدة البيانات غير المرتبطة بإثبات التحقق؛ لا توجد صلاحية جدولية عامة للكتابة على كل الأعمدة.
@@ -95,7 +95,7 @@ Migration 20261030030822_profile_avatars_storage_security أنشأت bucket خا
 ## 9. ملاحظات أمنية حالية
 
 - Supabase Advisor يرصد حماية كلمات المرور المسرّبة غير مفعّلة. لا تُفعّل عبر التفاف غير موثوق؛ يوثّق ذلك كخطر، وتُستخدم سياسات كلمات المرور وحدود المحاولات وCAPTCHA حيث تتوفر كطبقات إضافية.
-- يوجد تحذير 5 مفاتيح أجنبية بلا فهارس؛ يعالج بعد مراجعة الاستعلامات وMigration غير مدمرة.
+- فهارس Messenger الخاصة بالمفاتيح الأجنبية أضيفت إلى Staging، ولم يعد Advisor يعرض unindexed_foreign_keys. تبقى unused_index INFO في بيئة لا تحمل نشاطاً إنتاجياً.
 - لا تُحذف الفهارس التي تظهر غير مستخدمة في Advisor اعتماداً على تقرير منفرد أو قاعدة بيانات قليلة النشاط.
 
 ## 10. الاختبارات الإلزامية المتبقية
