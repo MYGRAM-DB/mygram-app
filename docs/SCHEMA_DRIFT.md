@@ -1,14 +1,14 @@
 # تقرير اختلاف مخططات Production وStaging
 
 تاريخ خط الأساس: 2026-10-30
-آخر تحديث: بعد Migration Staging رقم 20261030023659
+آخر تحديث: بعد Migration Staging رقم 20261030024521
 
 ## 1. ملخص البيئتين
 
 | المؤشر | Production | Staging |
 |---|---:|---:|
 | الجداول العامة | 51 | 8 |
-| Migration history | 45 | 6 |
+| Migration history | 45 | 7 |
 | Edge Functions | 5 | 0 |
 | اللغات | 60 | 14 |
 | الدول | 205 | 205 |
@@ -106,3 +106,10 @@ Migration: 20261030023659_create_private_profile_details_and_stage_countries
 4. لا تفعيل supported_locales.enabled قبل انتقال متزامن مع is_active.
 5. لا تعلن RLS/Auth مكتملة قبل اختبار API برمزي JWT حقيقيين.
 6. كل مرحلة لاحقة Migration موثقة وقابلة للاستعادة، وتبدأ على Staging.
+
+
+## 8. تحديث بعد Migration استكمال الملف
+- Migration `20261030024521_add_secure_profile_completion_rpc` تضيف `complete_mygram_profile` على Staging فقط.
+- RPC تنفذ الحفظ الذري للملف العام والتفاصيل الخاصة وتفضيلات الموقع اعتماداً على `auth.uid()`.
+- تم فحص SECURITY DEFINER وsearch_path الفارغ وصلاحيات التنفيذ: authenticated مسموح، anon غير مسموح.
+- لا تغييرات على مخطط أو بيانات أو سياسات Production.
