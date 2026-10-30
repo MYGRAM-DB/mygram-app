@@ -74,7 +74,10 @@ const pairQuery = new URLSearchParams({
   limit: "1",
 });
 
-let pairRows = await expectRows(a, `/rest/v1/messenger_conversations?${pairQuery}`, 0, "Initial direct conversation lookup");
+const pairLookup = await api(a, `/rest/v1/messenger_conversations?${pairQuery}`);
+assert.equal(pairLookup.response.status, 200, `Direct conversation lookup failed: ${JSON.stringify(pairLookup.body)}`);
+const pairRows = pairLookup.body ?? [];
+assert.ok(pairRows.length <= 1, "More than one direct conversation exists for the same canonical pair.");
 let conversationId;
 
 if (pairRows.length === 0) {
@@ -104,7 +107,10 @@ async function ensureMessage(session, senderId, clientMessageId, body) {
     client_message_id: `eq.${clientMessageId}`,
     limit: "1",
   });
-  const existing = await expectRows(session, `/rest/v1/messenger_messages?${query}`, 0, "Fixture message lookup");
+  const lookup = await api(session, `/rest/v1/messenger_messages?${query}`);
+  assert.equal(lookup.response.status, 200, `Fixture message lookup failed: ${JSON.stringify(lookup.body)}`);
+  const existing = lookup.body ?? [];
+  assert.ok(existing.length <= 1, "Duplicate client_message_id fixture rows were found.");
   if (existing.length) return existing[0].id;
 
   const inserted = await api(session, "/rest/v1/messenger_messages?select=id", {
@@ -144,7 +150,10 @@ const attachmentQuery = new URLSearchParams({
   object_path: `eq.${objectPath}`,
   limit: "1",
 });
-const existingAttachment = await expectRows(a, `/rest/v1/messenger_attachments?${attachmentQuery}`, 0, "Attachment metadata lookup");
+const attachmentLookup = await api(a, `/rest/v1/messenger_attachments?${attachmentQuery}`);
+assert.equal(attachmentLookup.response.status, 200, `Attachment metadata lookup failed: ${JSON.stringify(attachmentLookup.body)}`);
+const existingAttachment = attachmentLookup.body ?? [];
+assert.ok(existingAttachment.length <= 1, "Duplicate attachment fixture metadata was found.");
 if (existingAttachment.length === 0) {
   const attachmentInsert = await api(a, "/rest/v1/messenger_attachments", {
     method: "POST",
