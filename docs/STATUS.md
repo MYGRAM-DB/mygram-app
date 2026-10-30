@@ -135,3 +135,17 @@ The repository owner must configure and verify branch rules in GitHub Settings. 
 - لا merge ولا deploy.
 - جميع تغييرات قاعدة البيانات الحالية محصورة في MYGRAM-STAGING.
 - تراجع الكود عبر revert للـcommit على فرع العمل؛ وتراجع DDL عبر migration تعويضية مراجعة، لا حذف عشوائي للبيانات أو تعطيل RLS.
+
+
+## Decision 04 verified update | 2026-10-31
+
+- Current rebuild HEAD: `e37881857cdc76b444da11a5887ad01e8699fc02`.
+- [Run #107](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41143033931): both current CI jobs passed on this exact SHA.
+- PR #54 remains Open / Draft / Not Merged.
+- OIDC/AuthZ source updated, but `qa-authz-two-user` remains undeployed and unexecuted. The runner still has a fixture-insert mismatch against Staging grants; do not deploy until corrected.
+- Branch protection rulesets were not saved. Read-only rulesets listing is empty; direct branch-protection API is 403 for the connected integration.
+- Confirmed P1 Production finding: authenticated can SELECT all columns of all `profiles` rows because of table grants plus permissive `USING (true)`; this includes study/work and location fields. Production remains untouched.
+- Staging retains a safer split: no authenticated base-table profile SELECT, safe security-invoker/barrier public view, private details owner RLS.
+- No signed avatar URL service, independent AuthZ CI gate, Migration Validator, SMTP/recovery journey, or rollback proof has been completed.
+- Gate A: OPEN. No merge, no public deployment, no Production changes.
+
