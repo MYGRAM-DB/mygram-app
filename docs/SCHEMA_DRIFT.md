@@ -1,3 +1,17 @@
+# LATEST VERIFIED CI DELTA | 2026-10-31
+
+- Last tested code/documentation baseline: `cf81c0543d97dc85c34ac5ae2abdd75f028f1073`.
+- [Run #111](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41143795913) completed SUCCESS on that exact SHA. Both required existing jobs passed.
+- Run #111 verify job passed product tests, Playwright, TypeScript, Vite build, and the current syntax-only integration checks.
+- Run #111 Staging job passed the existing JWT/Profile Privacy/Storage/Messenger A/B/C/Realtime suite.
+- Important: the AuthZ-specific `qa-authz-two-user` function remains undeployed and the independent AuthZ test remains unexecuted. Run #111 does not close that gap.
+- PR #54 remains Open / Draft / Not Merged. Branch protection remains unverified and unapplied; rulesets API returned an empty list after the browser session timed out before save.
+- No Production changes. Production `profiles` remains a confirmed overbroad authenticated SELECT path, with zero populated study/work fields and zero hidden-but-populated location rows in the audit-time aggregate.
+- Four Staging-applied migrations have no matching branch source files; exact versions are documented below. No history rewrite.
+- This documentation-only consolidation creates a newer branch HEAD; the next CI run must be checked against that resulting SHA rather than inheriting Run #111.
+
+---
+
 > **Current verified state (2026-10-31):** rebuild HEAD `47bede99b7ac368f4079cab9d705660f1c9b5749` passed [Run #110](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41143602523), both jobs SUCCESS. PR #54 remains Open / Draft / Not Merged. Branch protection is not applied or verified. Staging ledger: 17 migrations; branch source: 13 migration files; four applied entries are source-missing and listed in the Decision 04 delta below. No migration history rewrite or Production change occurred. Gate A remains OPEN.
 
 > **الحالة الحالية (2026-10-31):** آخر خط أساس اجتاز الاختبار هو HEAD `a837aee766da87a3a050fcdde6f01e90eba41dc1` عبر Run #104 [41139860543](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41139860543)، والوظيفتان الرئيسيتان نجحتا. هذا المستند أدناه هو خط أساس تاريخي لتفاصيل الفروقات، والمرجع التنفيذي الحالي للأمن والاختبارات هو [AUDIT-20261031.md](./AUDIT-20261031.md). بوابة A ما زالت مفتوحة. PR #54 مفتوح Draft، ولا دمج أو نشر أو تعديل Production. أي commit توثيقي لاحق يحتاج CI جديداً على HEAD الناتج.
