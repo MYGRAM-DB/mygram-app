@@ -321,7 +321,7 @@ export default function App() {
                 user ? <MessengerWorkspace user={user}/> : (
                   <section className="panel detail">
                     <div className="eyebrow">MYGRAM MESSENGER</div>
-                    <h1>محادثاتك الخاصة تبدأ هنا</h1>
+                    <h1>MYGRAM MESSENGER</h1><p className="muted">محادثاتك الخاصة تبدأ هنا</p>
                     <p className="description">سجّل الدخول لفتح Messenger. لا تُعرض أي محادثة قبل التحقق من عضويتك فيها.</p>
                     <a className="button primary" href="#/auth">تسجيل الدخول</a>
                   </section>
