@@ -1,3 +1,22 @@
+# CURRENT VERIFIED SNAPSHOT | DECISION 04 | 2026-10-31
+
+- Repository: `MYGRAM-DB/mygram-app`.
+- `main`: `d75fbdb6bf6f47ae70ffd1e975eaf9ba12ee7a61`.
+- Rebuild branch: `rebuild/phase-a-architecture`.
+- Current HEAD: `47bede99b7ac368f4079cab9d705660f1c9b5749`.
+- [Run #110](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41143602523): **SUCCESS** on this exact HEAD; both build/verify and Staging security jobs passed.
+- Run #107: SUCCESS on `e37881857cdc76b444da11a5887ad01e8699fc02`. Runs #108 and #109 were cancelled by newer commits.
+- PR #54: Open / Draft / Not Merged. Do not merge.
+- Branch protection: NOT VERIFIED / NOT APPLIED. Rulesets list is empty; browser setup timed out before saving; branch-protection endpoint access returned 403.
+- `qa-authz-two-user`: source updated, but not deployed or executed. Current CI validates test syntax only. Fixture insertion must be corrected before deployment.
+- Production P1 privacy path: authenticated SELECT grant + permissive `USING (true)` on `profiles` exposes all profile columns to signed-in users. Audit-time aggregate: 3 rows; study/work populated rows 0; hidden-but-populated location rows 0. No Production changes.
+- Staging has safer base-table grants and a security-invoker/barrier public projection.
+- Staging migration ledger 17 vs 13 repository migration files; 4 applied migrations are source-missing and documented in `SCHEMA_DRIFT.md`.
+- No signed avatar URL access contract, independent AuthZ CI gate, migration validator, SMTP/recovery proof, or rollback proof yet.
+- Gate A: OPEN. Production read-only. No public deployment.
+
+---
+
 # CURRENT VERIFIED SNAPSHOT | 2026-10-31
 
 ## تصحيح السجل التنفيذي | 2026-10-31
