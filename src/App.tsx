@@ -1,4 +1,4 @@
-import { isValidUsername, normalizeUsername } from "./lib/profile-validation.js";
+import { isValidUsername, normalizeUsername } from "./lib/profile-validation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { products, getProductBySlug, type ProductDefinition } from "./config/products";
 import { navigate, routeFromPath, useHashPath } from "./lib/navigation";
