@@ -22,9 +22,9 @@
 
 - npm test: أربعة اختبارات Node لفهرس المنتجات.
 - @playwright/test مثبت بإصدار 1.64.1.
-- خمسة اختبارات Chromium في e2e/foundation.spec.ts: RTL والمنتجات، استقلال مساري Messenger وWHATSMYGRAM، حفظ المظهر، تنقل الهاتف، وسلوك التسجيل دون إعداد Supabase.
-- CI #13 نجح باستخدام npm ci من package-lock.json الملتزم.
-- CI #13: Node 4/4، Playwright 5/5، TypeScript وVite build.
+- ستة اختبارات Chromium في e2e/foundation.spec.ts: RTL والمنتجات، استقلال مساري Messenger وWHATSMYGRAM، حفظ المظهر، تنقل الهاتف، سلوك التسجيل دون إعداد Supabase، وحماية مسار onboarding من الزائر.
+- أربعة اختبارات إضافية مستقلة لتطبيع username وصيغته وحدوده والمحارف غير المقبولة؛ إجمالي اختبارات Node أصبح 8 (4 سجل منتجات + 4 تحقق اسم المستخدم).
+- CI run 40994126414 على commit b2ad90a2d9bd86917c44f59c7b038060651b22ea نجح: npm ci من lockfile الملتزم، Playwright Chromium 6/6، Node 8/8، TypeScript وVite build.
 - CI run 40992836026 بعد Migration المرحلة الثانية نجح على commit الخاص بملف Migration. يلزم إعادة CI بعد أي commit كود لاحق.
 
 ## 4. فحص RLS الذي نُفذ على Staging
@@ -51,9 +51,12 @@
 ## 6. ما لم يُختبر بعد
 
 - Auth حي: signUp، تأكيد البريد، signIn، استرجاع كلمة المرور.
+- E2E مسار onboarding بعد جلسة Auth حقيقية، وحفظ النموذج من المتصفح عبر Supabase REST/RPC.
+- اقتراح اسم مستخدم وفحص توفره المبكر.
 - اختبار RLS عبر JWT حقيقيين منفصلين، لا محاكاة قاعدة البيانات فقط.
-- تخزين profile_private_details عبر REST واختبارات منع قراءة حساب آخر.
-- منع المستخدم من تعديل verified_contact_method أو contact_verified_at عبر REST.
+- اختبار complete_mygram_profile بحسابين JWT حقيقيين عبر REST، والتحقق من أن حقول الملف الخاص والتفضيلات لا تُقرأ من الحساب الآخر.
+- اختبار منع المستخدم من تعديل verified_contact_method أو contact_verified_at عبر REST.
+- اختبار API حي لعدم القدرة على تمرير هوية مستخدم آخر إلى RPC.
 - إرسال بريد أو SMS حقيقي.
 - مكالمات WebRTC/LiveKit على جهازين.
 - الميزات الاجتماعية والمراسلة بعد بناء الواجهات الجديدة.
