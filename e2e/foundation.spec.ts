@@ -70,3 +70,11 @@ test("onboarding route requires an authenticated session", async ({ page }) => {
   await expect(page).toHaveURL(/#\/auth$/);
   await expect(page.getByRole("heading", { name: "الدخول إلى MYGRAM" })).toBeVisible();
 });
+
+test("MYGRAM FB route opens its social login gate", async ({ page }) => {
+  await page.goto("/#/products");
+  await page.getByTestId("product-fb").click();
+  await expect(page).toHaveURL(/#\/products\/fb$/);
+  await expect(page.getByRole("heading", { name: "الموجز الاجتماعي" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "تسجيل الدخول" })).toBeVisible();
+});
