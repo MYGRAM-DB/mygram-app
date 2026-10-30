@@ -14,13 +14,13 @@
 |---|---|---|
 | A: Audit & Foundation | PARTIAL | تدقيق GitHub وSupabase؛ تم توثيق انحراف Production/Staging في SCHEMA_DRIFT.md وPR #54 |
 | B: Core Architecture | PARTIAL | Vite/React/TypeScript shell، لوحة المنتجات التسعة، مسارات Hash، مظهر داكن/فاتح وRTL |
-| C: Identity & Auth | PARTIAL | تهيئة Supabase Auth بالبريد عند ضبط المتغيرات؛ لا تحقق بريد حي أو OTP |
+| C: Identity & Auth | PARTIAL | تهيئة Supabase Auth بالبريد عند ضبط المتغيرات؛ لا تحقق بريد حي أو OTP أو استكمال ملف |
 | D: Social | PARTIAL | مخطط قاعدة اجتماعي سابق موجود؛ واجهات إعادة البناء والعمليات غير مكتملة |
-| E: Messaging | PARTIAL | مخططات منفصلة لـMessenger وWHATSMYGRAM موجودة؛ لا واجهة مراسلة جديدة أو E2E |
+| E: Messaging | PARTIAL | مخططات منفصلة لـMessenger وWHATSMYGRAM موجودة؛ لا واجهة مراسلة جديدة أو E2E متكامل |
 | F: Video | NOT IMPLEMENTED | Tube وTikToks غير منفذين؛ Reels القديمة لا تعني اكتمال المنتج |
 | G: AI & Meetings | PARTIAL | Meetings functions ومخططات موجودة في Production؛ MYGRAM AI غير منفذ |
 | H: Wallet | NOT IMPLEMENTED | لا جداول محفظة أو Ledger |
-| I: Comprehensive Tests | PARTIAL | 4 اختبارات Node + TypeScript + Vite build نجحت في CI run #2؛ Playwright وRLS E2E لم تبدأ |
+| I: Comprehensive Tests | PARTIAL | CI run #4: اختبارات Node ‏4/4 وTypeScript وVite build نجحت؛ أُضيفت خمسة اختبارات Playwright وCI run #6 بانتظار النتيجة |
 | J: Release | BLOCKED | لا نشر Production في هذه المرحلة |
 
 ## ما يعمل في الهيكل الحالي
@@ -32,26 +32,29 @@
 - إنشاء الحساب/تسجيل الدخول بالبريد عبر Supabase Auth عند إعداد البيئة.
 - تمييز واضح عند عدم إعداد Supabase دون إرسال طلبات غير مضبوطة.
 - واجهة عربية RTL في نسخة التأسيس.
+- أُضيف Playwright Chromium suite أولي، بانتظار التحقق من CI.
 
 ## ما لم يكتمل
 
 - دعم 60 لغة كاملة.
 - التسجيل الهاتفي وOTP.
-- استكمال الملف الشخصي وتفرد اسم المستخدم.
+- استكمال الملف الشخصي وتفرد اسم المستخدم بحماية موثقة.
 - صفحات ووظائف المنتجات التسعة.
-- Playwright E2E وRLS/Integration tests.
+- اختبارات RLS بحسابين وIntegration tests.
 - إعداد SMTP أو SMS أو خدمات الاتصالات الحقيقية.
 - نظام المحفظة والدفتر المالي.
+- تثبيت package-lock.json في المستودع.
 
 ## المخاطر المفتوحة
 
-1. تثبيت package-lock المولد من Artifact بعد نجاح CI؛ لا يزال غير ملتزم في المستودع.
-2. إعداد متغيرات Supabase في بيئة البناء دون وضع Service Role Key بالعميل.
-3. بناء استكمال الملف الشخصي بعد تثبيت contract واضح ومراجعة قيود usernames.
-4. ترحيل Staging من مخططها الحالي المحدود إلى schema متوافق.
-5. اختبارات سلبية/إيجابية لثلاثة RPCs SECURITY DEFINER.
-6. معالجة خمسة foreign keys بدون فهارس بعد مراجعة الأثر.
-7. إثبات تغطية الترجمة لجميع واجهات المنتجات.
-8. تجهيز مزودي SMTP وSMS وTURN وLiveKit وAI عند اعتماد الخدمات.
-9. تصميم Wallet قانونياً ومحاسبياً قبل أي كتابة مالية.
-10. إنشاء Playwright journeys لمستخدمين منفصلين، ثم اختبار الوظائف المتكاملة.
+1. استخراج package-lock النهائي من Artifact الخاص بتشغيل CI بعد تثبيت Playwright ثم الالتزام به في الفرع.
+2. التحقق من نجاح أول تشغيل Playwright وعدم وجود أخطاء متصفح.
+3. إعداد متغيرات Supabase في بيئة البناء دون وضع Service Role Key بالعميل.
+4. بناء استكمال الملف الشخصي بعد تثبيت contract واضح ومراجعة قيود usernames.
+5. مواءمة مخطط Staging تدريجياً بإضافات آمنة، ثم فحص المخطط والسياسات مجدداً.
+6. اختبارات سلبية/إيجابية لثلاثة RPCs SECURITY DEFINER.
+7. معالجة خمسة foreign keys بدون فهارس بعد مراجعة الأثر.
+8. إثبات تغطية الترجمة لجميع واجهات المنتجات.
+9. تجهيز مزودي SMTP وSMS وTURN وLiveKit وAI عند اعتماد الخدمات.
+10. تصميم Wallet قانونياً ومحاسبياً قبل أي كتابة مالية.
+11. إنشاء Playwright journeys لحسابين منفصلين واختبار RLS، ثم اختبار الوظائف المتكاملة.
