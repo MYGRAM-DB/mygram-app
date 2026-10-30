@@ -17,15 +17,15 @@
 | F: Video | NOT IMPLEMENTED | Tube وTikToks والريلز كمنتجات مكتملة غير منفذة |
 | G: AI & Meetings | NOT IMPLEMENTED IN STAGING | لا توجد منظومة MYGRAM AI أو Meetings جديدة في Staging |
 | H: Wallet | NOT IMPLEMENTED | لا جداول Wallet أو Ledger أو معاملات مالية |
-| I: Tests | PARTIAL | اختبارات قاعدة البيانات المحاكية نجحت؛ اختبارات Auth/JWT وMessenger A/B/C عبر API/WebSocket لم تُشغّل بعد |
+| I: Tests | PARTIAL | CI Run #60 ناجح: 8 Node و6 Playwright وفحوص الصياغة وTypeScript/Vite build؛ اختبارات Auth/JWT وMessenger A/B/C الحقيقية ما زالت متخطاة لغياب أسرار QA |
 | J: Release | BLOCKED | لا دمج PR #54 ولا نشر Production |
 
 ## مواءمة Staging الحالية
 
 - المشروع: MYGRAM-STAGING (cbyvtehvaojxfcgpelir)، حالته ACTIVE_HEALTHY.
 - قاعدة البيانات: PostgreSQL 17.
-- الجداول العامة: 12، منها 8 للجذر/الهوية والاجتماعي و4 لـMessenger المباشر.
-- Migrations: 10.
+- الجداول العامة: 12، منها 8 للجذر/الهوية والاجتماعي و4 لـMessenger المباشر. أضيفت واجهتا View آمنتان للملفات العامة وحالة الملف الخاصة بالحساب الحالي.
+- Migrations: 11.
 - الدول المدعومة: 205.
 - اللغات المسجلة: 14 فقط، بلا Translation Catalog كامل.
 - يوجد 3 مستخدمي Auth مؤكدَي البريد. لم تتغير كلمات مرورهم، ولم تُنشأ لهم بيانات ملف شخصية دائمة في فحوص SQL.
@@ -78,7 +78,7 @@
 
 ## Auth / Profile / Storage الحالي
 
-- حقول إثبات البريد والهاتف verified_contact_method وcontact_verified_at غير قابلة للتحديث من anon أو authenticated حسب column privileges.
+- Migration 20261030171814_secure_public_profile_projection ألغت القراءة المباشرة من public.profiles لـanon وauthenticated، وأنشأت public_profiles لعرض الحقول المسموح بها فقط مع حجب بيانات السكن إلا عند موافقة صاحب الملف، وmy_profile_state لحالة إكمال ملف المستخدم الحالي فقط. اختبار SQL بدور authenticated أكد منع القراءة المباشرة، وظهور 3 ملفات عامة آمنة، وصف حالة واحد للحساب الحالي، وعدم ظهور حقول الدراسة/العمل أو بيانات السكن دون موافقة. الواجهة الجديدة تستخدم هذين الـView بدل الجدول الأساسي.\n- حقول إثبات البريد والهاتف verified_contact_method وcontact_verified_at غير قابلة للتحديث من anon أو authenticated حسب column privileges.
 - complete_mygram_profile دالة SECURITY DEFINER مع search_path فارغ، EXECUTE لـauthenticated فقط، والهوية مستمدة من auth.uid().
 - تنبيه Advisor على الدالة أعلاه موثق؛ يبقى اختبار REST/JWT شرطاً قبل الدمج.
 - حماية كلمات المرور المسرّبة ما زالت غير مفعلة بسبب حدود الخطة الحالية.
