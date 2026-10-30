@@ -16,9 +16,9 @@ concurrency:
 
 jobs:
   verify:
-    name: Typecheck, unit tests, and production build
+    name: Typecheck, unit tests, Playwright, and production build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,8 +30,12 @@ jobs:
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
       - name: Install from generated lock
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
       - name: Test product registry
         run: npm test
+      - name: Browser end-to-end tests
+        run: npm run test:e2e
       - name: TypeScript validation and Vite build
         run: npm run build
       - name: Upload lockfile for repository pinning
