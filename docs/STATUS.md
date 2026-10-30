@@ -1,94 +1,114 @@
 # MYGRAM Execution Status
 
-تاريخ خط الأساس: 2026-10-30
+تاريخ التحديث: 2026-10-30
 
 ## الحالة العامة
 
-PHASE B: FOUNDATION SHELL IMPLEMENTED
+المنصة ما زالت في مرحلة التأسيس. تم نقل أول شريحة من MYGRAM MESSENGER إلى Staging، لكن ذلك لا يعني اكتمال منتج المراسلة أو المنتجات التسعة.
 
-هذا لا يعني أن المنتجات أو الوظائف الأساسية مكتملة.
-
-## المراحل
-
-| المرحلة | الحالة | الملاحظات |
+| المسار | الحالة | الدليل / الحاجز |
 |---|---|---|
-| A: Audit & Foundation | PARTIAL | تدقيق GitHub وSupabase؛ اختلافات البيئتين موثقة |
-| B: Core Architecture | PARTIAL | Vite/React/TypeScript shell، سجل المنتجات التسعة، مسارات Hash، مظهر داكن/فاتح وRTL |
-| C: Identity & Auth | PARTIAL | تسجيل البريد الأولي، توجيه onboarding، نموذج الملف، RPC ذرّية وبيانات خاصة منفصلة؛ اختبار جلستي JWT عبر Auth API ما زال مطلوباً |
-| D: Social | PARTIAL | مخطط اجتماعي أولي وRLS موجودان؛ الواجهات والعمليات غير مكتملة |
-| E: Messaging | NOT IMPLEMENTED IN STAGING | لا توجد جداول محادثات أو رسائل أو أعضاء محادثة في Staging؛ اختبار عزل A/B/C غير قابل للتنفيذ قبل ترحيل المخطط والسياسات |
-| F: Video | NOT IMPLEMENTED | Tube وTikToks غير منفذين |
-| G: AI & Meetings | PARTIAL | وظائف اجتماعات قديمة موجودة في Production؛ MYGRAM AI غير منفذ |
-| H: Wallet | NOT IMPLEMENTED | لا جداول محفظة أو Ledger |
-| I: Tests | PARTIAL | CI Run #46 أخضر على HEAD 4a710d5039f1b9319498ead8a83da4ce7b81d5f1 للاختبارات الأساسية والبناء؛ خطوة JWT/Storage الآلية تخطّتها CI لعدم تهيئة أسرار QA |
-| J: Release | BLOCKED | لا نشر Production |
+| A: Audit & Foundation | PARTIAL | مستودع main وخط إعادة البناء موثقان؛ الفروق بين Production وStaging محفوظة |
+| B: Core Architecture | PARTIAL | React + TypeScript + Vite، سجل المنتجات التسعة، RTL، المظهر الداكن/الفاتح |
+| C: Identity & Auth | PARTIAL | تسجيل بريد أولي، onboarding، RPC ذرّية؛ JWT الحقيقي وSMTP واستعادة كلمة المرور مطلوبة |
+| D: Social | PARTIAL | posts/comments/reactions في Staging مع RLS؛ الواجهة والعمليات الاجتماعية الكاملة غير مكتملة |
+| E: MYGRAM MESSENGER | PARTIAL | محادثات مباشرة A/B، رسائل، مرفقات خاصة، RLS وRealtime وواجهة أولية؛ اختبار JWT/WebSocket الحقيقي ينتظر أسرار QA |
+| E2: WHATSMYGRAM | NOT IMPLEMENTED IN STAGING | لا توجد جداول أو سياسات مستقلة لهذا المنتج بعد |
+| F: Video | NOT IMPLEMENTED | Tube وTikToks والريلز كمنتجات مكتملة غير منفذة |
+| G: AI & Meetings | NOT IMPLEMENTED IN STAGING | لا توجد منظومة MYGRAM AI أو Meetings جديدة في Staging |
+| H: Wallet | NOT IMPLEMENTED | لا جداول Wallet أو Ledger أو معاملات مالية |
+| I: Tests | PARTIAL | اختبارات قاعدة البيانات المحاكية نجحت؛ اختبارات Auth/JWT وMessenger A/B/C عبر API/WebSocket لم تُشغّل بعد |
+| J: Release | BLOCKED | لا دمج PR #54 ولا نشر Production |
 
-## مواءمة Staging
+## مواءمة Staging الحالية
 
-- Migration 20261030022611_align_staging_core_schema_phase_1 أضافت حقول الملف والتفضيلات وعلاقة الردود وحدود النص.
-- Migration 20261030023659_create_private_profile_details_and_stage_countries أنشأت تفاصيل الملف الخاصة وجدول الدول المرجعي.
-- Staging يضم 8 جداول عامة و8 migrations بعد إضافة تخزين صور الملف الشخصي.
-- جدول الدول يحتوي 205 سجلات مرجعية، كلها مفعّلة، مع أسماء عربية/إنجليزية ورموز اتصال.
-- profile_private_details مفعّل عليه RLS؛ حقول إثبات البريد/الهاتف ليست قابلة للكتابة من المتصفح حسب فحص column privileges.
-- Migration 20261030024521 أضافت RPC ذرّية لاستكمال الملف؛ SECURITY DEFINER مع search_path فارغ، التنفيذ لـauthenticated فقط، والهوية من auth.uid().
-- Migration 20261030030822 أنشأت bucket خاصة profile-avatars بحد 5 MiB وأربع سياسات تربط العمليات بمجلد auth.uid().
-- لا توجد bucket عامة في Staging.
-- توجد ثلاثة مستخدمين Auth مؤكدَي البريد. لم تُغيّر كلمات مرورهم أو بياناتهم الدائمة خلال فحوص المحاكاة.
-- تبقى 14 لغة فقط، ولا يوجد Translation Catalog أو Edge Functions.
-- جرد مخطط قاعدة البيانات في 2026-10-30 لم يجد أي جدول تطبيقي باسم أو مجال chat/message/conversation/participant/thread/inbox في Staging. لم يتم الرجوع إلى Production أو نسخه لهذا الفحص.
+- المشروع: MYGRAM-STAGING (cbyvtehvaojxfcgpelir)، حالته ACTIVE_HEALTHY.
+- قاعدة البيانات: PostgreSQL 17.
+- الجداول العامة: 12، منها 8 للجذر/الهوية والاجتماعي و4 لـMessenger المباشر.
+- Migrations: 10.
+- الدول المدعومة: 205.
+- اللغات المسجلة: 14 فقط، بلا Translation Catalog كامل.
+- يوجد 3 مستخدمي Auth مؤكدَي البريد. لم تتغير كلمات مرورهم، ولم تُنشأ لهم بيانات ملف شخصية دائمة في فحوص SQL.
+- المخازن الخاصة: profile-avatars وmessenger-attachments. لا يُستخدم رابط Public للوسائط.
+- لا توجد Edge Functions منشورة حالياً في Staging.
+- لا توجد تغييرات Production. لم يتم نسخ بيانات Production إلى Staging.
 
-## نتائج RLS وStorage المحاكية (2026-10-30)
+## MYGRAM MESSENGER: ما تم بناؤه
 
-- استخدمت معاملة PostgreSQL مؤقتة مع SET LOCAL ROLE authenticated وclaims مختلفة لحسابين Staging موجودين، ثم نفذت ROLLBACK.
-- RPC complete_mygram_profile نجحت لكل هوية محاكاة وأنشأت صفوف الملف الخاص والتفضيلات داخل المعاملة فقط.
-- الحساب A قرأ تفاصيله الخاصة وتفضيلاته؛ لم تظهر له صفوف الحساب B الخاصة أو تفضيلاته.
-- الحسابان المصادقان استطاعا قراءة صفّي الملف العامين، وفق سياسة profiles الحالية.
-- الحساب B لم يستطع تعديل بيانات الملف الخاص للحساب A أو منشور A؛ عدد الصفوف المعدّلة في كل محاولة كان صفراً.
-- الحساب A لم يستطع حذف تعليق أو تفاعل الحساب B؛ عدد الصفوف المحذوفة في كل محاولة كان صفراً.
-- اختُبر Storage على مستوى صفوف storage.objects: المالك استطاع رؤية صف كائن تجريبي، والحساب الآخر لم يستطع رؤيته أو تحديثه. أُلغيت المعاملة.
-- محاولة الحذف المباشر من storage.objects رفضها مشغّل Supabase الوقائي (الحذف يجب أن يتم عبر Storage API). لم يُجرَ حذف مباشر.
-- تحقق لاحق بعد ROLLBACK أكد بقاء 3 مستخدمي Auth مؤكدين، وصفر صفوف اختبار دائمة في profile_private_details وuser_preferences وposts وpost_comments وpost_reactions وprofile-avatars.
-- هذه محاكاة claims وصلاحيات قاعدة البيانات وليست اختبار جلستي دخول JWT عبر Auth API، وليست رفع ملف ثنائي فعلي عبر Storage API أو من واجهة MYGRAM.
-- فحص column privileges أكد أن anon وauthenticated لا يستطيعان تحديث verified_contact_method أو contact_verified_at.
-- اختبار REST آلي بحسابين مستقلين موجود في tests/authz.integration.mjs، لكنه لم يُشغّل بعد لأنه يتطلب أسرار حسابَي QA داخل GitHub Actions.
+- messenger_conversations: محادثة مباشرة ذات طرفين، مع ترتيب ثابت لمعرفي العضوين ومنع تكرار زوج المحادثة.
+- messenger_participants: العضوية تُنشأ داخل Trigger موثوق، والعميل يملك القراءة فقط ولا يستطيع إضافة نفسه أو غيره.
+- messenger_messages: رسائل نصية ورسائل مرتبطة بوسائط؛ هوية المرسل مرتبطة بـauth.uid()، والرسالة غير قابلة للتعديل أو الحذف من العميل في هذه المرحلة.
+- messenger_attachments: بيانات وصفية مرتبطة برسالة ومحادثة محددتين.
+- bucket خاصة messenger-attachments، حد 25 MiB، وقائمة MIME محددة للصورة والفيديو والصوت وPDF.
+- قنوات Realtime خاصة باسم messenger:<conversation-id>:messages. صلاحية الاشتراك مبنية على عضوية الطرفين، والبث ناتج عن Database Triggers لا عن رسائل Broadcast يرسلها العميل مباشرة.
+- واجهة React أولية في src/components/MessengerWorkspace.tsx: فتح محادثة باسم المستخدم، قائمة المحادثات، الرسائل، المرفقات، وروابط مؤقتة للتحميل.
+- جميع الجداول الأربع في Messenger لديها RLS. لا يملك العميل صلاحية الكتابة في جدول العضوية أو تعديل/حذف الرسائل.
 
-## اختبار محادثات A/B/C
+## نتائج اختبار A/B/C المحاكي داخل قاعدة البيانات (2026-10-30)
 
-- طلب التحقق: ينشئ A محادثة مباشرة مع B، ثم يحاول C تعداد المحادثات وقراءة المحادثة والرسائل والمرفقات والاشتراك في Realtime أو الانضمام إلى المحادثة.
-- نتيجة فحص Staging: لا توجد حالياً جداول محادثات/رسائل/أعضاء أو سياسات RLS تخص Messenger؛ لذلك لم يُنفذ اختبار محادثة وهمي ولم تُسجل نتيجة PASS.
-- بوابة التنفيذ: ترحيل مخطط Messenger إلى Staging، تعريف membership-based RLS على كل من conversation وmessages وattachments، حماية Realtime/Storage، ثم تشغيل اختبار ثلاث هويات JWT حقيقية A وB وC.
-- معايير النجاح: A وB يستطيعان الوصول إلى محادثتهما؛ C لا يرى سجل المحادثة أو الرسائل أو المرفقات ولا يستطيع تعديل العضوية أو الاشتراك في قناة Realtime الخاصة بها.
+تم إنشاء محادثة A/B ومرفق مؤقت داخل معاملة PostgreSQL مع ثلاث هويات claims مختلفة، ثم ROLLBACK:
 
-## ما لم يكتمل
+| العملية | A | B | C |
+|---|---:|---:|---:|
+| رؤية المحادثة | منشئ | 1 صف | 0 صفوف |
+| رؤية الأعضاء | عضو | عضوان | 0 صفوف |
+| رؤية الرسائل | يرسل | يرى رسائل المحادثة | 0 صفوف |
+| رؤية ميتاداتا المرفق | عضو | 1 صف | 0 صفوف |
+| رؤية كائن Storage | المالك | 1 كائن | 0 كائنات |
+| أهلية قناة Realtime الخاصة | true | true | false |
+| انتحال هوية A من C | غير مطبق | غير مطبق | BLOCKED |
+| إضافة C نفسه كعضو | غير مطبق | غير مطبق | BLOCKED |
+| إنشاء محادثة A/B من C | غير مطبق | غير مطبق | BLOCKED |
 
-- تشغيل اختبار Auth API بجلسَتي JWT فعليتين باستخدام حسابَي QA مؤكدَي البريد.
-- اختبار signup وتأكيد البريد وتسليم SMTP إلى صندوق وارد حقيقي.
-- رحلة UI الفعلية لتسجيل الدخول واستكمال الملف عبر حسابَي QA.
-- رفع صورة الملف الشخصي فعلياً عبر Storage API من واجهة MYGRAM وربطها بالملف.
-- اختبار Storage upload/read/upsert/delete عبر JWT حقيقيين.
-- تنفيذ مخطط Messenger وسياسات المحادثات في Staging ثم اختبار A/B/C عبر ثلاث هويات حقيقية.
-- تسجيل الهاتف وOTP.
-- تفرد usernames عبر البيئتين.
-- حماية عرض حقول الموقع العامة في profiles.
-- 60 لغة كاملة مع ترجمة جميع الشاشات.
-- صفحات ووظائف المنتجات التسعة.
-- المحفظة والدفتر المالي.
+- تم تأكيد أن B يستطيع قراءة الرسائل والعضوية والمرفقات بينما C لا يرى أي صف متعلق بالمحادثة.
+- مُنع C من إرسال رسالة بانتحال A، ومن إضافة نفسه إلى جدول العضوية، ومن إنشاء محادثة يكون طرفاها A وB.
+- فحص Storage أكد أن C لا يرى كائن المرفق.
+- محاكاة Realtime استخدمت شرط العضوية نفسه الموجود في سياسة RLS للقناة. لم يتم بعد اختبار اتصال WebSocket حقيقي بثلاثة JWT.
+- تحقق بعد ROLLBACK أكد بقاء صفر محادثات، صفر أعضاء، صفر رسائل، صفر ميتاداتا مرفقات، وصفر كائنات في bucket Messenger.
+- هذا اختبار قاعدة بيانات بمحاكاة claims وليس اختبار REST/Auth API أو Storage API أو WebSocket حقيقي.
 
-## تنبيهات Advisor في Staging
+## اختبارات التكامل المضافة ولم تُشغّل بعد
 
-- SECURITY WARN: authenticated_security_definer_function_executable على RPC استكمال الملف. الاستدعاء مقصود من authenticated فقط مع قيود دفاعية موثقة، لكن يجب اختبار REST/JWT قبل اعتماد الميزة.
-- SECURITY WARN: حماية كلمات المرور المسرّبة غير مفعلة.
-- PERFORMANCE INFO: ستة فهارس غير مستخدمة بعد على الجداول الاجتماعية في Staging؛ لا تُحذف قبل توفر حمل فعلي ومراجعة خطط الاستعلام.
+- tests/authz.integration.mjs: اختبار حسابين فعليين عبر Auth API وREST وStorage.
+- tests/messenger-three-party.integration.mjs: اختبار A/B/C عبر ثلاث جلسات JWT، REST، Storage، ومحاولة الانضمام إلى قناة Realtime خاصة.
+- تشغيل اختبار Messenger يتطلب أسرار GitHub Actions: MYGRAM_STAGING_PUBLISHABLE_KEY وبيانات دخول حسابات A وB وC المخصصة للاختبار.
+- متغير GitHub Actions المطلوب: MYGRAM_MESSENGER_ABC_TESTS=true.
+- الاختبار مثبت على Staging ref المحدد، ويستخدم Publishable Key فقط. ينشئ أو يعيد استخدام محادثة ثابتة بين A وB، ورسالتين ثابتتين، وكائن مرفق ثابتاً مخصصاً للحسابات الثلاثة. تبقى هذه كـQA fixture في Staging لإعادة تشغيل الاختبار دون تضخم السجلات.
+- لم تتم إضافة أو قراءة أي كلمة مرور بواسطة المساعد.
 
-## المخاطر المفتوحة
+## Auth / Profile / Storage الحالي
 
-1. اختبار رحلة Auth/JWT فعلية بحسابين مستقلين.
-2. اختبار REST لمنع قراءة تفاصيل الحساب الخاص ومنع تغيير حقول إثبات التحقق.
-3. اختبار Storage upload/read/upsert/delete للمالك وغير المالك عبر JWT.
-4. تنفيذ مخطط Messenger وRLS واختبار عزل المحادثات بثلاثة حسابات.
-5. اختبار SMTP/رسائل التأكيد والاستعادة عبر صندوق بريد حقيقي.
-6. مراجعة إتاحة أعمدة profiles لأن SELECT الحالي يسمح للمستخدمين المصادقين بقراءة صفوف profiles؛ show_living_location ليس حماية على مستوى العمود.
-7. انتقال supported_locales من is_active إلى enabled بآلية متزامنة قبل استعمال العمود الجديد.
-8. استكمال بقية مخطط Staging تدريجياً.
-9. إعداد SMS/LiveKit/AI لاحقاً بأسرار منفصلة.
-10. تغطية اللغات والمنتجات والاختبارات المتكاملة.
+- حقول إثبات البريد والهاتف verified_contact_method وcontact_verified_at غير قابلة للتحديث من anon أو authenticated حسب column privileges.
+- complete_mygram_profile دالة SECURITY DEFINER مع search_path فارغ، EXECUTE لـauthenticated فقط، والهوية مستمدة من auth.uid().
+- تنبيه Advisor على الدالة أعلاه موثق؛ يبقى اختبار REST/JWT شرطاً قبل الدمج.
+- حماية كلمات المرور المسرّبة ما زالت غير مفعلة بسبب حدود الخطة الحالية.
+- اختبار البريد الحقيقي، SMTP، استعادة كلمة المرور، Phone Auth وOTP لم يكتمل.
+- Storage الصور الشخصية: خاص، 5 MiB.
+- Storage مرفقات Messenger: خاص، 25 MiB.
+
+## Advisor / Performance
+
+- تحذير SECURITY DEFINER الوحيد في Advisor هو complete_mygram_profile، وهو مقصود ومقيد كما هو موثق أعلاه.
+- auth_leaked_password_protection ما زال WARN غير معالج.
+- بعد إضافة الفهارس، لم يعد Advisor يعرض unindexed_foreign_keys على جداول Messenger.
+- تبقى معلومات unused_index لأن Staging لا يحمل حركة إنتاجية كافية. لم نحذف أية فهارس.
+
+## ما زال مطلوباً للوصول إلى الهدف الأصلي
+
+1. تشغيل اختبارات Auth الحقيقية بحسابين مستقلين، وMessenger بثلاثة JWT عبر REST/Storage/WebSocket.
+2. ضبط SMTP واختبار إنشاء حساب جديد، رسالة التأكيد، تسجيل الدخول، استعادة كلمة المرور.
+3. إكمال تجربة Messenger: حذف/أرشفة المحادثة لكل طرف، إيصالات القراءة، الكتابة الآن، البحث، الحظر/طلبات المراسلة، المحادثات الجماعية والمكالمات.
+4. بناء WHATSMYGRAM كمجال مستقل تماماً، بمخططه وسياساته واختباراته الخاصة.
+5. إكمال العلاقات الاجتماعية وطلبات الصداقة والحظر، ثم ربط قواعد السماح بالمراسلة.
+6. استكمال نشر الصور والقصص والفيديو القصير والطويل والاجتماعات والذكاء الاصطناعي.
+7. إكمال 60 لغة وترجمة جميع الشاشات، واختبار RTL/LTR لكل لغة.
+8. محفظة مستقلة بعقود Ledger ومراجعة أمنية ومالية قبل أي أموال حقيقية.
+9. توحيد اختبارات Desktop/Mobile وA11y والأداء والأمن لكل منتج.
+10. مراجعة Schema Drift بين Production وStaging قبل أي ترحيل نهائي.
+
+## حدود الإنتاج والتراجع
+
+- كل migrations والاختبارات المذكورة نُفذت في MYGRAM-STAGING فقط.
+- لا تغييرات Production على الجداول أو البيانات أو Auth أو Storage أو Functions.
+- PR #54 يبقى Draft ومفتوحاً، ولا merge أو deploy.
+- تراجع التطبيق يتم عبر revert لفرع العمل؛ وتغييرات Staging تتراجع بـMigration تعويضية مُراجعة، لا بحذف عشوائي.
