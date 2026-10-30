@@ -76,5 +76,5 @@ test("MYGRAM FB route opens its social login gate", async ({ page }) => {
   await page.getByTestId("product-fb").click();
   await expect(page).toHaveURL(/#\/products\/fb$/);
   await expect(page.getByRole("heading", { name: "الموجز الاجتماعي" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "تسجيل الدخول" })).toBeVisible();
+  await expect(page.locator("section.panel.detail").getByRole("link", { name: "تسجيل الدخول" })).toBeVisible();
 });
