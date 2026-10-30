@@ -4,6 +4,7 @@ import { products, getProductBySlug, type ProductDefinition } from "./config/pro
 import { navigate, routeFromPath, useHashPath } from "./lib/navigation";
 import { isSupabaseConfigured, supabase, type MygramUser } from "./lib/supabase";
 import { MessengerWorkspace } from "./components/MessengerWorkspace";
+import { SocialFeedWorkspace } from "./components/SocialFeedWorkspace";
 
 type Theme = "dark" | "light";
 type AuthMode = "signin" | "signup";
@@ -323,6 +324,15 @@ export default function App() {
                     <div className="eyebrow">MYGRAM MESSENGER</div>
                     <h1>MYGRAM MESSENGER</h1><p className="muted">محادثاتك الخاصة تبدأ هنا</p>
                     <p className="description">سجّل الدخول لفتح Messenger. لا تُعرض أي محادثة قبل التحقق من عضويتك فيها.</p>
+                    <a className="button primary" href="#/auth">تسجيل الدخول</a>
+                  </section>
+                )
+              ) : product.slug === "fb" ? (
+                user ? <SocialFeedWorkspace user={user}/> : (
+                  <section className="panel detail">
+                    <div className="eyebrow">MYGRAM FB</div>
+                    <h1>الموجز الاجتماعي</h1>
+                    <p className="description">سجّل الدخول لنشر أفكارك والتفاعل مع مجتمع MYGRAM.</p>
                     <a className="button primary" href="#/auth">تسجيل الدخول</a>
                   </section>
                 )
