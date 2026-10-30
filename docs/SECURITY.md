@@ -46,7 +46,7 @@
 - profile_private_details وحقول التفضيلات نطاق أكثر حساسية، مع سياسات صفوف تربط الوصول بـauth.uid().
 - تم التحقق مباشرة من أن authenticated لا يملك UPDATE على العمودين verified_contact_method وcontact_verified_at، ولا يملك anon ذلك أيضاً.
 - منح INSERT/UPDATE على profile_private_details محدود بأعمدة البيانات غير المرتبطة بإثبات التحقق؛ لا توجد صلاحية جدولية عامة للكتابة على كل الأعمدة.
-- يجب عدم اعتبار show_living_location بحد ذاته حاجزاً أمنياً على مستوى العمود. يلزم لاحقاً فصل استعلامات العرض أو View آمنة عند بناء ملفات المستخدمين العامة.
+- تم إغلاق خطر القراءة المباشرة من profiles في Staging عبر Migration 20261030171814_secure_public_profile_projection: سُحبت SELECT من الجدول الأساسي عن anon وauthenticated، وأضيف View public_profiles يعرض الأعمدة العامة فقط ويعيد حقول السكن NULL ما لم يوافق صاحب الملف عبر show_living_location. وأضيف View my_profile_state لإظهار profile_completed للحساب الحالي فقط. لا يحتوي الإسقاط العام على study_place أو work_place أو profile_completed.\n- التحقق بدور authenticated أكد أن SELECT المباشر على profiles مرفوض، وأن public_profiles متاح، وأن my_profile_state يعيد صفاً واحداً للمستخدم نفسه. يجب اختبار REST/JWT الفعلي لاحقاً قبل الدمج.
 - يلزم معالجة تعارضات أسماء المستخدمين قبل تثبيت ضمان تفرد موحد في Production.
 
 ## 6. ضوابط RPC استكمال الملف
