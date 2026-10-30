@@ -11,13 +11,13 @@
 | A: Audit & Foundation | PARTIAL | مستودع main وخط إعادة البناء موثقان؛ الفروق بين Production وStaging محفوظة |
 | B: Core Architecture | PARTIAL | React + TypeScript + Vite، سجل المنتجات التسعة، RTL، المظهر الداكن/الفاتح |
 | C: Identity & Auth | PARTIAL | تسجيل بريد أولي، onboarding، RPC ذرّية؛ JWT الحقيقي وSMTP واستعادة كلمة المرور مطلوبة |
-| D: Social | PARTIAL | posts/comments/reactions في Staging مع RLS؛ الواجهة والعمليات الاجتماعية الكاملة غير مكتملة |
+| D: Social | PARTIAL | موجز نصي وواجهة منشورات وتعليقات وثمانية تفاعلات وحذف منشورات/تعليقات المالك؛ تحقق SQL ثلاثي الهويات ناجح، رفع الوسائط والعلاقات غير مكتملة |
 | E: MYGRAM MESSENGER | PARTIAL | محادثات مباشرة A/B، رسائل، مرفقات خاصة، RLS وRealtime وواجهة أولية؛ اختبار JWT/WebSocket الحقيقي ينتظر أسرار QA |
 | E2: WHATSMYGRAM | NOT IMPLEMENTED IN STAGING | لا توجد جداول أو سياسات مستقلة لهذا المنتج بعد |
 | F: Video | NOT IMPLEMENTED | Tube وTikToks والريلز كمنتجات مكتملة غير منفذة |
 | G: AI & Meetings | NOT IMPLEMENTED IN STAGING | لا توجد منظومة MYGRAM AI أو Meetings جديدة في Staging |
 | H: Wallet | NOT IMPLEMENTED | لا جداول Wallet أو Ledger أو معاملات مالية |
-| I: Tests | PARTIAL | CI Run #60 ناجح: 8 Node و6 Playwright وفحوص الصياغة وTypeScript/Vite build؛ اختبارات Auth/JWT وMessenger A/B/C الحقيقية ما زالت متخطاة لغياب أسرار QA |
+| I: Tests | PARTIAL | CI Run #60 ناجح قبل واجهة MYGRAM FB؛ Run #71 فشل بسبب محدد Playwright ملتبس في رابط تسجيل الدخول، والإصلاح أُرسل في commit جديد ولم يُختبر بعد. اختبارات Auth/JWT وMessenger A/B/C الحقيقية ما زالت متخطاة لغياب أسرار QA |
 | J: Release | BLOCKED | لا دمج PR #54 ولا نشر Production |
 
 ## مواءمة Staging الحالية
@@ -33,7 +33,7 @@
 - لا توجد Edge Functions منشورة حالياً في Staging.
 - لا توجد تغييرات Production. لم يتم نسخ بيانات Production إلى Staging.
 
-## MYGRAM MESSENGER: ما تم بناؤه
+## MYGRAM FB: ما تم بناؤه\n\n- واجهة موجز نصي في src/components/SocialFeedWorkspace.tsx مرتبطة بالمسار /products/fb.\n- إنشاء منشور نصي حتى 5000 حرف، عرض آخر 50 منشوراً، عرض أسماء أصحابها عبر public_profiles، التعليق حتى 2000 حرف، وثمانية تفاعلات: like/love/haha/care/wow/sad/angry/fire.\n- حذف المنشور وتعليق المستخدم لنفسه فقط وفق RLS. لا يوجد دعم لرفع الصور/الفيديو في هذه الواجهة بعد.\n- تحقق SQL ثلاثي الهويات داخل Transaction/Rollback: B قرأ منشور A وتعليقاً وتفاعلاً؛ C لم يتمكن من تعديل منشور A أو حذف تعليق/تفاعل B؛ لم تُترك بيانات اختبار دائمة.\n\n## MYGRAM MESSENGER: ما تم بناؤه
 
 - messenger_conversations: محادثة مباشرة ذات طرفين، مع ترتيب ثابت لمعرفي العضوين ومنع تكرار زوج المحادثة.
 - messenger_participants: العضوية تُنشأ داخل Trigger موثوق، والعميل يملك القراءة فقط ولا يستطيع إضافة نفسه أو غيره.
@@ -78,7 +78,8 @@
 
 ## Auth / Profile / Storage الحالي
 
-- Migration 20261030171814_secure_public_profile_projection ألغت القراءة المباشرة من public.profiles لـanon وauthenticated، وأنشأت public_profiles لعرض الحقول المسموح بها فقط مع حجب بيانات السكن إلا عند موافقة صاحب الملف، وmy_profile_state لحالة إكمال ملف المستخدم الحالي فقط. اختبار SQL بدور authenticated أكد منع القراءة المباشرة، وظهور 3 ملفات عامة آمنة، وصف حالة واحد للحساب الحالي، وعدم ظهور حقول الدراسة/العمل أو بيانات السكن دون موافقة. الواجهة الجديدة تستخدم هذين الـView بدل الجدول الأساسي.\n- حقول إثبات البريد والهاتف verified_contact_method وcontact_verified_at غير قابلة للتحديث من anon أو authenticated حسب column privileges.
+- Migration 20261030171814_secure_public_profile_projection ألغت القراءة المباشرة من public.profiles لـanon وauthenticated، وأنشأت public_profiles لعرض الحقول المسموح بها فقط مع حجب بيانات السكن إلا عند موافقة صاحب الملف، وmy_profile_state لحالة إكمال ملف المستخدم الحالي فقط. اختبار SQL بدور authenticated أكد منع القراءة المباشرة، وظهور 3 ملفات عامة آمنة، وصف حالة واحد للحساب الحالي، وعدم ظهور حقول الدراسة/العمل أو بيانات السكن دون موافقة. الواجهة الجديدة تستخدم هذين الـView بدل الجدول الأساسي.
+- حقول إثبات البريد والهاتف verified_contact_method وcontact_verified_at غير قابلة للتحديث من anon أو authenticated حسب column privileges.
 - complete_mygram_profile دالة SECURITY DEFINER مع search_path فارغ، EXECUTE لـauthenticated فقط، والهوية مستمدة من auth.uid().
 - تنبيه Advisor على الدالة أعلاه موثق؛ يبقى اختبار REST/JWT شرطاً قبل الدمج.
 - حماية كلمات المرور المسرّبة ما زالت غير مفعلة بسبب حدود الخطة الحالية.
