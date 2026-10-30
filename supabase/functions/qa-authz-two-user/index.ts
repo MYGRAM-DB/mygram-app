@@ -256,14 +256,26 @@ Deno.serve(async (request: Request) => {
     const remainingPrivate = createdPrivateIds.length > 0
       ? await admin.from("profile_private_details").select("user_id", { count: "exact", head: true }).in("user_id", createdPrivateIds)
       : { error: null, count: 0 };
-    const remainingObjects = avatarPaths.length > 0
-      ? await admin.from("storage.objects").select("name", { count: "exact", head: true }).eq("bucket_id", AVATAR_BUCKET).in("name", avatarPaths)
-      : { error: null, count: 0 };
+    const remainingObjectChecks = await Promise.all(avatarPaths.map(async (path) => {
+      const separator = path.lastIndexOf("/");
+      const folder = path.slice(0, separator);
+      const filename = path.slice(separator + 1);
+      const { data, error } = await admin.storage.from(AVATAR_BUCKET).list(folder, {
+        limit: 100,
+        search: filename,
+      });
+      return {
+        error,
+        count: (data ?? []).filter((item) => item.name === filename).length,
+      };
+    }));
+    const remainingObjectErrors = remainingObjectChecks.filter((result) => result.error);
+    const remainingObjectCount = remainingObjectChecks.reduce((total, result) => total + result.count, 0);
 
     cleanupComplete =
       cleanupErrors.length === 0 &&
       !remainingPrivate.error && (remainingPrivate.count ?? 0) === 0 &&
-      !remainingObjects.error && (remainingObjects.count ?? 0) === 0;
+      remainingObjectErrors.length === 0 && remainingObjectCount === 0;
 
     checks.push({
       name: "qa_data_cleanup",
