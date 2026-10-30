@@ -117,3 +117,9 @@ Migration: 20261030023659_create_private_profile_details_and_stage_countries
 - RPC تنفذ الحفظ الذري للملف العام والتفاصيل الخاصة وتفضيلات الموقع اعتماداً على `auth.uid()`.
 - تم فحص SECURITY DEFINER وsearch_path الفارغ وصلاحيات التنفيذ: authenticated مسموح، anon غير مسموح.
 - لا تغييرات على مخطط أو بيانات أو سياسات Production.
+
+
+## Decision 04 delta | 2026-10-31
+
+No migration was applied in this execution. Staging still reports 17 applied migrations, including `20261030201257_create_cached_ui_translation_service` and `20261030212710_restore_messenger_private_broadcast_triggers`. Production migration inventory remains distinct and was read-only inspected. A repository/ledger Migration Validator has not yet been implemented; do not infer full drift closure from the successful CI run.
+
