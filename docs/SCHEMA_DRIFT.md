@@ -123,3 +123,18 @@ Migration: 20261030023659_create_private_profile_details_and_stage_countries
 
 No migration was applied in this execution. Staging still reports 17 applied migrations, including `20261030201257_create_cached_ui_translation_service` and `20261030212710_restore_messenger_private_broadcast_triggers`. Production migration inventory remains distinct and was read-only inspected. A repository/ledger Migration Validator has not yet been implemented; do not infer full drift closure from the successful CI run.
 
+
+
+## Applied migrations without matching repository files | 2026-10-31
+
+A direct comparison of the current Staging migration ledger (17 rows) with the rebuild branch `supabase/migrations/` directory (13 SQL files) found four ledger entries with no matching file in the branch:
+
+- `20261029200719_create_profile_for_new_auth_users`
+- `20261029200728_revoke_public_execute_handle_new_user`
+- `20261029211249_mygram_staging_profiles_rls_core`
+- `20261029223828_create_supported_locales_public_read`
+
+The remaining 13 Staging migration versions/names have matching branch files, including the corrected `20261030201257_create_cached_ui_translation_service.sql`.
+
+These four entries are **applied-but-source-missing**, not proof of database corruption. Do not rewrite Staging migration history or invent replacement migrations. Recover the exact original SQL from a trusted migration backup/repository history, or record an explicitly approved baseline exception with provenance and checksums before a validator can pass. This remains an open P1 source-of-truth gap.
+
