@@ -43,16 +43,27 @@ async function authorizeGitHubWorkflow(request: Request): Promise<Record<string,
       algorithms: ["RS256"],
     });
     const claims = verified.payload as Record<string, unknown>;
+    const now = Math.floor(Date.now() / 1000);
+    const audience = claims.aud;
+    const audienceAllowed = typeof audience === "string"
+      ? audience === OIDC_AUDIENCE
+      : Array.isArray(audience) && audience.includes(OIDC_AUDIENCE);
     const allowed =
+      claims.iss === OIDC_ISSUER &&
+      audienceAllowed &&
+      typeof claims.exp === "number" && claims.exp > now &&
+      (typeof claims.nbf !== "number" || claims.nbf <= now) &&
       claims.repository === "MYGRAM-DB/mygram-app" &&
       claims.repository_owner === "MYGRAM-DB" &&
+      String(claims.repository_id) === "1429829602" &&
+      String(claims.repository_owner_id) === "346374775" &&
       claims.event_name === "pull_request" &&
       claims.head_ref === "rebuild/phase-a-architecture" &&
       claims.base_ref === "main" &&
       typeof claims.workflow_ref === "string" &&
       claims.workflow_ref.startsWith("MYGRAM-DB/mygram-app/.github/workflows/ci.yml@") &&
       claims.workflow === "MYGRAM Build and Quality Gate" &&
-      claims.sub === "repo:MYGRAM-DB/mygram-app:pull_request";
+      claims.sub === "repo:MYGRAM-DB@346374775/mygram-app@1429829602:pull_request";
     return allowed ? claims : null;
   } catch {
     return null;
@@ -98,9 +109,10 @@ Deno.serve(async (request: Request) => {
   const accounts = [
     { label: "A", email: `${prefix}-a@example.com`, password: `${crypto.randomUUID()}Aa9!` },
     { label: "B", email: `${prefix}-b@example.com`, password: `${crypto.randomUUID()}Bb8!` },
+    { label: "C", email: `${prefix}-c@example.com`, password: `${crypto.randomUUID()}Cc7!` },
   ];
   const createdUserIds: string[] = [];
-  const sessions = new Map<string, { client: SupabaseClient; userId: string }>();
+  const sessions = new Map<string, { client: SupabaseClient; userId: string; accessToken: string; refreshToken: string }>();
   const createdPrivateIds: string[] = [];
   const avatarPaths: string[] = [];
   const checks: Array<{ name: string; status: "PASS" | "FAIL"; detail: string }> = [];
@@ -127,13 +139,21 @@ Deno.serve(async (request: Request) => {
         password: account.password,
       });
       assert(!error && data.session && data.user, `REAL_JWT_SIGN_IN_FAILED_${account.label}`);
-      sessions.set(account.label, { client, userId: data.user.id });
+      sessions.set(account.label, {
+        client,
+        userId: data.user.id,
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token,
+      });
     }
 
     const a = sessions.get("A")!;
     const b = sessions.get("B")!;
-    assert(a.userId !== b.userId, "TWO_AUTH_USERS_NOT_DISTINCT");
-    checks.push({ name: "two_independent_real_jwt_sessions", status: "PASS", detail: "A and B authenticated through Supabase Auth password grant and received distinct JWT identities." });
+    const c = sessions.get("C")!;
+    assert(new Set([a.userId, b.userId, c.userId]).size === 3, "THREE_AUTH_USERS_NOT_DISTINCT");
+    const sessionCheck = await a.client.auth.getUser(a.accessToken);
+    assert(!sessionCheck.error && sessionCheck.data.user?.id === a.userId, "A_SESSION_DID_NOT_CONTINUE");
+    checks.push({ name: "three_independent_real_jwt_sessions", status: "PASS", detail: "A, B and C authenticated through Supabase Auth password grant and received distinct JWT identities; A's live session resolves to its own user." });
 
     async function ensurePrivateRow(session: { client: SupabaseClient; userId: string }, label: string) {
       const { data, error } = await session.client.from("profile_private_details").insert({
@@ -146,7 +166,7 @@ Deno.serve(async (request: Request) => {
       createdPrivateIds.push(session.userId);
     }
 
-    await Promise.all([ensurePrivateRow(a, "A"), ensurePrivateRow(b, "B")]);
+    await Promise.all([ensurePrivateRow(a, "A"), ensurePrivateRow(b, "B"), ensurePrivateRow(c, "C")]);
 
     const { data: ownA, error: ownAError } = await a.client.from("profile_private_details")
       .select("user_id,date_of_birth,gender,nationality_code")
@@ -158,11 +178,23 @@ Deno.serve(async (request: Request) => {
       .eq("user_id", b.userId);
     assert(!crossPrivateError && crossPrivate?.length === 0, "A_READ_B_PRIVATE_DETAILS");
 
+    const { data: cReadA, error: cReadAError } = await c.client.from("profile_private_details")
+      .select("user_id").eq("user_id", a.userId);
+    const { data: cReadB, error: cReadBError } = await c.client.from("profile_private_details")
+      .select("user_id").eq("user_id", b.userId);
+    assert(!cReadAError && cReadA?.length === 0 && !cReadBError && cReadB?.length === 0, "C_READ_PRIVATE_DETAILS_OF_A_OR_B");
+
     const { data: crossUpdate, error: crossUpdateError } = await a.client.from("profile_private_details")
       .update({ contact_phone: "+15555550123" })
       .eq("user_id", b.userId)
       .select("user_id");
     assert(!crossUpdateError && crossUpdate?.length === 0, "A_MODIFIED_B_PRIVATE_DETAILS");
+
+    const { data: cUpdateA, error: cUpdateAError } = await c.client.from("profile_private_details")
+      .update({ contact_phone: "+15555550124" }).eq("user_id", a.userId).select("user_id");
+    const { data: cUpdateB, error: cUpdateBError } = await c.client.from("profile_private_details")
+      .update({ contact_phone: "+15555550125" }).eq("user_id", b.userId).select("user_id");
+    assert(!cUpdateAError && cUpdateA?.length === 0 && !cUpdateBError && cUpdateB?.length === 0, "C_MODIFIED_PRIVATE_DETAILS_OF_A_OR_B");
 
     const { error: verificationError } = await a.client.from("profile_private_details")
       .update({ verified_contact_method: "email", contact_verified_at: new Date().toISOString() })
@@ -203,6 +235,9 @@ Deno.serve(async (request: Request) => {
     const { data: crossDownload, error: crossDownloadError } = await b.client.storage.from(AVATAR_BUCKET).download(avatarA);
     assert(crossDownloadError && !crossDownload, "B_DOWNLOADED_A_PRIVATE_AVATAR");
 
+    const { data: cDownload, error: cDownloadError } = await c.client.storage.from(AVATAR_BUCKET).download(avatarA);
+    assert(cDownloadError && !cDownload, "C_DOWNLOADED_A_PRIVATE_AVATAR");
+
     const { error: ownerUpsertError } = await a.client.storage.from(AVATAR_BUCKET).upload(avatarA, PNG, {
       contentType: "image/png",
       upsert: true,
@@ -229,6 +264,20 @@ Deno.serve(async (request: Request) => {
       "A_UPDATED_B_BASE_PROFILE",
     );
     checks.push({ name: "base_profile_cross_account_write_denied", status: "PASS", detail: "A cannot update B's base profile row." });
+
+    const cProfileUpdate = await c.client.from("profiles")
+      .update({ first_name: "QA-CROSS-ACCOUNT-C-BLOCKED" }).eq("id", a.userId).select("id");
+    assert(!!cProfileUpdate.error || (cProfileUpdate.data?.length ?? 0) === 0, "C_UPDATED_A_BASE_PROFILE");
+
+    const { error: revokeError } = await admin.auth.admin.signOut(c.accessToken);
+    assert(!revokeError, "C_SESSION_REVOCATION_FAILED");
+    const refreshResponse = await fetch(`${apiUrl}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST",
+      headers: { apikey: publicKey, "content-type": "application/json" },
+      body: JSON.stringify({ refresh_token: c.refreshToken }),
+    });
+    assert(!refreshResponse.ok, "C_REFRESH_TOKEN_WORKED_AFTER_GLOBAL_REVOCATION");
+    checks.push({ name: "revoked_refresh_token_rejected", status: "PASS", detail: "C's server-side session was revoked; its original refresh token could not obtain a new session. Access JWT revocation is not claimed before its exp time." });
   } catch (error) {
     checks.push({
       name: "auth_rls_storage_suite",
