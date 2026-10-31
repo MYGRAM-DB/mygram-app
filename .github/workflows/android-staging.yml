@@ -49,7 +49,6 @@ jobs:
         run: |
           set -euo pipefail
           sdkmanager "platforms;android-36" "build-tools;36.0.0" "emulator" "system-images;android-35;google_apis;x86_64"
-          yes | sdkmanager --licenses >/dev/null
 
       - name: Validate Staging-only build inputs
         shell: bash
