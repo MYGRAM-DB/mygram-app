@@ -152,6 +152,10 @@ The X11 report and the two Database proposals in this document are delivered sep
 
 PR #96 remains the X10 report PR only. It was not edited by X11. Its last verified branch comparison was 4 ahead / 0 behind; verify again before any future decision. It remains documentation-only, OPEN / DRAFT / NOT MERGED.
 
+### CI trigger boundary for documentation PRs
+
+PR #96 and PR #97 both have zero workflow runs and zero commit statuses on their exact heads. The inspected `.github/workflows/ci.yml` on the current integration branch still declares `pull_request.branches: ["main"]`. Since these documentation PRs target `rebuild/phase-a-architecture`, that base-branch filter does not select them. W10 PR #90 contains the intended integration-branch trigger in its own branch and Run #172 passed there, but that workflow change is not yet present on the integration branch. CI owner must decide the safe required-check path; no manual dispatch or workflow-policy change was made in this X11 cycle.
+
 ### Formal review state
 
 | PR | Submitted review state | Interpretation |
