@@ -98,3 +98,28 @@ test("cleanup failures are reported instead of being silently treated as success
   });
   assert.deepEqual(result, { storageRemoved: false, messageResolved: false });
 });
+
+
+test("out-of-order realtime and older-page responses preserve the complete deduplicated timeline", () => {
+  const older = { id: "00000000-0000-4000-8000-000000000001", created_at: "2026-10-30T08:00:00.000Z", body: "older" };
+  const middle = { id: "00000000-0000-4000-8000-000000000002", created_at: "2026-10-30T09:00:00.000Z", body: "middle" };
+  const latest = { id: "00000000-0000-4000-8000-000000000003", created_at: "2026-10-30T10:00:00.000Z", body: "latest" };
+  const realtime = { id: "00000000-0000-4000-8000-000000000004", created_at: "2026-10-30T10:01:00.000Z", body: "realtime" };
+
+  // Older-page response lands first, then a newest-page/realtime refresh.
+  const olderFirst = mergeMessagesByCreatedAtId(
+    mergeMessagesByCreatedAtId([latest], [middle, older]),
+    [latest, realtime],
+  );
+  // Newest-page/realtime refresh lands first, then the older-page response.
+  const realtimeFirst = mergeMessagesByCreatedAtId(
+    mergeMessagesByCreatedAtId([latest], [latest, realtime]),
+    [middle, older],
+  );
+
+  const expected = [older.id, middle.id, latest.id, realtime.id];
+  assert.deepEqual(olderFirst.map((message) => message.id), expected);
+  assert.deepEqual(realtimeFirst.map((message) => message.id), expected);
+  assert.equal(new Set(olderFirst.map((message) => message.id)).size, expected.length);
+  assert.equal(new Set(realtimeFirst.map((message) => message.id)).size, expected.length);
+});
