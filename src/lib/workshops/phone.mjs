@@ -1,0 +1,2 @@
+export function normalizePhone(input,defaultCallingCode){let s=String(input).trim().replace(/[()\s.-]/g,"");if(s.startsWith("00"))s="+"+s.slice(2);if(!s.startsWith("+")){const c=String(defaultCallingCode||"").replace(/\D/g,"");if(!c)return null;s="+"+c+s.replace(/^0+/,"")}return /^\+[1-9]\d{7,14}$/.test(s)?s:null}
+// Structural format only. It does not verify ownership or reachability.
