@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {nextClip,previousClip,setPlayback} from "../../src/lib/workshops/short-video-player.mjs";
+test("TikToks: clip navigation is bounded",()=>{let s={index:0,total:2,playing:false};s=nextClip(s);assert.equal(s.index,1);assert.equal(nextClip(s).index,1);assert.equal(previousClip(s).index,0)});
+test("TikToks: playback can pause and resume",()=>{const s={index:0,total:1,playing:true};assert.equal(setPlayback(s,false).playing,false);assert.equal(setPlayback(s,true).playing,true)});
