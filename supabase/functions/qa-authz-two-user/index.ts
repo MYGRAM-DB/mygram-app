@@ -33,12 +33,11 @@ async function sha256(value: string): Promise<string> {
 }
 
 async function authorizeGitHubWorkflow(request: Request): Promise<Record<string, unknown> | null> {
-  const authorization = request.headers.get("authorization") ?? "";
-  const match = authorization.match(/^Bearer\\s+(.+)$/i);
-  if (!match) return null;
+  const oidcToken = extractBearerToken(request.headers.get("authorization") ?? "");
+  if (!oidcToken) return null;
 
   try {
-    const verified = await jwtVerify(match[1], OIDC_JWKS, {
+    const verified = await jwtVerify(oidcToken, OIDC_JWKS, {
       issuer: OIDC_ISSUER,
       audience: OIDC_AUDIENCE,
       algorithms: ["RS256"],
@@ -71,8 +70,8 @@ Deno.serve(async (request: Request) => {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
 
-  const oidc = request.headers.get("authorization") ?? "";
-  const oidcToken = oidc.replace(/^Bearer\s+/i, "");
+  const oidcToken = extractBearerToken(request.headers.get("authorization") ?? "");
+  assert(oidcToken, "GITHUB_OIDC_TOKEN_REQUIRED");
   const tokenHash = await sha256(oidcToken);
   const now = new Date().toISOString();
   const expiry = new Date(Number(claims.exp) * 1000).toISOString();
