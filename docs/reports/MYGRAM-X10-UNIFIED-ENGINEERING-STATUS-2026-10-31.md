@@ -349,7 +349,7 @@ Still required:
 - Independent human security review with reviewer identity and evidence.
 - Safe trusted OIDC workflow installed on integration and independently source-matched to deployed functions before any activation.
 
-Gate A remains OPEN. No QA function deployment or QA invocation occurred during this report-preparation audit.
+Gate A remains OPEN. No QA function deployment or QA invocation occurred during this report-preparation audit. The current value of the GitHub repository variable `MYGRAM_STAGING_QA_ENABLED` was not independently readable in this audit; its value is therefore recorded as **not verified**, and activation is not authorized.
 
 ## 5. Workshop-by-workshop delivery report
 
@@ -691,7 +691,7 @@ No paid provider activation or new schema migration without separate review/appr
 **Final governance state:**
 - Production READ-ONLY.
 - Gate A OPEN.
-- QA activation disabled pending source parity, independent review and explicit owner approval.
+- QA activation is **not authorized** pending source parity, independent review and explicit owner approval. The repository variable value `MYGRAM_STAGING_QA_ENABLED` was not independently inspected in this audit.
 - No migration, RLS, Auth, Storage or Edge Function changes made during this audit.
 - No merge, auto-merge, public release, invitations, APK distribution, paid provider activation, Wallet or Payments activation.
 
