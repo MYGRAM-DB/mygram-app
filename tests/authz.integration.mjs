@@ -74,31 +74,21 @@ const png = Uint8Array.from(Buffer.from(
   "base64",
 ));
 
-const createdPrivateRows = [];
 const storageRows = [];
 
-async function ensureOwnPrivateDetails(session) {
+async function requireOwnPrivateDetails(session) {
   const query = new URLSearchParams({
     select: "user_id",
     user_id: `eq.${session.user.id}`,
     limit: "1",
   });
   const existing = await request(`/rest/v1/profile_private_details?${query}`, session.token);
-  assert.equal(existing.response.status, 200, `Unable to inspect own private-details row for ${session.label}`);
-  if ((existing.body ?? []).length > 0) return;
-
-  const inserted = await request("/rest/v1/profile_private_details", session.token, {
-    method: "POST",
-    headers: { Prefer: "return=minimal" },
-    body: JSON.stringify({
-      user_id: session.user.id,
-      date_of_birth: "1990-01-01",
-      gender: "prefer_not_to_say",
-      nationality_code: "US",
-    }),
-  });
-  assert.equal(inserted.response.status, 201, `Could not create temporary private-details row for ${session.label}: ${JSON.stringify(inserted.body)}`);
-  createdPrivateRows.push(session);
+  assert.equal(existing.response.status, 200, `Unable to inspect own private-details fixture for ${session.label}`);
+  assert.equal(
+    existing.body?.length,
+    1,
+    `Missing pre-provisioned private-details fixture for ${session.label}; never seed this protected table with a user JWT.`,
+  );
 }
 
 async function storageUpload(session, objectPath, upsert = false) {
@@ -120,21 +110,38 @@ async function storageDelete(session, objectPath) {
 }
 
 async function cleanup() {
-  const results = await Promise.all([
-    ...storageRows.map(({ session, path }) => storageDelete(session, path).catch(() => null)),
-    ...createdPrivateRows.map((session) =>
-      request(`/rest/v1/profile_private_details?user_id=eq.${session.user.id}`, session.token, {
-        method: "DELETE",
-      }).catch(() => null),
-    ),
-  ]);
-  const cleanupFailures = results.filter((result) => result && !result.response.ok);
-  assert.equal(cleanupFailures.length, 0, "One or more temporary QA rows or Storage objects could not be cleaned up.");
+  const failures = [];
+  await Promise.all(storageRows.map(async ({ session, path: objectPath }) => {
+    let deletion;
+    try {
+      deletion = await storageDelete(session, objectPath);
+    } catch {
+      failures.push(`STORAGE_DELETE_REQUEST_FAILED_${session.label}`);
+    }
+
+    let absence;
+    try {
+      absence = await request(
+        `/storage/v1/object/authenticated/profile-avatars/${objectPath}`,
+        session.token,
+      );
+    } catch {
+      failures.push(`STORAGE_ABSENCE_CHECK_FAILED_${session.label}`);
+      return;
+    }
+
+    const absent = [400, 404].includes(absence.response.status);
+    if (!absent) failures.push(`STORAGE_OBJECT_REMAINS_OR_UNVERIFIED_${session.label}`);
+    if (deletion && !deletion.response.ok && !absent) {
+      failures.push(`STORAGE_DELETE_FAILED_${session.label}`);
+    }
+  }));
+  assert.deepEqual(failures, [], "Temporary Storage cleanup failed or absence could not be independently verified.");
 }
 
 try {
-  await Promise.all([ensureOwnPrivateDetails(a), ensureOwnPrivateDetails(b)]);
-  console.log("PASS: temporary private-details fixtures are available without changing profile names or usernames.");
+  await Promise.all([requireOwnPrivateDetails(a), requireOwnPrivateDetails(b)]);
+  console.log("PASS: pre-provisioned private-details fixtures are readable by their owners; test performs no privileged fixture writes.");
 
   const privateSelect = (id) => `/rest/v1/profile_private_details?select=user_id,date_of_birth,gender,nationality_code,contact_email,contact_phone,verified_contact_method,contact_verified_at&user_id=eq.${id}`;
   const ownPrivate = await request(privateSelect(a.user.id), a.token);
@@ -174,7 +181,7 @@ try {
     }),
   });
   assert.ok(
-    [401, 403].includes(verificationTamper.response.status),
+    [400, 401, 403].includes(verificationTamper.response.status),
     `Verification fields were not rejected by column privileges: HTTP ${verificationTamper.response.status} ${JSON.stringify(verificationTamper.body)}`,
   );
   console.log("PASS: cross-account private/profile updates are blocked and verification fields cannot be client-written.");

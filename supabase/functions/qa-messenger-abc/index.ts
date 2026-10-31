@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.118.0";
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.9.6";
+import { extractBearerToken, isTrustedStagingWorkflowClaims } from "../_shared/github-oidc-policy.mjs";
 
 const PROJECT_REF = "cbyvtehvaojxfcgpelir";
 const BUCKET = "messenger-attachments";
@@ -82,9 +83,7 @@ Deno.serve(async (request: Request) => {
     return json({ ok: false, error: "METHOD_NOT_ALLOWED" }, 405);
   }
 
-  const bearer = request.headers.get("authorization") ?? "";
-  const bearerParts = bearer.trim().split(" ");
-  const oidcToken = bearerParts[0]?.toLowerCase() === "bearer" ? bearerParts.slice(1).join(" ").trim() : "";
+  const oidcToken = extractBearerToken(request.headers.get("authorization") ?? "");
   if (!oidcToken) return json({ ok: false, error: "GITHUB_OIDC_TOKEN_REQUIRED" }, 401);
 
   let claims: Record<string, unknown>;
@@ -99,20 +98,7 @@ Deno.serve(async (request: Request) => {
     return json({ ok: false, error: "GITHUB_OIDC_TOKEN_INVALID" }, 401);
   }
 
-  const allowedWorkflow = "MYGRAM-DB/mygram-app/.github/workflows/ci.yml@";
-  const identityAllowed =
-    claims.repository === "MYGRAM-DB/mygram-app" &&
-    claims.repository_owner === "MYGRAM-DB" &&
-    claims.event_name === "pull_request" &&
-    claims.head_ref === "rebuild/phase-a-architecture" &&
-    claims.base_ref === "main" &&
-    typeof claims.workflow_ref === "string" &&
-    claims.workflow_ref.startsWith(allowedWorkflow) &&
-    claims.workflow === "MYGRAM Build and Quality Gate" &&
-    String(claims.repository_id) === "1429829602" &&
-    String(claims.repository_owner_id) === "346374775" &&
-    claims.sub === "repo:MYGRAM-DB@346374775/mygram-app@1429829602:pull_request";
-  if (!identityAllowed) {
+  if (!isTrustedStagingWorkflowClaims(claims)) {
     return json({ ok: false, error: "GITHUB_WORKFLOW_IDENTITY_NOT_ALLOWLISTED" }, 403);
   }
 
@@ -135,7 +121,10 @@ Deno.serve(async (request: Request) => {
   const tokenHash = await sha256(oidcToken);
   const now = new Date().toISOString();
   const expiry = new Date(Number(claims.exp) * 1000).toISOString();
-  await admin.from("qa_run_challenges").delete().lt("expires_at", now);
+  const { error: challengeCleanupError } = await admin.from("qa_run_challenges").delete().lt("expires_at", now);
+  if (challengeCleanupError) {
+    return json({ ok: false, error: "GITHUB_OIDC_REPLAY_CACHE_UNAVAILABLE" }, 503);
+  }
   const { error: replayError } = await admin.from("qa_run_challenges").insert({
     token_hash: tokenHash,
     expires_at: expiry,
@@ -370,39 +359,131 @@ Deno.serve(async (request: Request) => {
     await Promise.allSettled(channelHandles.map(({ channel }) => channel.unsubscribe()));
 
     const cleanupErrors: string[] = [];
-    if (profileAvatarPaths.length > 0) {
-      const { error } = await admin.storage.from("profile-avatars").remove(profileAvatarPaths);
-      if (error) cleanupErrors.push("PROFILE_AVATAR_STORAGE_DELETE_FAILED");
-    }
-    if (objectPath) {
-      const { error } = await admin.storage.from(BUCKET).remove([objectPath]);
-      if (error) cleanupErrors.push("STORAGE_OBJECT_DELETE_FAILED");
-    }
-    if (conversationId) {
-      const { error } = await admin.from("messenger_conversations").delete().eq("id", conversationId);
-      if (error) cleanupErrors.push("CONVERSATION_DELETE_FAILED");
-    }
-    for (const userId of createdUserIds.reverse()) {
-      const { error } = await admin.auth.admin.deleteUser(userId);
-      if (error) cleanupErrors.push("EPHEMERAL_AUTH_USER_DELETE_FAILED");
+
+    async function cleanupAttempt(
+      name: string,
+      operation: () => PromiseLike<{ error: unknown | null }>,
+    ) {
+      try {
+        const result = await operation();
+        if (result.error) cleanupErrors.push(name);
+      } catch {
+        cleanupErrors.push(name);
+      }
     }
 
-    const remainingConversation = await admin.from("messenger_conversations")
-      .select("id", { count: "exact", head: true })
-      .eq("id", conversationId ?? "00000000-0000-0000-0000-000000000000");
-    const remainingObject = objectPath
-      ? await admin.from("messenger_attachments").select("id", { count: "exact", head: true }).eq("object_path", objectPath)
-      : { error: null, count: 0 };
+    // Isolate deletion attempts while respecting foreign-key dependencies:
+    // objects first, then conversation-owned rows, then Auth users.
+    if (profileAvatarPaths.length > 0) {
+      await cleanupAttempt(
+        "PROFILE_AVATAR_STORAGE_DELETE_FAILED",
+        () => admin.storage.from("profile-avatars").remove(profileAvatarPaths),
+      );
+    }
+    if (objectPath) {
+      await cleanupAttempt(
+        "STORAGE_OBJECT_DELETE_FAILED",
+        () => admin.storage.from(BUCKET).remove([objectPath!]),
+      );
+    }
+    if (conversationId) {
+      await cleanupAttempt(
+        "CONVERSATION_DELETE_FAILED",
+        () => admin.from("messenger_conversations").delete().eq("id", conversationId!),
+      );
+    }
+    for (const userId of [...createdUserIds].reverse()) {
+      await cleanupAttempt(
+        "EPHEMERAL_AUTH_USER_DELETE_FAILED",
+        () => admin.auth.admin.deleteUser(userId),
+      );
+    }
+
+    async function countRows(
+      operation: () => PromiseLike<{ count: number | null; error: unknown | null }>,
+    ): Promise<{ count: number; failed: boolean }> {
+      try {
+        const result = await operation();
+        return { count: result.count ?? 0, failed: !!result.error };
+      } catch {
+        return { count: 0, failed: true };
+      }
+    }
+
+    const conversationFilterId = conversationId ?? "00000000-0000-0000-0000-000000000000";
+    const [remainingConversation, remainingMessages, remainingParticipants] = await Promise.all([
+      countRows(() => admin.from("messenger_conversations")
+        .select("id", { count: "exact", head: true }).eq("id", conversationFilterId)),
+      countRows(() => admin.from("messenger_messages")
+        .select("id", { count: "exact", head: true }).eq("conversation_id", conversationFilterId)),
+      countRows(() => admin.from("messenger_participants")
+        .select("user_id", { count: "exact", head: true }).eq("conversation_id", conversationFilterId)),
+    ]);
+    const remainingAttachments = objectPath
+      ? await countRows(() => admin.from("messenger_attachments")
+        .select("id", { count: "exact", head: true }).eq("object_path", objectPath!))
+      : { count: 0, failed: false };
+
+    const objectPaths = [
+      ...profileAvatarPaths.map((path) => ({ bucket: "profile-avatars", path })),
+      ...(objectPath ? [{ bucket: BUCKET, path: objectPath }] : []),
+    ];
+    const storageAbsenceChecks = await Promise.all(objectPaths.map(async ({ bucket, path }) => {
+      try {
+        const separator = path.lastIndexOf("/");
+        const folder = path.slice(0, separator);
+        const filename = path.slice(separator + 1);
+        const { data, error } = await admin.storage.from(bucket).list(folder, {
+          limit: 100,
+          search: filename,
+        });
+        return {
+          failed: !!error,
+          count: (data ?? []).filter((item) => item.name === filename).length,
+        };
+      } catch {
+        return { failed: true, count: 0 };
+      }
+    }));
+
+    const authUserAbsenceChecks = await Promise.all(createdUserIds.map(async (userId) => {
+      try {
+        const { data, error } = await admin.auth.admin.getUserById(userId);
+        if (error) return error.status === 404 || /user not found/i.test(error.message);
+        return !data.user;
+      } catch {
+        return false;
+      }
+    }));
+
+    const dbChecks = [remainingConversation, remainingMessages, remainingParticipants, remainingAttachments];
+    const dbVerificationFailed = dbChecks.some((result) => result.failed);
+    const remainingDbRows = dbChecks.reduce((total, result) => total + result.count, 0);
+    const storageVerificationFailed = storageAbsenceChecks.some((result) => result.failed);
+    const remainingStorageObjects = storageAbsenceChecks.reduce((total, result) => total + result.count, 0);
+    const allAuthUsersAbsent = authUserAbsenceChecks.every(Boolean);
+
     cleanupComplete =
       cleanupErrors.length === 0 &&
-      !remainingConversation.error && (remainingConversation.count ?? 0) === 0 &&
-      !remainingObject.error && (remainingObject.count ?? 0) === 0;
+      !dbVerificationFailed &&
+      remainingDbRows === 0 &&
+      !storageVerificationFailed &&
+      remainingStorageObjects === 0 &&
+      allAuthUsersAbsent;
+
     const cleanup = checks.find((check) => check.name === "test_data_cleanup");
     if (cleanup) {
       cleanup.status = cleanupComplete ? "PASS" : "FAIL";
       cleanup.detail = cleanupComplete
-        ? "Ephemeral A/B/C Auth users, synthetic profile avatar, Messenger conversation, message/attachment rows and Messenger object were removed; database absence checks passed."
-        : "The temporary conversation is still present or could not be verified as deleted.";
+        ? "Ephemeral A/B/C Auth users, profile avatar objects, Messenger conversation, participants, messages, attachment metadata and attachment object were removed; independent database, Storage and Auth absence checks passed."
+        : [
+            ...cleanupErrors,
+            ...(dbVerificationFailed ? ["DATABASE_ABSENCE_CHECK_FAILED"] : []),
+            ...(remainingDbRows > 0 ? ["MESSENGER_DATABASE_ROWS_REMAIN"] : []),
+            ...(storageVerificationFailed ? ["STORAGE_ABSENCE_CHECK_FAILED"] : []),
+            ...(remainingStorageObjects > 0 ? ["STORAGE_OBJECTS_REMAIN"] : []),
+            ...(!allAuthUsersAbsent ? ["AUTH_USERS_REMAIN_OR_ABSENCE_UNVERIFIED"] : []),
+          ].join(", ") || "Temporary QA resources remain or could not be verified as removed.";
     }
   }
 

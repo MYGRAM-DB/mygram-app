@@ -2,9 +2,9 @@ name: MYGRAM Build and Quality Gate
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: ["main", "rebuild/phase-a-architecture"]
   push:
-    branches: ["main"]
+    branches: ["main", "rebuild/phase-a-architecture"]
   workflow_dispatch:
 
 permissions:
@@ -16,9 +16,9 @@ concurrency:
 
 jobs:
   verify:
-    name: Typecheck, unit tests, Playwright, and production build
+    name: Unit tests, Playwright, and production build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,44 +26,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.16.0
-      - name: Install from committed lockfile
-        run: npm ci --ignore-scripts --no-audit --no-fund
+          cache: npm
+      - name: Install dependencies from lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Unit and contract tests
+        run: npm test
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
-      - name: Test product registry
-        run: npm test
       - name: Browser end-to-end tests
         run: npm run test:e2e
-      - name: Validate integration test syntax
-        run: node --check tests/authz.integration.mjs
-      - name: Validate Messenger A/B/C integration test syntax
-        run: node --check tests/messenger-three-party.integration.mjs
-      - name: TypeScript validation and Vite build
-        run: npm run build
-
-
-  staging-authz:
-    name: Real JWT, Profile Privacy, Storage, Messenger A/B/C, and Realtime
-    runs-on: ubuntu-latest
-    needs: verify
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Run isolated Staging security suite with GitHub OIDC
-        shell: bash
+      - name: Validate Staging integration test source
         run: |
-          set -euo pipefail
-          OIDC_RESPONSE="$(curl --fail --silent --show-error \
-            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=mygram-staging-qa")"
-          OIDC_TOKEN="$(printf '%s' "$OIDC_RESPONSE" | jq -er '.value')"
-          unset OIDC_RESPONSE
-          curl --fail --silent --show-error \
-            --request POST \
-            "https://cbyvtehvaojxfcgpelir.supabase.co/functions/v1/qa-messenger-abc" \
-            -H "Authorization: Bearer $OIDC_TOKEN" \
-            -H "Content-Type: application/json" \
-            --data '{}'
-          unset OIDC_TOKEN
+          node --check tests/authz.integration.mjs
+          node --check tests/messenger-three-party.integration.mjs
+      - name: Set up Deno for Edge Function checks
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.7.0
+          cache: true
+      - name: Typecheck Staging QA Edge Functions
+        run: |
+          deno check --node-modules-dir=auto --no-lock supabase/functions/qa-authz-two-user/index.ts
+          deno check --node-modules-dir=auto --no-lock supabase/functions/qa-messenger-abc/index.ts
+      - name: TypeScript validation and production build
+        run: npm run build

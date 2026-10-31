@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.118.0";
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.9.6";
+import { extractBearerToken, isTrustedStagingWorkflowClaims } from "../_shared/github-oidc-policy.mjs";
 
 const PROJECT_REF = "cbyvtehvaojxfcgpelir";
 const AVATAR_BUCKET = "profile-avatars";
@@ -32,39 +33,17 @@ async function sha256(value: string): Promise<string> {
 }
 
 async function authorizeGitHubWorkflow(request: Request): Promise<Record<string, unknown> | null> {
-  const authorization = request.headers.get("authorization") ?? "";
-  const match = authorization.match(/^Bearer\s+(.+)$/i);
-  if (!match) return null;
+  const oidcToken = extractBearerToken(request.headers.get("authorization") ?? "");
+  if (!oidcToken) return null;
 
   try {
-    const verified = await jwtVerify(match[1], OIDC_JWKS, {
+    const verified = await jwtVerify(oidcToken, OIDC_JWKS, {
       issuer: OIDC_ISSUER,
       audience: OIDC_AUDIENCE,
       algorithms: ["RS256"],
     });
     const claims = verified.payload as Record<string, unknown>;
-    const now = Math.floor(Date.now() / 1000);
-    const audience = claims.aud;
-    const audienceAllowed = typeof audience === "string"
-      ? audience === OIDC_AUDIENCE
-      : Array.isArray(audience) && audience.includes(OIDC_AUDIENCE);
-    const allowed =
-      claims.iss === OIDC_ISSUER &&
-      audienceAllowed &&
-      typeof claims.exp === "number" && claims.exp > now &&
-      (typeof claims.nbf !== "number" || claims.nbf <= now) &&
-      claims.repository === "MYGRAM-DB/mygram-app" &&
-      claims.repository_owner === "MYGRAM-DB" &&
-      String(claims.repository_id) === "1429829602" &&
-      String(claims.repository_owner_id) === "346374775" &&
-      claims.event_name === "pull_request" &&
-      claims.head_ref === "rebuild/phase-a-architecture" &&
-      claims.base_ref === "main" &&
-      typeof claims.workflow_ref === "string" &&
-      claims.workflow_ref.startsWith("MYGRAM-DB/mygram-app/.github/workflows/ci.yml@") &&
-      claims.workflow === "MYGRAM Build and Quality Gate" &&
-      claims.sub === "repo:MYGRAM-DB@346374775/mygram-app@1429829602:pull_request";
-    return allowed ? claims : null;
+    return isTrustedStagingWorkflowClaims(claims) ? claims : null;
   } catch {
     return null;
   }
@@ -91,12 +70,15 @@ Deno.serve(async (request: Request) => {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
 
-  const oidc = request.headers.get("authorization") ?? "";
-  const oidcToken = oidc.replace(/^Bearer\s+/i, "");
+  const oidcToken = extractBearerToken(request.headers.get("authorization") ?? "");
+  assert(oidcToken, "GITHUB_OIDC_TOKEN_REQUIRED");
   const tokenHash = await sha256(oidcToken);
   const now = new Date().toISOString();
   const expiry = new Date(Number(claims.exp) * 1000).toISOString();
-  await admin.from("qa_run_challenges").delete().lt("expires_at", now);
+  const { error: challengeCleanupError } = await admin.from("qa_run_challenges").delete().lt("expires_at", now);
+  if (challengeCleanupError) {
+    return json({ ok: false, error: "GITHUB_OIDC_REPLAY_CACHE_UNAVAILABLE" }, 503);
+  }
   const { error: replayError } = await admin.from("qa_run_challenges").insert({
     token_hash: tokenHash,
     expires_at: expiry,
