@@ -1,0 +1,21 @@
+name: MYGRAM ai-guard workshop CI
+on:
+  push:
+    branches: ["feature/workshop-ai"]
+  pull_request:
+    branches: ["rebuild/phase-a-architecture"]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/workshops/ai-guard.test.mjs
+      - run: npm run build
