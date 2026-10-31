@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   extractBearerToken,
   isTrustedStagingWorkflowClaims,
@@ -45,6 +46,12 @@ test("untrusted event, branch, workflow path and workflow name are rejected", ()
   ]) {
     assert.equal(isTrustedStagingWorkflowClaims({ ...baseClaims, ...patch }, NOW), false);
   }
+});
+
+test("checked-in trusted workflow name matches the exact OIDC claim policy", () => {
+  const source = readFileSync(new URL("../.github/workflows/staging-authz.yml", import.meta.url), "utf8");
+  const actualName = source.match(/^name:\s*(.+)$/m)?.[1]?.trim();
+  assert.equal(actualName, TRUSTED_STAGING_WORKFLOW.workflow);
 });
 
 test("wrong repository identity or audience is rejected", () => {
