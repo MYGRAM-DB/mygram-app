@@ -61,6 +61,6 @@ export function isTrustedStagingWorkflowClaims(
  */
 export function extractBearerToken(authorization) {
   if (typeof authorization !== "string") return null;
-  const match = authorization.match(/^Bearer\\s+(\\S+)$/i);
+  const match = authorization.match(/^Bearer\s+(\S+)$/i);
   return match?.[1] ?? null;
 }
