@@ -1,0 +1,1 @@
+export function transitionJob(j,next){const allowed={queued:["processing"],processing:["ready","failed"],ready:[],failed:["queued"]};if(!allowed[j.state].includes(next))throw Error("INVALID_JOB_TRANSITION");if(next==="queued"&&j.attempts>=j.maxAttempts)throw Error("RETRY_LIMIT_REACHED");return {...j,state:next,attempts:next==="processing"?j.attempts+1:j.attempts}}
