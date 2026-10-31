@@ -1,3 +1,18 @@
+# DECISION 13 | Android execution enablement | 2026-10-31
+
+> Verified checkpoint and Android build execution order. This is a documentation/control update; no application source or Supabase configuration was changed.
+
+- [Run #122](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41183762660): **SUCCESS** on exact integration SHA `320b3b3cd15003e0fe01f09ac6f6cbf33c07ac0b`; both existing jobs passed. The security job still invokes `qa-messenger-abc`, not `qa-authz-two-user`.
+- PR #54 remains Open / Draft / Not Merged.
+- Branch `feature/android-staging` exists. It was verified at `b4adbd1fb2178f5711782c2a6748ff85e3e57c50` and fast-forwarded without source changes to the current integration baseline `320b3b3cd15003e0fe01f09ac6f6cbf33c07ac0b`.
+- Android branch remains a source-only starting point: no Capacitor packages/config, native `android/` project, Gradle wrapper, or Android workflow. Existing Vite base/source-map and Auth redirect gaps remain.
+- No APK has been built, installed or distributed. The next execution path is a controlled GitHub-hosted runner or an approved local/Work environment; the decision specifies how to build and verify without pretending the current connector ran npm/Gradle.
+- Repository is public; Actions artifacts are readable by anyone with repository read access. Do not upload a tester APK or use public Actions artifacts as a private distribution channel.
+- Gate A remains OPEN; tester import/distribution is blocked. Production remains READ-ONLY.
+- Full requirements: [DECISION-13-ANDROID-EXECUTION-ENABLEMENT.md](DECISION-13-ANDROID-EXECUTION-ENABLEMENT.md).
+
+---
+
 # DECISION 12 | Nine-product productivity and evidence-based progress | 2026-10-31
 
 > Latest checked result: Run #121 SUCCESS on exact SHA `b4adbd1fb2178f5711782c2a6748ff85e3e57c50`; both existing CI jobs passed.

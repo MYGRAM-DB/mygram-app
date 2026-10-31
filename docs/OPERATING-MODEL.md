@@ -1,3 +1,14 @@
+# MYGRAM | DECISION 13 ADDENDUM — Android execution enablement | 2026-10-31
+
+- `feature/android-staging` was verified at the prior SHA `b4adbd1fb2178f5711782c2a6748ff85e3e57c50` and fast-forwarded to integration baseline `320b3b3cd15003e0fe01f09ac6f6cbf33c07ac0b` (documentation-only delta).
+- No Capacitor config, native Android project, Gradle wrapper, Android workflow or APK exists yet. Do not report the branch creation as Android implementation.
+- Build may use a controlled GitHub-hosted runner or approved local/Work environment. No fabricated lockfile or Gradle wrapper.
+- The repository is public, and GitHub Actions artifacts are accessible to anyone with repository read access. Do not use them for private APK/tester distribution.
+- Gate A, independent human security review, physical-device acceptance and owner authorization remain release dependencies.
+- Full order: [DECISION-13-ANDROID-EXECUTION-ENABLEMENT.md](DECISION-13-ANDROID-EXECUTION-ENABLEMENT.md).
+
+---
+
 # MYGRAM | DECISION 12 ADDENDUM — Nine-product throughput and score control | 2026-10-31
 
 > This addendum adds product delivery ownership and a reproducible score contract to Decision 11. It does not override security or release gates.

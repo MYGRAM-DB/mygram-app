@@ -1,3 +1,16 @@
+# DECISION 13 STATUS ADDENDUM — 2026-10-31
+
+Verified after Decision 12:
+- `feature/android-staging` exists and is now synchronized to integration commit `320b3b3cd15003e0fe01f09ac6f6cbf33c07ac0b`.
+- The branch has no Android source changes yet. No Capacitor configuration/dependencies, `android/` project, Gradle wrapper or APK CI workflow exists at this baseline.
+- `package.json` has no Capacitor dependencies/scripts; `vite.config.ts` still has web base `/mygram-app/` and `sourcemap: true`; signup has no native `emailRedirectTo`.
+- [Run #122](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41183762660) succeeded on `320b3b3cd15003e0fe01f09ac6f6cbf33c07ac0b`, but it did not build Android.
+- No APK has been built or distributed.
+
+Decision 13 chooses a controlled GitHub-hosted runner or approved local/Work environment for real npm/Gradle execution. Because this repository is public, Actions artifacts are not a private distribution channel; see the [Decision 13 Android execution order](DECISION-13-ANDROID-EXECUTION-ENABLEMENT.md).
+
+---
+
 # MYGRAM | DECISION 08 — Android APK test track
 
 Date: 2026-10-31  
