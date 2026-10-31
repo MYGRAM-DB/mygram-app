@@ -11,11 +11,42 @@ export type ISODateTime = string;
 
 export interface PublicProfileRow {
   id: UUID;
-  username: string | null;
   full_name: string | null;
+  username: string | null;
   first_name: string | null;
   last_name: string | null;
+  bio: string | null;
   avatar_url: string | null;
+  cover_url: string | null;
+  interests: string[] | null;
+  created_at: ISODateTime | null;
+  updated_at: ISODateTime | null;
+  nationality_code: string | null;
+  living_country_code: string | null;
+  living_region: string | null;
+  living_city: string | null;
+}
+
+export interface ProfileRow {
+  id: UUID;
+  full_name: string | null;
+  username: string | null;
+  bio: string;
+  avatar_url: string | null;
+  cover_url: string | null;
+  interests: string[];
+  created_at: ISODateTime;
+  updated_at: ISODateTime;
+  first_name: string | null;
+  last_name: string | null;
+  profile_completed: boolean;
+  study_place: string | null;
+  work_place: string | null;
+  public_nationality_code: string | null;
+  public_living_country_code: string | null;
+  public_living_region: string | null;
+  public_living_city: string | null;
+  show_living_location: boolean;
 }
 
 export interface PostRow {
@@ -23,8 +54,9 @@ export interface PostRow {
   user_id: UUID;
   content: string;
   media_url: string | null;
-  media_type: string | null;
+  media_type: "image" | "video" | "audio" | "file" | null;
   created_at: ISODateTime;
+  updated_at: ISODateTime;
 }
 
 export interface PostCommentRow {
@@ -34,13 +66,16 @@ export interface PostCommentRow {
   content: string;
   created_at: ISODateTime;
   parent_comment_id: UUID | null;
+  updated_at: ISODateTime;
 }
 
 export interface PostReactionRow {
   id: UUID;
   post_id: UUID;
   user_id: UUID;
-  reaction: string;
+  reaction: "like" | "love" | "haha" | "care" | "wow" | "sad" | "angry" | "fire";
+  created_at: ISODateTime;
+  updated_at: ISODateTime;
 }
 
 export type MessengerMessageType = "text" | "image" | "video" | "audio" | "file";
@@ -173,6 +208,7 @@ export interface MygramServiceContracts {
   identity: {
     get_my_profile_state: { Args: Record<string, never>; Returns: Record<string, unknown> };
     complete_mygram_profile: { Args: CompleteMygramProfileArgs; Returns: unknown };
+    profiles: ProfileRow;
     public_profiles: PublicProfileRow;
     profile_private_details: ProfilePrivateDetailsRow;
     user_preferences: UserPreferencesRow;
