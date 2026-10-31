@@ -123,7 +123,12 @@ jobs:
       - name: Package generated source for review (no APK)
         run: |
           set -euo pipefail
-          rm -rf android/app/build android/.gradle
+          rm -rf android/app/build android/build android/.gradle
+          rm -rf android/capacitor-cordova-android-plugins
+          rm -rf android/app/src/main/assets/public
+          rm -f android/app/src/main/assets/capacitor.config.json
+          rm -f android/app/src/main/assets/capacitor.plugins.json
+          rm -f android/app/src/main/res/xml/config.xml
           find android -name local.properties -delete
           zip -qr android-source-review.zip android capacitor.config.json package.json package-lock.json
           unzip -l android-source-review.zip | tail -n 5
