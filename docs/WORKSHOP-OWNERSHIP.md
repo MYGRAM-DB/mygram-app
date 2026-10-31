@@ -23,7 +23,7 @@
 
 The TypeScript declarations in `src/contracts/database.ts` are limited to:
 
-- `public_profiles` view columns inspected from Staging information_schema.
+- Full `profiles` base-table row and `public_profiles` view projection fields inspected from Staging information_schema.
 - `profiles` public profile fields used by the app and `profile_private_details` private/verification columns.
 - `user_preferences`, `supported_countries` (205 Staging rows), and `supported_locales` (60 Staging rows).
 - `ui_translation_cache` and `ui_translation_daily_usage`.
