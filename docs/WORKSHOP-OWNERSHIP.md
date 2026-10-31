@@ -23,16 +23,19 @@
 
 The TypeScript declarations in `src/contracts/database.ts` are limited to:
 
-- `public_profiles` projection fields used by the current application query.
+- `public_profiles` view columns inspected from Staging information_schema.
+- `profiles` public profile fields used by the app and `profile_private_details` private/verification columns.
+- `user_preferences`, `supported_countries` (205 Staging rows), and `supported_locales` (60 Staging rows).
+- `ui_translation_cache` and `ui_translation_daily_usage`.
 - `posts`, `post_comments` (including `parent_comment_id`), and `post_reactions`.
 - `messenger_conversations`, `messenger_participants`, `messenger_messages`, and `messenger_attachments`.
-- The exact argument names currently used for `complete_mygram_profile` and the observed `get_my_profile_state` return property.
+- Exact argument names and JSONB return type for `complete_mygram_profile` and `get_my_profile_state`, inspected from Staging `pg_proc`.
 
 The messenger column definitions are grounded in migration `20261030165820_create_messenger_direct_conversations_security.sql`. The nested-comment foreign key and field are grounded in `20261030022611_align_staging_core_schema_phase_1.sql`.
 
 ## Explicit schema gaps
 
-No table, field, RPC, or authorization contract is fabricated for Meetings, AI quotas, notifications, moderation, audit events, Marketplace, or video processing. These remain **schema-pending** until the current Staging schema and authoritative migration source are inspected. Their service owners must submit evidence before W10 publishes those contracts.
+Live Staging inspection currently exposes 15 public base tables plus the `public_profiles` view. No Meetings tables, AI quota tables, notifications tables, moderation tables, audit-event tables, Marketplace tables, or video-processing queue tables were present in the inspected public schema. These remain **schema-pending** until an authoritative schema source is identified and reviewed. Their service owners must submit evidence before W10 publishes those contracts.
 
 ## Ownership constraints
 
