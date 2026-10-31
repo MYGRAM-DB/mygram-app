@@ -1,4 +1,4 @@
-name: MYGRAM Trusted Staging QA
+name: MYGRAM Trusted Staging QA Smoke
 
 on:
   push:
