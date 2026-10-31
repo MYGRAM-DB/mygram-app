@@ -1,0 +1,132 @@
+name: MYGRAM Android Staging Bootstrap
+
+on:
+  pull_request:
+    branches: ["rebuild/phase-a-architecture"]
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mygram-android-staging-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-bootstrap:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/feature/android-staging') ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.ref == 'feature/android-staging' &&
+       github.event.pull_request.base.ref == 'rebuild/phase-a-architecture')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout Android staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Validate Staging-only build inputs
+        shell: bash
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -euo pipefail
+          test "${VITE_SUPABASE_URL}" = "https://cbyvtehvaojxfcgpelir.supabase.co" || {
+            echo "::error::VITE_SUPABASE_URL must point to MYGRAM-STAGING."
+            exit 1
+          }
+          case "${VITE_SUPABASE_PUBLISHABLE_KEY}" in
+            sb_publishable_*) ;;
+            *) echo "::error::Missing or invalid Supabase publishable key."; exit 1 ;;
+          esac
+          echo "Staging project reference validated."
+
+      - name: Install committed web dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Resolve and pin Capacitor 8 packages
+        run: npm install --save-exact @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 --no-audit --no-fund
+
+      - name: Typecheck and build local Android web assets
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -euo pipefail
+          npm run typecheck
+          npx vite build --mode android
+
+      - name: Generate native Android project
+        run: |
+          set -euo pipefail
+          npx cap add android
+          npx cap sync android
+          cd android
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Verify APK identity, signature, permissions, target and checksum
+        shell: bash
+        env:
+          APK: android/app/build/outputs/apk/debug/app-debug.apk
+        run: |
+          set -euo pipefail
+          test -s "$APK"
+          SDK_TOOLS="$ANDROID_HOME/build-tools"
+          APKSIGNER="$(find "$SDK_TOOLS" -type f -name apksigner | sort -V | tail -n 1)"
+          AAPT="$(find "$SDK_TOOLS" -type f -name aapt | sort -V | tail -n 1)"
+          test -x "$APKSIGNER"
+          test -x "$AAPT"
+          "$APKSIGNER" verify --verbose --print-certs "$APK"
+          BADGING="$("$AAPT" dump badging "$APK")"
+          printf '%s\n' "$BADGING" | grep -F "package: name='com.mygram.app.staging'"
+          PERMISSIONS="$("$AAPT" dump permissions "$APK")"
+          if printf '%s\n' "$PERMISSIONS" | grep -E 'android.permission.(CAMERA|RECORD_AUDIO|ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION|READ_CONTACTS|WRITE_CONTACTS)'; then
+            echo "::error::Unexpected sensitive Android permission found."
+            exit 1
+          fi
+          if grep -R -a -E 'service_role|sb_secret_' android/app/src/main/assets/public; then
+            echo "::error::Privileged Supabase credential pattern found in bundled assets."
+            exit 1
+          fi
+          if grep -R -a -E 'rocztskcyakvekokftfx' android/app/src/main/assets/public; then
+            echo "::error::Production Supabase project reference found in Android assets."
+            exit 1
+          fi
+          grep -R -a -q 'cbyvtehvaojxfcgpelir' android/app/src/main/assets/public
+          sha256sum "$APK"
+          echo "APK built and verified on the ephemeral runner. Binary is intentionally not uploaded."
+
+      - name: Package generated source for review (no APK)
+        run: |
+          set -euo pipefail
+          rm -rf android/app/build android/.gradle
+          find android -name local.properties -delete
+          zip -qr android-source-review.zip android capacitor.config.ts package.json package-lock.json
+          unzip -l android-source-review.zip | tail -n 5
+
+      - name: Upload generated source only
+        uses: actions/upload-artifact@v4
+        with:
+          name: mygram-android-staging-source-${{ github.sha }}
+          path: android-source-review.zip
+          if-no-files-found: error
+          retention-days: 7
