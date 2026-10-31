@@ -1,3 +1,47 @@
+# DECISION 06 | Latest verified snapshot | 2026-10-31
+
+> This entry supersedes earlier current-state summaries below. Historical snapshots remain preserved for audit.
+
+- Repository: `MYGRAM-DB/mygram-app`.
+- Rebuild branch: `rebuild/phase-a-architecture`.
+- Current HEAD at this update: `da49c3826318b372cf706e3e2b07ec1b2d67b459`.
+- [Run #116](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41149322936): **SUCCESS** on this exact HEAD. Both jobs completed successfully: build/typecheck/unit/Playwright and the existing Staging Messenger/JWT/Profile/Storage/Realtime suite.
+- [Run #115](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41149093354): **SUCCESS** on `8630647227ea0a21fca4f98c990acc4af168b57a`; both jobs passed on that earlier exact SHA.
+- [Run #114](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41147969397): **SUCCESS** on `1b8a66b16f61984ee91350bfce400e25633026a7`.
+- [Run #113](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41147962375): **CANCELLED**; not counted as pass or fail.
+- PR #54: **Open / Draft / Not Merged**, head `da49c3826318b372cf706e3e2b07ec1b2d67b459`, base `main`. No merge or Ready transition.
+- MY-0401: **CLOSED**. The two active repository rulesets are `main-branch-protection` (ID `26248287`) and `rebuild-branch-safety` (ID `26248473`). Bypass lists are empty.
+- Production: **READ-ONLY**. No Production schema, data, Auth, Storage, Edge Function, settings, or deployment changes.
+
+## Human-testable Staging preview | OPEN RELEASE BLOCKER
+
+- There is currently no repository deployment workflow for a human-accessible Staging application. The only workflow under `.github/workflows` is `ci.yml`; it builds and tests but does not publish a web application.
+- Playwright is configured against the local Vite server at `http://127.0.0.1:5173/mygram-app/`. Its passing browser tests are CI-local and do not provide a URL that the owner can open.
+- `npm run dev` and `npm run preview` are local developer commands, not hosted deployments. The Vite base path `/mygram-app/` is not proof that GitHub Pages is configured or deployed.
+- No verified human-testable Staging URL is currently recorded. This is tracked as `MY-0410`.
+- A private, access-controlled preview is required before manual product acceptance. It must connect only to MYGRAM-STAGING project ref `cbyvtehvaojxfcgpelir`; the Production ref `rocztskcyakvekokftfx` must be rejected by a build-time environment guard.
+- Only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` may be exposed in browser build configuration. Never expose a Service Role / Secret key.
+- Public hosting is not authorized by this record. If a provider cannot restrict access to the owner/approved testers, obtain explicit approval before publishing any publicly reachable preview.
+- The current UI is a foundation shell. Only MYGRAM FB and MYGRAM MESSENGER are classified partial; the other seven products remain not implemented. A preview must display these statuses accurately and must not imply nine completed products.
+
+## AuthZ boundary
+
+- `qa-authz-two-user` remains undeployed and unexecuted.
+- CI's `node --check tests/authz.integration.mjs` step validates syntax only.
+- The existing Staging job invokes `qa-messenger-abc`, not `qa-authz-two-user`.
+- The AuthZ fixture INSERT mismatch, trusted Workflow identity design, independent AuthZ CI job, expiry/replay tests, signed URL contract, and complete cleanup verification remain open.
+
+## Gate status
+
+- MY-0401 branch rules: CLOSED.
+- MY-0410 human-testable, access-controlled Staging preview: OPEN.
+- AuthZ (MY-0402/0404/0405): OPEN.
+- Signed avatar URL contract (MY-0403): OPEN.
+- Migration recovery and Validator (MY-0407): OPEN.
+- Production privacy remediation plan (MY-0406): OPEN; planning only, no Production changes.
+- SMTP, recovery, session lifecycle, and Staging rollback evidence: OPEN.
+- Gate A: **OPEN**.
+
 # DECISION 05 | LATEST VERIFIED SNAPSHOT | 2026-10-31
 
 > This snapshot supersedes the preceding Decision 05 addendum for current state. Older entries remain historical evidence and are not deleted.
