@@ -100,3 +100,15 @@ test("Bearer header parsing accepts one token and rejects malformed headers", ()
   assert.equal(extractBearerToken(""), null);
   assert.equal(extractBearerToken(null), null);
 });
+
+
+test("both QA endpoints fail closed when replay-cache cleanup fails", () => {
+  for (const path of [
+    "../supabase/functions/qa-authz-two-user/index.ts",
+    "../supabase/functions/qa-messenger-abc/index.ts",
+  ]) {
+    const source = readFileSync(new URL(path, import.meta.url), "utf8");
+    assert.match(source, /const \{ error: challengeCleanupError \} = await admin\.from\("qa_run_challenges"\)\.delete\(\)\.lt\("expires_at", now\);/);
+    assert.match(source, /if \(challengeCleanupError\) \{\s*return json\(\{ ok: false, error: "GITHUB_OIDC_REPLAY_CACHE_UNAVAILABLE" \}, 503\);/);
+  }
+});
