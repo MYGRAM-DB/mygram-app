@@ -1,0 +1,2 @@
+export function transitionMeeting(m,actor,next){if(actor!==m.hostId)throw Error("FORBIDDEN");const allowed={scheduled:["live","cancelled"],live:["ended"],ended:[],cancelled:[]};if(!allowed[m.status].includes(next))throw Error("INVALID_MEETING_TRANSITION");return {...m,status:next}}
+export function transferChair(m,actor,next){if(actor!==m.hostId)throw Error("FORBIDDEN");if(m.status!=="live"||!m.participantIds.includes(next))throw Error("INVALID_CHAIR_TRANSFER");return {...m,chairId:next}}
