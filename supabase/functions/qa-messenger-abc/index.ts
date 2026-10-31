@@ -368,27 +368,81 @@ Deno.serve(async (request: Request) => {
       const { error } = await admin.from("messenger_conversations").delete().eq("id", conversationId);
       if (error) cleanupErrors.push("CONVERSATION_DELETE_FAILED");
     }
-    for (const userId of createdUserIds.reverse()) {
+    for (const userId of [...createdUserIds].reverse()) {
       const { error } = await admin.auth.admin.deleteUser(userId);
       if (error) cleanupErrors.push("EPHEMERAL_AUTH_USER_DELETE_FAILED");
     }
 
-    const remainingConversation = await admin.from("messenger_conversations")
-      .select("id", { count: "exact", head: true })
-      .eq("id", conversationId ?? "00000000-0000-0000-0000-000000000000");
-    const remainingObject = objectPath
-      ? await admin.from("messenger_attachments").select("id", { count: "exact", head: true }).eq("object_path", objectPath)
-      : { error: null, count: 0 };
+    const conversationFilterId = conversationId ?? "00000000-0000-0000-0000-000000000000";
+    const [remainingConversation, remainingMessages, remainingParticipants, remainingAttachments] = await Promise.all([
+      admin.from("messenger_conversations").select("id", { count: "exact", head: true }).eq("id", conversationFilterId),
+      admin.from("messenger_messages").select("id", { count: "exact", head: true }).eq("conversation_id", conversationFilterId),
+      admin.from("messenger_participants").select("user_id", { count: "exact", head: true }).eq("conversation_id", conversationFilterId),
+      objectPath
+        ? admin.from("messenger_attachments").select("id", { count: "exact", head: true }).eq("object_path", objectPath)
+        : Promise.resolve({ error: null, count: 0 }),
+    ]);
+
+    const objectPaths = [
+      ...profileAvatarPaths.map((path) => ({ bucket: "profile-avatars", path })),
+      ...(objectPath ? [{ bucket: BUCKET, path: objectPath }] : []),
+    ];
+    const storageAbsenceChecks = await Promise.all(objectPaths.map(async ({ bucket, path }) => {
+      try {
+        const separator = path.lastIndexOf("/");
+        const folder = path.slice(0, separator);
+        const filename = path.slice(separator + 1);
+        const { data, error } = await admin.storage.from(bucket).list(folder, {
+          limit: 100,
+          search: filename,
+        });
+        return {
+          failed: !!error,
+          count: (data ?? []).filter((item) => item.name === filename).length,
+        };
+      } catch {
+        return { failed: true, count: 0 };
+      }
+    }));
+
+    const authUserAbsenceChecks = await Promise.all(createdUserIds.map(async (userId) => {
+      try {
+        const { data, error } = await admin.auth.admin.getUserById(userId);
+        if (error) return error.status === 404 || /user not found/i.test(error.message);
+        return !data.user;
+      } catch {
+        return false;
+      }
+    }));
+
+    const dbChecks = [remainingConversation, remainingMessages, remainingParticipants, remainingAttachments];
+    const dbVerificationFailed = dbChecks.some((result) => !!result.error);
+    const remainingDbRows = dbChecks.reduce((total, result) => total + (result.count ?? 0), 0);
+    const storageVerificationFailed = storageAbsenceChecks.some((result) => result.failed);
+    const remainingStorageObjects = storageAbsenceChecks.reduce((total, result) => total + result.count, 0);
+    const allAuthUsersAbsent = authUserAbsenceChecks.every(Boolean);
+
     cleanupComplete =
       cleanupErrors.length === 0 &&
-      !remainingConversation.error && (remainingConversation.count ?? 0) === 0 &&
-      !remainingObject.error && (remainingObject.count ?? 0) === 0;
+      !dbVerificationFailed &&
+      remainingDbRows === 0 &&
+      !storageVerificationFailed &&
+      remainingStorageObjects === 0 &&
+      allAuthUsersAbsent;
+
     const cleanup = checks.find((check) => check.name === "test_data_cleanup");
     if (cleanup) {
       cleanup.status = cleanupComplete ? "PASS" : "FAIL";
       cleanup.detail = cleanupComplete
-        ? "Ephemeral A/B/C Auth users, synthetic profile avatar, Messenger conversation, message/attachment rows and Messenger object were removed; database absence checks passed."
-        : "The temporary conversation is still present or could not be verified as deleted.";
+        ? "Ephemeral A/B/C Auth users, profile avatar objects, Messenger conversation, participants, messages, attachment metadata and attachment object were removed; independent database, Storage and Auth absence checks passed."
+        : [
+            ...cleanupErrors,
+            ...(dbVerificationFailed ? ["DATABASE_ABSENCE_CHECK_FAILED"] : []),
+            ...(remainingDbRows > 0 ? ["MESSENGER_DATABASE_ROWS_REMAIN"] : []),
+            ...(storageVerificationFailed ? ["STORAGE_ABSENCE_CHECK_FAILED"] : []),
+            ...(remainingStorageObjects > 0 ? ["STORAGE_OBJECTS_REMAIN"] : []),
+            ...(!allAuthUsersAbsent ? ["AUTH_USERS_REMAIN_OR_ABSENCE_UNVERIFIED"] : []),
+          ].join(", ") || "Temporary QA resources remain or could not be verified as removed.";
     }
   }
 
