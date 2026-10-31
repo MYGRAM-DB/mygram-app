@@ -121,7 +121,10 @@ Deno.serve(async (request: Request) => {
   const tokenHash = await sha256(oidcToken);
   const now = new Date().toISOString();
   const expiry = new Date(Number(claims.exp) * 1000).toISOString();
-  await admin.from("qa_run_challenges").delete().lt("expires_at", now);
+  const { error: challengeCleanupError } = await admin.from("qa_run_challenges").delete().lt("expires_at", now);
+  if (challengeCleanupError) {
+    return json({ ok: false, error: "GITHUB_OIDC_REPLAY_CACHE_UNAVAILABLE" }, 503);
+  }
   const { error: replayError } = await admin.from("qa_run_challenges").insert({
     token_hash: tokenHash,
     expires_at: expiry,
