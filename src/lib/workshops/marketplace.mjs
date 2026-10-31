@@ -1,0 +1,3 @@
+export function publishListing(l,actor){if(l.sellerId!==actor)throw Error("FORBIDDEN");if(!l.title.trim()||l.title.length>120)throw Error("INVALID_LISTING_TITLE");if(l.status==="removed")throw Error("REMOVED_LISTING");return {...l,title:l.title.trim(),status:"published"}}
+export function adEligible(a){return a.approved===true&&a.moderationPassed===true&&a.sensitiveTargeting!==true}
+export function canShowAdToday(impressions,cap){return Number.isInteger(impressions)&&Number.isInteger(cap)&&impressions>=0&&cap>0&&impressions<cap}
