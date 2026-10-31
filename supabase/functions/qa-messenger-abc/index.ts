@@ -356,32 +356,64 @@ Deno.serve(async (request: Request) => {
     await Promise.allSettled(channelHandles.map(({ channel }) => channel.unsubscribe()));
 
     const cleanupErrors: string[] = [];
-    if (profileAvatarPaths.length > 0) {
-      const { error } = await admin.storage.from("profile-avatars").remove(profileAvatarPaths);
-      if (error) cleanupErrors.push("PROFILE_AVATAR_STORAGE_DELETE_FAILED");
+
+    async function cleanupAttempt(
+      name: string,
+      operation: () => PromiseLike<{ error: unknown | null }>,
+    ) {
+      try {
+        const result = await operation();
+        if (result.error) cleanupErrors.push(name);
+      } catch {
+        cleanupErrors.push(name);
+      }
     }
-    if (objectPath) {
-      const { error } = await admin.storage.from(BUCKET).remove([objectPath]);
-      if (error) cleanupErrors.push("STORAGE_OBJECT_DELETE_FAILED");
-    }
-    if (conversationId) {
-      const { error } = await admin.from("messenger_conversations").delete().eq("id", conversationId);
-      if (error) cleanupErrors.push("CONVERSATION_DELETE_FAILED");
-    }
-    for (const userId of [...createdUserIds].reverse()) {
-      const { error } = await admin.auth.admin.deleteUser(userId);
-      if (error) cleanupErrors.push("EPHEMERAL_AUTH_USER_DELETE_FAILED");
+
+    // Isolate deletion attempts: one timeout or rejected request must not
+    // prevent cleanup of the remaining temporary QA resources.
+    await Promise.all([
+      ...(profileAvatarPaths.length > 0 ? [cleanupAttempt(
+        "PROFILE_AVATAR_STORAGE_DELETE_FAILED",
+        () => admin.storage.from("profile-avatars").remove(profileAvatarPaths),
+      )] : []),
+      ...(objectPath ? [cleanupAttempt(
+        "STORAGE_OBJECT_DELETE_FAILED",
+        () => admin.storage.from(BUCKET).remove([objectPath!]),
+      )] : []),
+      ...(conversationId ? [cleanupAttempt(
+        "CONVERSATION_DELETE_FAILED",
+        () => admin.from("messenger_conversations").delete().eq("id", conversationId!),
+      )] : []),
+      ...[...createdUserIds].reverse().map((userId) => cleanupAttempt(
+        "EPHEMERAL_AUTH_USER_DELETE_FAILED",
+        () => admin.auth.admin.deleteUser(userId),
+      )),
+    ]);
+
+    async function countRows(
+      operation: () => PromiseLike<{ count: number | null; error: unknown | null }>,
+    ): Promise<{ count: number; failed: boolean }> {
+      try {
+        const result = await operation();
+        return { count: result.count ?? 0, failed: !!result.error };
+      } catch {
+        return { count: 0, failed: true };
+      }
     }
 
     const conversationFilterId = conversationId ?? "00000000-0000-0000-0000-000000000000";
-    const [remainingConversation, remainingMessages, remainingParticipants, remainingAttachments] = await Promise.all([
-      admin.from("messenger_conversations").select("id", { count: "exact", head: true }).eq("id", conversationFilterId),
-      admin.from("messenger_messages").select("id", { count: "exact", head: true }).eq("conversation_id", conversationFilterId),
-      admin.from("messenger_participants").select("user_id", { count: "exact", head: true }).eq("conversation_id", conversationFilterId),
-      objectPath
-        ? admin.from("messenger_attachments").select("id", { count: "exact", head: true }).eq("object_path", objectPath)
-        : Promise.resolve({ error: null, count: 0 }),
+    const [remainingConversation, remainingMessages, remainingParticipants] = await Promise.all([
+      countRows(() => admin.from("messenger_conversations")
+        .select("id", { count: "exact", head: true }).eq("id", conversationFilterId)),
+      countRows(() => admin.from("messenger_messages")
+        .select("id", { count: "exact", head: true }).eq("conversation_id", conversationFilterId)),
+      countRows(() => admin.from("messenger_participants")
+        .select("user_id", { count: "exact", head: true }).eq("conversation_id", conversationFilterId)),
     ]);
+    const remainingAttachments = objectPath
+      ? await countRows(() => admin.from("messenger_attachments")
+        .select("id", { count: "exact", head: true }).eq("object_path", objectPath!))
+      : { count: 0, failed: false };
 
     const objectPaths = [
       ...profileAvatarPaths.map((path) => ({ bucket: "profile-avatars", path })),
@@ -416,8 +448,8 @@ Deno.serve(async (request: Request) => {
     }));
 
     const dbChecks = [remainingConversation, remainingMessages, remainingParticipants, remainingAttachments];
-    const dbVerificationFailed = dbChecks.some((result) => !!result.error);
-    const remainingDbRows = dbChecks.reduce((total, result) => total + (result.count ?? 0), 0);
+    const dbVerificationFailed = dbChecks.some((result) => result.failed);
+    const remainingDbRows = dbChecks.reduce((total, result) => total + result.count, 0);
     const storageVerificationFailed = storageAbsenceChecks.some((result) => result.failed);
     const remainingStorageObjects = storageAbsenceChecks.reduce((total, result) => total + result.count, 0);
     const allAuthUsersAbsent = authUserAbsenceChecks.every(Boolean);
