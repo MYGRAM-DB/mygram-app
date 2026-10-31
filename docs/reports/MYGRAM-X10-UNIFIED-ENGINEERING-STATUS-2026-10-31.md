@@ -41,7 +41,7 @@ It is **not release-ready**. Several product surfaces remain design-only or lack
 
 | Executive indicator | Audited result | Evidence / interpretation |
 |---|---:|---|
-| Open PRs discovered | 6 | #54, #59, #87, #90, #91, #92 |
+| Primary workstream PRs tracked | 6 | #54, #59, #87, #90, #91, #92; documentation PR #96 is tracked separately |
 | Open priority blockers in this report | 6+ | #55, #60, #88, #89, #93, #95, plus workshop Issues #73–#85 |
 | Staging applied migrations | 17 | Supabase migration ledger |
 | SQL migration files in integration directory | 12 | GitHub directory listing on integration branch |
@@ -70,9 +70,9 @@ It is **not release-ready**. Several product surfaces remain design-only or lack
 
 ## 2. GitHub PR and CI register
 
-### 2.1 All open PRs discovered
+### 2.1 Six primary workstream / integration PRs
 
-The open-PR search returned six PRs. Every listed PR remains Open, Draft and Not Merged at audit time.
+The six PRs in this register are the primary workstream and integration paths: #54, #59, #87, #90, #91 and #92. They are not the total count of all related PRs. **PR #96 is the separate documentation-delivery PR for this report** and is tracked independently in Section 10.9. All six primary PRs were re-fetched for the latest refresh and remain Open, Draft and Not Merged.
 
 | PR | Scope | Head branch | Exact head SHA | Latest run | Result | Changed paths / evidence |
 |---|---|---|---|---|---|---|
@@ -704,6 +704,7 @@ No paid provider activation or new schema migration without separate review/appr
 | Database | Reconcile 17 migration ledger entries against 12 source files; review #93/#95 design and rollback | Pending |
 | CI owner | Confirm job-level evidence and safe CI transition path | Pending |
 | Workshop owners W1–W13 | Confirm scope, changed paths, outstanding work, owner and rollback | Pending |
+| Android owner | Confirm generated source, reproducibility, PKCE and physical-device evidence, rollback | Pending |
 | Project owner | Review report and explicitly authorize any future protected operation | Pending |
 
 This report is an evidence-backed audit snapshot. Any later change must update the exact branch/SHA/run and the corresponding evidence row. Do not edit historical evidence to make a newer result appear to have existed earlier.
@@ -717,7 +718,7 @@ This section is a dated delta against the original 13:40–13:42 UTC audit. It d
 
 ### 10.1 Current GitHub PR and exact-head CI snapshot
 
-All six PRs below were re-fetched. All remain **OPEN / DRAFT / NOT MERGED**.
+The six primary workstream PRs below were re-fetched. All remain **OPEN / DRAFT / NOT MERGED**. PR #96 is the separate documentation PR and is not part of this six-PR workstream count.
 
 | PR | Scope | Base ← head branch | Exact head SHA | Exact-head run | Job(s) and result | Changed paths / interpretation |
 |---|---|---|---|---|---|---|
@@ -819,7 +820,7 @@ Replay:
 ### 10.7 Report branch delivery state
 
 - Documentation branch: `docs/x10-unified-evidence-2026-10-31`.
-- It is two commits ahead of `rebuild/phase-a-architecture` and zero commits behind at the latest comparison.
+- Live GitHub compare confirms **3 commits ahead** of `rebuild/phase-a-architecture` and **0 commits behind**. The earlier “2 commits ahead” wording was incorrect and is superseded by this correction.
 - This report is a documentation-only change; no application source, migration, workflow or environment file is changed by the report update.
 - The five missing migration files are not reconstructed or added by this report.
 - W10, Security, Database and workshop-owner reviews remain **PENDING**. This report is not an independent review or sign-off.
@@ -835,3 +836,74 @@ During this evidence refresh:
 - No paid provider, Wallet or Payments was activated.
 
 **Decision:** The report is now refreshed with the later PR/CI and Staging/Advisor evidence, but its acceptance state remains unchanged: Gate A OPEN, zero accepted journeys, Release Ready NO. The documentation PR itself still requires CI and W10/Security/Database review before the report task can be closed.
+
+
+---
+
+## 10.9 Final review refresh — 2026-10-31T17:46:35.388Z
+
+This section records the latest read-only GitHub verification performed for the final-review order. It is an addendum; the historical Staging and Advisor observations in Sections 10.2–10.5 retain their original timestamps and are not represented as freshly re-run database checks.
+
+### PR #96 delivery state and branch comparison
+
+| Check | Verified result | Source / boundary |
+|---|---|---|
+| PR #96 | OPEN / DRAFT / NOT MERGED | Live PR metadata; base `rebuild/phase-a-architecture` |
+| Current report head SHA before this correction | `8d71bb529f0c9a51dae264c5792fa1eba9bf8a28` | PR #96 exact head at start of this refresh |
+| Current report blob SHA before this correction | `f378cde6740545bb63ef0184bd3676874c3e610d` | GitHub file content response |
+| Changed files | 1, the report at this path | PR changed-file list |
+| Branch comparison | **3 ahead / 0 behind** | Live compare: report branch against `rebuild/phase-a-architecture`; previous 2-ahead wording corrected |
+| Formal PR reviews | **0 submitted reviews** | GitHub review list returned an empty array; requested reviewer list is empty |
+| Review comments | Comments requesting review exist | Issue comments are not formal submitted reviews or approvals |
+
+### Exact-head CI investigation
+
+For exact report head `8d71bb529f0c9a51dae264c5792fa1eba9bf8a28`:
+
+- Pull-request workflow-run query returned **zero runs**.
+- Commit combined-status query returned **zero statuses**.
+- Therefore CI is **NOT RUN / NO STATUS FOUND** on this exact SHA. No success is claimed.
+- The inspected `.github/workflows/ci.yml` on the integration branch and report branch has blob SHA `430e02d8c35909788816fa12df30fbc1907dcebd`.
+- Its trigger declares `pull_request.branches: ["main"]`, `push.branches: ["main"]`, and `workflow_dispatch`. It has no `paths` or `paths-ignore` filter excluding documentation.
+- PR #96 targets `rebuild/phase-a-architecture`, not `main`. GitHub's `pull_request.branches` filter matches the PR base branch, so the inspected central workflow does not trigger for PR #96 because of the **base-branch filter**, not because docs-only files are excluded.
+- No manual dispatch, workflow edit, permission change or CI-policy change was performed. CI owner must decide whether a safe documentation validation workflow or approved trigger policy is required.
+
+### Scope of the six primary PRs versus documentation PR
+
+The six primary workstream/integration PRs remain #54, #59, #87, #90, #91 and #92. Latest exact-head checks reconfirmed all six as OPEN / DRAFT / NOT MERGED. Their recorded exact-head workflow results remain: #54 Run #133 SUCCESS; #59 Run #9 SUCCESS; #87 no run/status; #90 Run #169 SUCCESS; #91 Run #156 SUCCESS; #92 Run #157 SUCCESS. PR #96 is a seventh, separate documentation-delivery PR and is not part of the six-workstream count.
+
+Run #133 remains historical evidence of **11/11** Messenger A/B/C checks on the older #54 SHA through the legacy PR-triggered OIDC path. It is not current Gate A acceptance, not current deployed-function provenance, and not authorization to invoke QA.
+
+### Review and confirmation matrix — current formal state
+
+| Reviewing authority | Formal evidence found in PR #96 | Status | Required next action |
+|---|---|---|---|
+| W10 | No submitted review | PENDING | Independent report/PR/CI/branch/structure review |
+| Security | No submitted review | PENDING | Formal review of OIDC, provenance, replay, RLS, Auth, Realtime, Storage and signed URLs |
+| Database | No submitted review | PENDING | Formal review of migration ledger/source reconciliation, schema, policies, constraints, grants and #93/#95 |
+| CI owner | No submitted review | PENDING | Confirm base-branch trigger explanation and decide safe docs validation; no unapproved workflow edits |
+| W1–W13 workshop owners | No submitted owner confirmations | PENDING | Each owner confirms their own scope, status, blockers, dependencies and rollback with evidence |
+| Android owner | No submitted owner confirmation | PENDING | Confirm generated source, reproducible build, PKCE and physical-device evidence |
+| Project owner | No approval for merge or protected action recorded | PENDING | Review final report; any protected operation requires separate explicit approval |
+
+A comment asking for review is not a review. No approval is inferred from authorship, CI success on another PR, or historical Staging evidence.
+
+### Reconciled inventory and acceptance boundary
+
+The previously recorded Staging snapshot remains separately timestamped at 2026-10-31 17:20:25 UTC: **17 applied migration versions; 15 public base tables; 1 public view; 12 integration-source SQL migration files; 5 applied migration versions without matching SQL source**. The five source files remain missing and unrecovered. No SQL was fabricated, no migration history rewritten, and no database recheck or mutation was performed as part of this documentation-only correction.
+
+Acceptance remains **0 accepted journeys** under the strict X10 definition. Gate A remains **OPEN**. Release Ready remains **NO**. Production remains **READ-ONLY**.
+
+### Change log for this correction
+
+1. Replaced the incorrect “2 commits ahead” statement in Section 10.7 with the live comparison result: **3 ahead / 0 behind**.
+2. Renamed the Section 2.1 register to identify the six entries as primary workstream/integration PRs, and explicitly separated documentation PR #96.
+3. Updated the executive indicator so “six” no longer implies that #96 does not exist.
+4. Added Android as a separate pending formal review lane.
+5. Added exact-head PR #96 CI results: zero workflow runs and zero commit statuses.
+6. Recorded the root cause in the inspected central workflow: PR base filter only targets `main`; no docs path exclusion exists.
+7. Added the formal review matrix and preserved all historical Staging/Advisor timestamps and evidence limits.
+
+### Governance
+
+This remains a documentation-only correction. No Production or Staging writes, migrations, RLS/Auth/Storage/Realtime/Function/Secret changes, QA invocation, deployment, merge, auto-merge, invitations, APK distribution, public release, paid provider activation, Wallet or Payments action was performed. PR #96 must remain OPEN / DRAFT / NOT MERGED until formal reviews and the CI-owner decision are recorded.
