@@ -1,3 +1,14 @@
+# Android Staging build checkpoint | 2026-10-31
+
+- **Run #9 SUCCESS** on Android branch commit `f2edc7fcc28c971bad4914c80b7408998da84218`: Gradle `assembleDebug` succeeded; APK identity, debug signature, SDK 36, permissions, Staging-only URL and secret-pattern checks passed.
+- PR #59 remains Open/Draft/Not Merged. Its three committed changes are the Android workflow, Capacitor JSON config, and Android-specific Vite mode.
+- Generated Android/Gradle source and npm lockfile are in source-only artifact `13036279372`, not yet committed to the PR branch. The APK itself was discarded after validation.
+- Native Auth deep links/password recovery and physical-device tests remain unimplemented/unverified. The APK was debug-signed; this is not a release APK.
+- Gate A remains OPEN; no APK distribution or tester activation. PR #54 remains Draft/Open/Not Merged. Production remains READ-ONLY.
+- Detailed evidence and next acceptance steps: [ANDROID-EXECUTION-20261031.md](ANDROID-EXECUTION-20261031.md).
+
+---
+
 # DECISION 13 | Android execution enablement | 2026-10-31
 
 > Verified checkpoint and Android build execution order. This is a documentation/control update; no application source or Supabase configuration was changed.

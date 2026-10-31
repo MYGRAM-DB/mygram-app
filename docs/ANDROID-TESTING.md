@@ -1,3 +1,19 @@
+# Latest Android build checkpoint — Run #9
+
+Verified result: [Run #9 SUCCESS](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41185503288) on PR #59 head `f2edc7fcc28c971bad4914c80b7408998da84218`.
+
+- Gradle `assembleDebug` succeeded in the ephemeral runner.
+- Package: `com.mygram.app.staging`; SDK 36; v2 debug signature verified.
+- APK SHA-256: `e88e9202211e8b0ff534a5e98051695389ffa185b7c5603b67ec140b8c75206b`.
+- Generated Android/Gradle project and npm lockfile are source-only artifact `13036279372`; not yet committed to Git.
+- APK itself was discarded and not uploaded.
+- Deep links/recovery and physical-device tests remain open.
+- PR #59 remains Open/Draft/Not Merged; Gate A remains OPEN.
+
+Full independent checkpoint: [ANDROID-EXECUTION-20261031.md](ANDROID-EXECUTION-20261031.md).
+
+---
+
 # DECISION 13 STATUS ADDENDUM — 2026-10-31
 
 Verified after Decision 12:
