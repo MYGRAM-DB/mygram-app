@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {CONTRACT_VERSION,validateCursor,assertResourceOwner} from "../../src/lib/workshops/contracts.mjs";
+test("platform cursor contract validates bounds",()=>{assert.equal(CONTRACT_VERSION,"1.0.0");assert.equal(validateCursor({afterSequence:2,limit:50}).limit,50);assert.throws(()=>validateCursor({afterSequence:0,limit:101}),/INVALID_PAGE_LIMIT/)});
+test("platform ownership rejects mismatched owner",()=>{assert.doesNotThrow(()=>assertResourceOwner("media","platform-media"));assert.throws(()=>assertResourceOwner("identity","messenger"),/RESOURCE_OWNER_MISMATCH/)})
