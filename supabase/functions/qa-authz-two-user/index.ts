@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.118.0";
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.9.6";
-import { isTrustedStagingWorkflowClaims } from "../_shared/github-oidc-policy.mjs";
+import { extractBearerToken, isTrustedStagingWorkflowClaims } from "../_shared/github-oidc-policy.mjs";
 
 const PROJECT_REF = "cbyvtehvaojxfcgpelir";
 const AVATAR_BUCKET = "profile-avatars";
