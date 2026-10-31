@@ -1,3 +1,19 @@
+# MYGRAM | DECISION 12 ADDENDUM — Nine-product throughput and score control | 2026-10-31
+
+> This addendum adds product delivery ownership and a reproducible score contract to Decision 11. It does not override security or release gates.
+
+- [Run #121](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41181799872) is **SUCCESS** on exact SHA `b4adbd1fb2178f5711782c2a6748ff85e3e57c50`; both current jobs passed. The Staging suite invokes `qa-messenger-abc`, not `qa-authz-two-user`.
+- [Issue #58](https://github.com/MYGRAM-DB/mygram-app/issues/58) now tracks the nine end-to-end product tracks and their technical acceptance boundaries.
+- All nine products begin design, threat-model, API/schema-contract and test-case preparation immediately. Actual implementation is parallel only where dependencies and file/schema ownership are isolated.
+- FB and Messenger are the first complete user journeys. Twitty/Insta/WHATSMYGRAM proceed on shared social/media/identity contracts. Meeting/Tube/TikToks/AI require provider, capacity, privacy and cost gates before production-grade claims.
+- The neutral 30% assessment remains historical until item-level weighted evidence is populated. New score contract: 15% shared platform + 45% product portfolio + 15% integration + 15% security/quality + 10% release/operations.
+- No percentage rises from documentation, issues or a green unrelated job. Each completed acceptance item must name exact SHA, environment, test, artifact and reviewer.
+- PR #54 remains Open/Draft/Not Merged. Production remains READ-ONLY. Gate A remains OPEN.
+
+Full criteria: [PRODUCT-DELIVERY-SCORECARD.md](PRODUCT-DELIVERY-SCORECARD.md) and [DECISION-12-PRODUCT-DELIVERY.md](DECISION-12-PRODUCT-DELIVERY.md).
+
+---
+
 # MYGRAM | DECISION 11 ADDENDUM — Execution acceleration | 2026-10-31
 
 > This addendum supersedes the older sequence below where it conflicts. The six delivery lanes remain in force; work may run in parallel only with isolated file/schema ownership and serialized integration by one controller.

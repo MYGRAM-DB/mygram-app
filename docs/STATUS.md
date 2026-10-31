@@ -1,3 +1,18 @@
+# DECISION 12 | Nine-product productivity and evidence-based progress | 2026-10-31
+
+> Latest checked result: Run #121 SUCCESS on exact SHA `b4adbd1fb2178f5711782c2a6748ff85e3e57c50`; both existing CI jobs passed.
+
+- Staging security job ran `qa-messenger-abc` only. `qa-authz-two-user` remains unproven as a runtime gate.
+- Product registry check: FB and Messenger are `partial`; WHATSMYGRAM, INSTA, TWITTY, MEETING, TUBE, TIKTOKS and AI are `not-implemented`.
+- [Issue #58](https://github.com/MYGRAM-DB/mygram-app/issues/58) opened for nine product vertical slices and acceptance rules.
+- The neutral evaluator's 30% is retained as a historical estimate. It is not yet reproducible from a weighted checklist; no score uplift is claimed.
+- New measurement contract is in [PRODUCT-DELIVERY-SCORECARD.md](PRODUCT-DELIVERY-SCORECARD.md). All percentage changes require exact-SHA acceptance evidence. Hard security gates remain independent of aggregate score.
+- All nine product tracks begin design, threat-model, data/API contract and test planning. Product implementation runs in isolated streams; FB/Messenger stabilization and shared platform/security remain priority dependencies.
+- PR #54 remains Open / Draft / Not Merged. Production remains read-only. Gate A remains OPEN.
+- This documentation update does not create product functionality, a Staging deployment, a migration, an Android APK or a release.
+
+---
+
 # DECISION 11 | Parallel production acceleration | 2026-10-31
 
 > Documentation/control update only. Baseline evidence was rechecked before this update; the new documentation commit requires its own CI run.
