@@ -322,6 +322,17 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
     messageEnd.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length, selectedId]);
 
+  function selectConversation(conversationId: string) {
+    // Invalidate pending requests synchronously, before React effects for the
+    // new selection run, so an old conversation cannot paint stale rows.
+    activeConversationId.current = conversationId;
+    messageRequestVersion.current += 1;
+    setMessages([]);
+    setHasOlderMessages(false);
+    setMessagesLoading(true);
+    setSelectedId(conversationId);
+  }
+
   async function createConversation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!supabase || creating) return;
@@ -376,7 +387,7 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
 
       setNewUsername("");
       await loadConversations();
-      setSelectedId(conversationId);
+      selectConversation(conversationId);
       setInfo(`تم فتح محادثة مع ${displayName(target as ProfileSummary)}.`);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "";
@@ -515,7 +526,7 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
                 type="button"
                 key={conversation.id}
                 className={`messenger-conversation ${selectedId === conversation.id ? "active" : ""}`}
-                onClick={() => setSelectedId(conversation.id)}
+                onClick={() => selectConversation(conversation.id)}
               >
                 <span className="messenger-avatar">{initials(conversation.other)}</span>
                 <span className="messenger-conversation-copy">
