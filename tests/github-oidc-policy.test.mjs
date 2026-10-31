@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  extractBearerToken,
   isTrustedStagingWorkflowClaims,
   TRUSTED_STAGING_WORKFLOW,
 } from "../supabase/functions/_shared/github-oidc-policy.mjs";
@@ -79,4 +80,14 @@ test("missing or non-object claims fail closed", () => {
   assert.equal(isTrustedStagingWorkflowClaims(null, NOW), false);
   assert.equal(isTrustedStagingWorkflowClaims("claims", NOW), false);
   assert.equal(isTrustedStagingWorkflowClaims([], NOW), false);
+});
+
+test("Bearer header parsing accepts one token and rejects malformed headers", () => {
+  assert.equal(extractBearerToken("Bearer abc.def.ghi"), "abc.def.ghi");
+  assert.equal(extractBearerToken("bearer abc.def.ghi"), "abc.def.ghi");
+  assert.equal(extractBearerToken("Basic abc.def.ghi"), null);
+  assert.equal(extractBearerToken("Bearer "), null);
+  assert.equal(extractBearerToken("Bearer abc def"), null);
+  assert.equal(extractBearerToken(""), null);
+  assert.equal(extractBearerToken(null), null);
 });
