@@ -174,17 +174,17 @@ The existing workshop branches and issues were checked. The workshop issues #73â
 |---|---|---|---|---|
 | W1 | MYGRAM FB | `d5a2f6c657986c51a232ef1b5826cb7b3d4265d9` | PR #91 / Run #156 | partial |
 | W2 | MYGRAM Messenger | `02a83a6dba6d7d5299bd4043b516db40060f3c7b` | PR #92 / Run #157 | partial |
-| W3 | WHATSMYGRAM | `3693b48dacdd36b0a44825fba7f7560241c96faa` | Issue #75; no PR | not-started for acceptance |
-| W4 | MYGRAM Insta | `b4200056843cce5045fc151af57e1339bf0ba6be` | Issue #76; no PR | not-started for acceptance |
-| W5 | MYGRAM Twitty | `a88cfd9cb1e2de7f9b580c2063ac6e5903bb964d` | Issue #77; no PR | not-started for acceptance |
-| W6 | MYGRAM Meeting | `059a62a934cea2bb3528575e24fce15262644211` | Issue #78; no PR | not-started for acceptance |
-| W7 | MYGRAM Tube | `e97c095ba9694a4679aa13f331117280d61404ad` | Issue #79; no PR | not-started for acceptance |
-| W8 | MYGRAM TikToks | `682a845071e397cbcb07dca6f404dd391085fafc` | Issue #80; no PR | not-started for acceptance |
-| W9 | MYGRAM AI | `2a760f367ccfbb6a681d51633dc9b9df65bfadf9` | Issue #81; no PR | not-started for acceptance |
+| W3 | WHATSMYGRAM | `3693b48dacdd36b0a44825fba7f7560241c96faa` | Issue #75; no open PR found | not-started for acceptance |
+| W4 | MYGRAM Insta | `b4200056843cce5045fc151af57e1339bf0ba6be` | Issue #76; no open PR found | not-started for acceptance |
+| W5 | MYGRAM Twitty | `a88cfd9cb1e2de7f9b580c2063ac6e5903bb964d` | Issue #77; no open PR found | not-started for acceptance |
+| W6 | MYGRAM Meeting | `059a62a934cea2bb3528575e24fce15262644211` | Issue #78; no open PR found | not-started for acceptance |
+| W7 | MYGRAM Tube | `e97c095ba9694a4679aa13f331117280d61404ad` | Issue #79; no open PR found | not-started for acceptance |
+| W8 | MYGRAM TikToks | `682a845071e397cbcb07dca6f404dd391085fafc` | Issue #80; no open PR found | not-started for acceptance |
+| W9 | MYGRAM AI | `2a760f367ccfbb6a681d51633dc9b9df65bfadf9` | Issue #81; no open PR found | not-started for acceptance |
 | W10 | Shared platform | `f8465e1dc2eafe58d1fed155118eafb33a22e9dd` | PR #90 / Run #172 | implementation-in-progress |
-| W11 | Localization | `f6ac6e8d3a7862f84f7e2ed96fbd83400e69f649` | Issue #83; no PR | not-started for acceptance |
-| W12 | Marketplace / ads | `f339d01cf00db51dc1b1bc8c8bbc0baf7b4b69ca` | Issue #84; no PR | not-started for acceptance |
-| W13 | Admin / operations | `e129b14b802ff88bd8e433592fb86c748a03f702` | Issue #85; no PR | not-started for acceptance |
+| W11 | Localization | `f6ac6e8d3a7862f84f7e2ed96fbd83400e69f649` | Issue #83; no open PR found | not-started for acceptance |
+| W12 | Marketplace / ads | `f339d01cf00db51dc1b1bc8c8bbc0baf7b4b69ca` | Issue #84; no open PR found | not-started for acceptance |
+| W13 | Admin / operations | `e129b14b802ff88bd8e433592fb86c748a03f702` | Issue #85; no open PR found | not-started for acceptance |
 | Android | Native Staging app | `f2edc7fcc28c971bad4914c80b7408998da84218` | PR #59 / Run #9 | partial |
 
 ### Android source artifact review
