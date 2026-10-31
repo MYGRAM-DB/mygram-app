@@ -8,7 +8,10 @@ import {
 } from "react";
 import type { MygramUser } from "../lib/supabase";
 import { supabase } from "../lib/supabase";
-import { mergeMessagesByCreatedAtId } from "../lib/workshops/messenger.mjs";
+import {
+  compensateAttachmentInsertFailure,
+  mergeMessagesByCreatedAtId,
+} from "../lib/workshops/messenger.mjs";
 
 type ProfileSummary = {
   id: string;
@@ -432,14 +435,22 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
           conversation_id: selectedId,
           sender_id: user.id,
           client_message_id: crypto.randomUUID(),
-          message_type: file ? fileMessageType(file) : "text",
+          // Text remains a valid message if the optional attachment row fails.
+          message_type: body ? "text" : file ? fileMessageType(file) : "text",
           body: body || null,
         })
         .select("id")
         .single();
 
       if (insertError) {
-        if (uploadedPath) await supabase.storage.from("messenger-attachments").remove([uploadedPath]);
+        if (uploadedPath) {
+          const cleanup = await compensateAttachmentInsertFailure({
+            removeStorageObject: () => supabase!.storage.from("messenger-attachments").remove([uploadedPath!]),
+            deleteEmptyMessage: async () => ({ error: null }),
+            hasTextBody: true,
+          });
+          if (!cleanup.storageRemoved) throw new Error("ATTACHMENT_ROLLBACK_FAILED");
+        }
         throw insertError;
       }
 
@@ -453,8 +464,25 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
           byte_size: file.size,
         });
         if (attachmentError) {
-          await supabase.storage.from("messenger-attachments").remove([uploadedPath]);
-          setInfo("أُرسلت الرسالة، لكن تعذر ربط المرفق بها. أعد إرسال الملف.");
+          const cleanup = await compensateAttachmentInsertFailure({
+            removeStorageObject: () => supabase!.storage.from("messenger-attachments").remove([uploadedPath!]),
+            deleteEmptyMessage: () => supabase!.from("messenger_messages")
+              .delete()
+              .eq("id", message.id)
+              .eq("sender_id", user.id),
+            hasTextBody: Boolean(body),
+          });
+
+          if (!body) {
+            if (!cleanup.storageRemoved || !cleanup.messageResolved) {
+              throw new Error("ATTACHMENT_ROLLBACK_FAILED");
+            }
+            throw new Error("ATTACHMENT_METADATA_INSERT_FAILED");
+          }
+
+          setInfo(cleanup.storageRemoved
+            ? "تم إرسال النص، لكن تعذر حفظ المرفق ونُظّف الملف المرفوع."
+            : "تم إرسال النص، لكن تعذر حفظ المرفق وتعذر تأكيد تنظيف الملف. يلزم فحص Storage.");
         }
       }
 
@@ -465,9 +493,13 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
       await Promise.all([loadMessages(selectedId, null, true), loadConversations()]);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "";
-      setError(message.includes("row-level security")
-        ? "رفضت قاعدة البيانات العملية لأن صلاحية المحادثة غير متاحة."
-        : "تعذر إرسال الرسالة أو المرفق. تحقق من الاتصال ثم أعد المحاولة.");
+      setError(message.includes("ATTACHMENT_METADATA_INSERT_FAILED")
+        ? "لم تُرسل الرسالة لأن بيانات المرفق لم تُحفظ. أعد المحاولة."
+        : message.includes("ATTACHMENT_ROLLBACK_FAILED")
+          ? "فشل حفظ المرفق وتعذر تأكيد تنظيف جميع الموارد. لا تعاود الإرسال قبل مراجعة المحادثة وStorage."
+          : message.includes("row-level security")
+            ? "رفضت قاعدة البيانات العملية لأن صلاحية المحادثة غير متاحة."
+            : "تعذر إرسال الرسالة أو المرفق. تحقق من الاتصال ثم أعد المحاولة.");
     } finally {
       setSending(false);
     }
