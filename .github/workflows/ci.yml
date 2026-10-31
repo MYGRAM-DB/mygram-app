@@ -46,7 +46,7 @@ jobs:
           cache: true
       - name: Typecheck Staging QA Edge Functions
         run: |
-          deno check --no-lock supabase/functions/qa-authz-two-user/index.ts
-          deno check --no-lock supabase/functions/qa-messenger-abc/index.ts
+          deno check --node-modules-dir=auto --no-lock supabase/functions/qa-authz-two-user/index.ts
+          deno check --node-modules-dir=auto --no-lock supabase/functions/qa-messenger-abc/index.ts
       - name: TypeScript validation and production build
         run: npm run build
