@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {createShortPost,rankTimeline} from "../../src/lib/workshops/twitty.mjs";
+test("short post length and relation validation",()=>{const p={body:" hi ",replyTo:null,repostOf:null};assert.equal(createShortPost(p).body,"hi");assert.throws(()=>createShortPost({...p,replyTo:"x",repostOf:"y"}),/CONFLICTING_RELATION/)});
+test("timeline newest first",()=>{assert.deepEqual(rankTimeline([{id:"a",createdAt:"2026-01-01"},{id:"b",createdAt:"2026-02-01"}]).map(x=>x.id),["b","a"])})
