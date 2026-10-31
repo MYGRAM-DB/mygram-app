@@ -1,3 +1,18 @@
+# DECISION 09 | Operating model and initial tester intake | 2026-10-31
+
+> Documentation and roster-count update only. The invite list is deliberately not embedded in Git.
+
+- Operating charter: [OPERATING-MODEL.md](OPERATING-MODEL.md).
+- Initial tester intake validated: 8 unique syntactically valid addresses, provisionally 1 owner + 7 testers.
+- Two addresses omitted an explicit role label and are provisionally treated as testers because the user described the list as test emails and stated that 43 more testers remain to reach the 50-tester target. The owner must correct either role before membership activation if that inference is wrong.
+- Remaining tester slots to target: 43.
+- A normalized owner-held CSV has been prepared outside the repository. No emails are committed to Git, PR comments, workflow logs, or artifacts.
+- No invitations or memberships have been inserted into Staging. Membership tables/Hook/RLS gate are not yet implemented or runtime-verified.
+- Run #118 [41153182603](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41153182603) completed SUCCESS on exact SHA `93dc0584d6318977a7c39ea27e54c42f1f1d8638`. This validates only the existing CI jobs; no Android APK job exists and `qa-authz-two-user` remains unexecuted.
+- PR #54 remains Open / Draft / Not Merged. Production remains read-only.
+
+---
+
 # DECISION 08 | Android APK testing track | 2026-10-31
 
 > This is a documentation-only decision on top of the Run #117-tested parent SHA. The new documentation commit must receive its own CI result; Run #117 is not inherited as a test of a later commit.
