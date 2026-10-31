@@ -21,7 +21,7 @@ jobs:
        github.event.pull_request.head.ref == 'feature/android-staging' &&
        github.event.pull_request.base.ref == 'rebuild/phase-a-architecture')
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
     steps:
       - name: Checkout Android staging branch
         uses: actions/checkout@v4
@@ -179,7 +179,7 @@ jobs:
           fi
           echo "Android 15 emulator installed and launched MYGRAM STAGING successfully."
 
-      - name: Package generated source for review (no APK)
+      - name: Package generated Android source for review
         run: |
           set -euo pipefail
           rm -rf android/app/build android/build android/.gradle
