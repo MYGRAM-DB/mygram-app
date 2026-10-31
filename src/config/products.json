@@ -1,0 +1,92 @@
+[
+  {
+    "id": "ai",
+    "slug": "ai",
+    "name": "MYGRAM AI",
+    "subtitle": "مساعدك الذكي داخل المنظومة",
+    "description": "المحادثة الذكية والكتابة والتلخيص وأدوات إنشاء المحتوى مع سجل وخصوصية وحدود استخدام واضحة.",
+    "status": "not-implemented",
+    "icon": "✦",
+    "accent": "violet"
+  },
+  {
+    "id": "fb",
+    "slug": "fb",
+    "name": "MYGRAM FB",
+    "subtitle": "المجتمع والمنشورات",
+    "description": "منشورات وموجز اجتماعي وتعليقات وتفاعلات وصفحات ومجموعات وعلاقات وخصوصية.",
+    "status": "partial",
+    "icon": "◎",
+    "accent": "blue"
+  },
+  {
+    "id": "insta",
+    "slug": "insta",
+    "name": "MYGRAM INSTA",
+    "subtitle": "المحتوى المرئي",
+    "description": "الصور والقصص والفيديو القصير والاستكشاف والملفات المرئية وأدوات المحتوى.",
+    "status": "not-implemented",
+    "icon": "◉",
+    "accent": "pink"
+  },
+  {
+    "id": "messenger",
+    "slug": "messenger",
+    "name": "MYGRAM MESSENGER",
+    "subtitle": "مراسلة MYGRAM",
+    "description": "المحادثات الفردية والجماعية والوسائط والتسجيلات الصوتية وحالة الرسائل والمكالمات.",
+    "status": "partial",
+    "icon": "➤",
+    "accent": "cyan"
+  },
+  {
+    "id": "whatsmygram",
+    "slug": "whatsmygram",
+    "name": "WHATSMYGRAM",
+    "subtitle": "تواصل مستقل برقم الهاتف",
+    "description": "منتج مستقل للمحادثات وجهات الاتصال والمجموعات والوسائط والتحقق الهاتفي.",
+    "status": "not-implemented",
+    "icon": "◌",
+    "accent": "green"
+  },
+  {
+    "id": "twitty",
+    "slug": "twitty",
+    "name": "MYGRAM TWITTY",
+    "subtitle": "التدوين السريع",
+    "description": "منشورات قصيرة وردود وإعادة نشر واقتباسات ووسوم وموضوعات رائجة.",
+    "status": "not-implemented",
+    "icon": "✳",
+    "accent": "sky"
+  },
+  {
+    "id": "tube",
+    "slug": "tube",
+    "name": "MYGRAM TUBE",
+    "subtitle": "منصة الفيديو",
+    "description": "قنوات ورفع وتشغيل فيديو وقوائم تشغيل واشتراكات وبحث وتوصيات.",
+    "status": "not-implemented",
+    "icon": "▶",
+    "accent": "red"
+  },
+  {
+    "id": "tiktoks",
+    "slug": "tiktoks",
+    "name": "MYGRAM TIKTOKS",
+    "subtitle": "الفيديو القصير",
+    "description": "موجز عمودي وتسجيل ورفع فيديو وأدوات إنشاء وتوصيات وتفاعلات.",
+    "status": "not-implemented",
+    "icon": "⌁",
+    "accent": "orange"
+  },
+  {
+    "id": "meeting",
+    "slug": "meeting",
+    "name": "MYGRAM MEETING",
+    "subtitle": "الاجتماعات والاتصالات",
+    "description": "اجتماعات فردية وجماعية وروابط دعوة وإدارة مشاركين وصوت وفيديو ومشاركة شاشة عند دعم الخدمة.",
+    "status": "not-implemented",
+    "icon": "▣",
+    "accent": "indigo"
+  }
+]
