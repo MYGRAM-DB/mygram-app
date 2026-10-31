@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {transitionMeeting,transferChair} from "../../src/lib/workshops/meeting.mjs";
+test("chair transfer requires host and active participant",()=>{const m={status:"live",hostId:"h",chairId:"h",participantIds:["h","p"]};assert.equal(transferChair(m,"h","p").chairId,"p");assert.throws(()=>transferChair(m,"h","x"),/INVALID_CHAIR_TRANSFER/)});
+test("meeting rejects non-host and invalid state transition",()=>{const m={status:"ended",hostId:"h"};assert.throws(()=>transitionMeeting(m,"x","live"),/FORBIDDEN/);assert.throws(()=>transitionMeeting(m,"h","live"),/INVALID_MEETING_TRANSITION/)})
