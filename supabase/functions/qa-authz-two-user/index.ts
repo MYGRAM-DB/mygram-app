@@ -155,14 +155,16 @@ Deno.serve(async (request: Request) => {
     assert(!sessionCheck.error && sessionCheck.data.user?.id === a.userId, "A_SESSION_DID_NOT_CONTINUE");
     checks.push({ name: "three_independent_real_jwt_sessions", status: "PASS", detail: "A, B and C authenticated through Supabase Auth password grant and received distinct JWT identities; A's live session resolves to its own user." });
 
-    async function ensurePrivateRow(session: { client: SupabaseClient; userId: string }, label: string) {
-      const { data, error } = await session.client.from("profile_private_details").insert({
+    async function ensurePrivateRow(session: { userId: string }, label: string) {
+      // Fixture setup is server-admin only. Every authorization assertion below
+      // continues to use the independent A/B/C user-scoped JWT clients.
+      const { data, error } = await admin.from("profile_private_details").insert({
         user_id: session.userId,
         date_of_birth: "1990-01-01",
         gender: "prefer_not_to_say",
         nationality_code: "US",
       }).select("user_id").single();
-      assert(!error && data?.user_id === session.userId, `OWN_PRIVATE_PROFILE_INSERT_FAILED_${label}`);
+      assert(!error && data?.user_id === session.userId, `ADMIN_PRIVATE_PROFILE_FIXTURE_FAILED_${label}`);
       createdPrivateIds.push(session.userId);
     }
 
@@ -287,51 +289,105 @@ Deno.serve(async (request: Request) => {
   } finally {
     const cleanupErrors: string[] = [];
 
-    if (avatarPaths.length > 0) {
-      const { error } = await admin.storage.from(AVATAR_BUCKET).remove(avatarPaths);
-      if (error) cleanupErrors.push("AVATAR_STORAGE_CLEANUP_FAILED");
+    async function cleanupAttempt(
+      name: string,
+      operation: () => Promise<{ error: unknown | null }>,
+    ) {
+      try {
+        const result = await operation();
+        if (result.error) cleanupErrors.push(name);
+      } catch {
+        cleanupErrors.push(name);
+      }
     }
 
-    for (const userId of createdPrivateIds) {
-      const { error } = await admin.from("profile_private_details").delete().eq("user_id", userId);
-      if (error) cleanupErrors.push("PRIVATE_PROFILE_FIXTURE_CLEANUP_FAILED");
+    // Isolate cleanup per object/row/user so one transient failure does not
+    // prevent the remaining ephemeral QA resources from being removed.
+    await Promise.all([
+      ...avatarPaths.map((path) => cleanupAttempt(
+        "AVATAR_STORAGE_CLEANUP_FAILED",
+        () => admin.storage.from(AVATAR_BUCKET).remove([path]),
+      )),
+      ...createdPrivateIds.map((userId) => cleanupAttempt(
+        "PRIVATE_PROFILE_FIXTURE_CLEANUP_FAILED",
+        () => admin.from("profile_private_details").delete().eq("user_id", userId),
+      )),
+      ...[...createdUserIds].reverse().map((userId) => cleanupAttempt(
+        "EPHEMERAL_AUTH_USER_DELETE_FAILED",
+        () => admin.auth.admin.deleteUser(userId),
+      )),
+    ]);
+
+    let remainingPrivateCount = 0;
+    let privateVerificationFailed = false;
+    if (createdPrivateIds.length > 0) {
+      try {
+        const { count, error } = await admin.from("profile_private_details")
+          .select("user_id", { count: "exact", head: true })
+          .in("user_id", createdPrivateIds);
+        remainingPrivateCount = count ?? 0;
+        privateVerificationFailed = !!error;
+      } catch {
+        privateVerificationFailed = true;
+      }
     }
 
-    for (const userId of createdUserIds.reverse()) {
-      const { error } = await admin.auth.admin.deleteUser(userId);
-      if (error) cleanupErrors.push("EPHEMERAL_AUTH_USER_DELETE_FAILED");
-    }
-
-    const remainingPrivate = createdPrivateIds.length > 0
-      ? await admin.from("profile_private_details").select("user_id", { count: "exact", head: true }).in("user_id", createdPrivateIds)
-      : { error: null, count: 0 };
     const remainingObjectChecks = await Promise.all(avatarPaths.map(async (path) => {
-      const separator = path.lastIndexOf("/");
-      const folder = path.slice(0, separator);
-      const filename = path.slice(separator + 1);
-      const { data, error } = await admin.storage.from(AVATAR_BUCKET).list(folder, {
-        limit: 100,
-        search: filename,
-      });
-      return {
-        error,
-        count: (data ?? []).filter((item) => item.name === filename).length,
-      };
+      try {
+        const separator = path.lastIndexOf("/");
+        const folder = path.slice(0, separator);
+        const filename = path.slice(separator + 1);
+        const { data, error } = await admin.storage.from(AVATAR_BUCKET).list(folder, {
+          limit: 100,
+          search: filename,
+        });
+        return {
+          failed: !!error,
+          count: (data ?? []).filter((item) => item.name === filename).length,
+        };
+      } catch {
+        return { failed: true, count: 0 };
+      }
     }));
-    const remainingObjectErrors = remainingObjectChecks.filter((result) => result.error);
+    const remainingObjectErrors = remainingObjectChecks.filter((result) => result.failed);
     const remainingObjectCount = remainingObjectChecks.reduce((total, result) => total + result.count, 0);
+
+    // Verify Auth-user absence independently after deletion, not merely that
+    // deleteUser returned without an error.
+    const authUserAbsenceChecks = await Promise.all(createdUserIds.map(async (userId) => {
+      try {
+        const { data, error } = await admin.auth.admin.getUserById(userId);
+        if (error) {
+          return error.status === 404 || /user not found/i.test(error.message);
+        }
+        return !data.user;
+      } catch {
+        return false;
+      }
+    }));
+    const allAuthUsersAbsent = authUserAbsenceChecks.every(Boolean);
 
     cleanupComplete =
       cleanupErrors.length === 0 &&
-      !remainingPrivate.error && (remainingPrivate.count ?? 0) === 0 &&
-      remainingObjectErrors.length === 0 && remainingObjectCount === 0;
+      !privateVerificationFailed && remainingPrivateCount === 0 &&
+      remainingObjectErrors.length === 0 && remainingObjectCount === 0 &&
+      allAuthUsersAbsent;
+
+    const cleanupFailureDetails = [
+      ...new Set(cleanupErrors),
+      ...(privateVerificationFailed ? ["PRIVATE_PROFILE_ABSENCE_CHECK_FAILED"] : []),
+      ...(remainingPrivateCount > 0 ? ["PRIVATE_PROFILE_FIXTURE_REMAINS"] : []),
+      ...(remainingObjectErrors.length > 0 ? ["AVATAR_OBJECT_ABSENCE_CHECK_FAILED"] : []),
+      ...(remainingObjectCount > 0 ? ["AVATAR_OBJECT_REMAINS"] : []),
+      ...(!allAuthUsersAbsent ? ["AUTH_USER_ABSENCE_CHECK_FAILED_OR_USER_REMAINS"] : []),
+    ];
 
     checks.push({
       name: "qa_data_cleanup",
       status: cleanupComplete ? "PASS" : "FAIL",
       detail: cleanupComplete
-        ? "Ephemeral Auth users, private profile fixtures, and avatar objects were removed and absence checks passed."
-        : cleanupErrors.join(", ") || "Temporary QA data remains or could not be verified as removed.",
+        ? "Ephemeral Auth users, private profile fixtures, and avatar objects were deleted; independent absence checks passed for every resource."
+        : cleanupFailureDetails.join(", ") || "Temporary QA data remains or could not be verified as removed.",
     });
   }
 
