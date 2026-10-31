@@ -1,0 +1,2 @@
+import test from "node:test";import assert from "node:assert/strict";import {storyVisible,activeStories} from "../../src/lib/workshops/stories.mjs";
+test("expired and private stories are not visible to others",()=>{const s={ownerId:"a",audience:"private",createdAt:"2026-01-01",expiresAt:"2026-01-02"};assert.equal(storyVisible(s,"b",Date.parse("2026-01-01T12:00Z")),false);assert.equal(storyVisible(s,"a",Date.parse("2026-01-03")),false);assert.equal(activeStories([s],Date.parse("2026-01-03")).length,0)})
