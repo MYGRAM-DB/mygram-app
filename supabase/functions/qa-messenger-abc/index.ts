@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.118.0";
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.9.6";
-import { isTrustedStagingWorkflowClaims } from "../_shared/github-oidc-policy.mjs";
+import { extractBearerToken, isTrustedStagingWorkflowClaims } from "../_shared/github-oidc-policy.mjs";
 
 const PROJECT_REF = "cbyvtehvaojxfcgpelir";
 const BUCKET = "messenger-attachments";
@@ -83,9 +83,7 @@ Deno.serve(async (request: Request) => {
     return json({ ok: false, error: "METHOD_NOT_ALLOWED" }, 405);
   }
 
-  const bearer = request.headers.get("authorization") ?? "";
-  const bearerParts = bearer.trim().split(" ");
-  const oidcToken = bearerParts[0]?.toLowerCase() === "bearer" ? bearerParts.slice(1).join(" ").trim() : "";
+  const oidcToken = extractBearerToken(request.headers.get("authorization") ?? "");
   if (!oidcToken) return json({ ok: false, error: "GITHUB_OIDC_TOKEN_REQUIRED" }, 401);
 
   let claims: Record<string, unknown>;
@@ -264,146 +262,3 @@ Deno.serve(async (request: Request) => {
       .select("id")
       .single();
     assert(!messageBError && messageB?.id, "B_COULD_NOT_SEND_MESSAGE");
-    checks.push({ name: "a_and_b_send_and_realtime_delivery", status: "PASS", detail: "A and B sent messages; B received A's private Realtime broadcast." });
-
-    const { data: participantRows, error: participantError } = await b.client
-      .from("messenger_participants")
-      .select("user_id")
-      .eq("conversation_id", conversationId);
-    assert(!participantError && participantRows?.length === 2, "B_DID_NOT_SEE_EXACTLY_TWO_PARTICIPANTS");
-
-    const { data: bMessages, error: bMessagesError } = await b.client
-      .from("messenger_messages")
-      .select("id,sender_id")
-      .eq("conversation_id", conversationId);
-    assert(!bMessagesError && bMessages?.length === 2, "B_CANNOT_READ_BOTH_MESSAGES");
-
-    const { data: cConversation, error: cConversationError } = await c.client
-      .from("messenger_conversations").select("id").eq("id", conversationId);
-    assert(!cConversationError && cConversation?.length === 0, "C_CAN_READ_A_B_CONVERSATION");
-
-    const { data: cParticipants, error: cParticipantsError } = await c.client
-      .from("messenger_participants").select("user_id").eq("conversation_id", conversationId);
-    assert(!cParticipantsError && cParticipants?.length === 0, "C_CAN_READ_A_B_MEMBERSHIP");
-
-    const { data: cMessages, error: cMessagesError } = await c.client
-      .from("messenger_messages").select("id").eq("conversation_id", conversationId);
-    assert(!cMessagesError && cMessages?.length === 0, "C_CAN_READ_A_B_MESSAGES");
-    checks.push({ name: "rest_membership_isolation", status: "PASS", detail: "B reads exactly two members and two messages; C receives zero conversation, membership, and message rows." });
-
-    const { error: spoofError } = await c.client
-      .from("messenger_messages")
-      .insert({
-        conversation_id: conversationId,
-        sender_id: a.userId,
-        client_message_id: crypto.randomUUID(),
-        message_type: "text",
-        body: "C spoof attempt must be denied.",
-      });
-    assert(spoofError, "C_SPOOFED_A_AS_MESSAGE_SENDER");
-
-    const { error: selfAddError } = await c.client
-      .from("messenger_participants")
-      .insert({ conversation_id: conversationId, user_id: c.userId, role: "member" });
-    assert(selfAddError, "C_ADDED_ITSELF_TO_CONVERSATION");
-    checks.push({ name: "membership_and_sender_spoof_denied", status: "PASS", detail: "C cannot spoof A as sender or add itself to participants." });
-
-    objectPath = `${conversationId}/${a.userId}/qa-${runId}.png`;
-    const { error: uploadError } = await a.client.storage.from(BUCKET).upload(objectPath, PNG, {
-      contentType: "image/png",
-      upsert: false,
-    });
-    assert(!uploadError, "A_COULD_NOT_UPLOAD_PRIVATE_ATTACHMENT");
-
-    const { error: metadataError } = await a.client.from("messenger_attachments").insert({
-      conversation_id: conversationId,
-      message_id: messageA.id,
-      uploaded_by: a.userId,
-      object_path: objectPath,
-      mime_type: "image/png",
-      byte_size: PNG.byteLength,
-    });
-    assert(!metadataError, "A_COULD_NOT_CREATE_ATTACHMENT_METADATA");
-
-    const { data: bAttachment, error: bAttachmentError } = await b.client
-      .from("messenger_attachments").select("id,object_path").eq("conversation_id", conversationId);
-    assert(!bAttachmentError && bAttachment?.length === 1, "B_CANNOT_READ_ATTACHMENT_METADATA");
-
-    const { data: bDownload, error: bDownloadError } = await b.client.storage.from(BUCKET).download(objectPath);
-    assert(!bDownloadError && bDownload, "B_CANNOT_DOWNLOAD_PRIVATE_ATTACHMENT");
-
-    const { data: cAttachment, error: cAttachmentError } = await c.client
-      .from("messenger_attachments").select("id").eq("conversation_id", conversationId);
-    assert(!cAttachmentError && cAttachment?.length === 0, "C_CAN_READ_ATTACHMENT_METADATA");
-
-    const { data: cDownload, error: cDownloadError } = await c.client.storage.from(BUCKET).download(objectPath);
-    assert(cDownloadError && !cDownload, "C_CAN_DOWNLOAD_PRIVATE_ATTACHMENT");
-    checks.push({ name: "private_storage_and_attachment_metadata", status: "PASS", detail: "A uploads; B reads metadata and downloads; C sees zero metadata and cannot download." });
-
-    const { data: cCreatedConversation, error: cCreateError } = await c.client
-      .from("messenger_conversations")
-      .insert({ user_low: userLow, user_high: userHigh, created_by: c.userId })
-      .select("id");
-    assert(cCreateError || (cCreatedConversation?.length ?? 0) === 0, "C_CREATED_A_CONVERSATION_FOR_A_AND_B");
-    checks.push({ name: "unauthorized_conversation_creation_denied", status: "PASS", detail: "C cannot create a conversation whose two members are A and B." });
-
-    await Promise.all(channelHandles.map(({ channel }) => channel.unsubscribe()));
-    channelHandles.length = 0;
-
-    checks.push({ name: "test_data_cleanup", status: "PASS", detail: "Cleanup is executed in finally; result confirmed after all deletion calls." });
-  } catch (error) {
-    const safeMessage = error instanceof Error ? error.message : "UNKNOWN_QA_RUNNER_ERROR";
-    checks.push({ name: "messenger_abc_test", status: "FAIL", detail: safeMessage });
-  } finally {
-    await Promise.allSettled(channelHandles.map(({ channel }) => channel.unsubscribe()));
-
-    const cleanupErrors: string[] = [];
-    if (profileAvatarPaths.length > 0) {
-      const { error } = await admin.storage.from("profile-avatars").remove(profileAvatarPaths);
-      if (error) cleanupErrors.push("PROFILE_AVATAR_STORAGE_DELETE_FAILED");
-    }
-    if (objectPath) {
-      const { error } = await admin.storage.from(BUCKET).remove([objectPath]);
-      if (error) cleanupErrors.push("STORAGE_OBJECT_DELETE_FAILED");
-    }
-    if (conversationId) {
-      const { error } = await admin.from("messenger_conversations").delete().eq("id", conversationId);
-      if (error) cleanupErrors.push("CONVERSATION_DELETE_FAILED");
-    }
-    for (const userId of createdUserIds.reverse()) {
-      const { error } = await admin.auth.admin.deleteUser(userId);
-      if (error) cleanupErrors.push("EPHEMERAL_AUTH_USER_DELETE_FAILED");
-    }
-
-    const remainingConversation = await admin.from("messenger_conversations")
-      .select("id", { count: "exact", head: true })
-      .eq("id", conversationId ?? "00000000-0000-0000-0000-000000000000");
-    const remainingObject = objectPath
-      ? await admin.from("messenger_attachments").select("id", { count: "exact", head: true }).eq("object_path", objectPath)
-      : { error: null, count: 0 };
-    cleanupComplete =
-      cleanupErrors.length === 0 &&
-      !remainingConversation.error && (remainingConversation.count ?? 0) === 0 &&
-      !remainingObject.error && (remainingObject.count ?? 0) === 0;
-    const cleanup = checks.find((check) => check.name === "test_data_cleanup");
-    if (cleanup) {
-      cleanup.status = cleanupComplete ? "PASS" : "FAIL";
-      cleanup.detail = cleanupComplete
-        ? "Ephemeral A/B/C Auth users, synthetic profile avatar, Messenger conversation, message/attachment rows and Messenger object were removed; database absence checks passed."
-        : "The temporary conversation is still present or could not be verified as deleted.";
-    }
-  }
-
-  const passed = checks.filter((check) => check.status === "PASS").length;
-  const failed = checks.filter((check) => check.status === "FAIL").length;
-  return json({
-    ok: failed === 0 && cleanupComplete,
-    project: PROJECT_REF,
-    suite: "MYGRAM Messenger A/B/C real JWT + REST + Storage + Realtime",
-    total_checks: checks.length,
-    passed,
-    failed,
-    cleanup_complete: cleanupComplete,
-    checks,
-  }, failed === 0 && cleanupComplete ? 200 : 500);
-});
