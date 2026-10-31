@@ -1,3 +1,25 @@
+# DECISION 10 | Verified engineering review and release blockers | 2026-10-31
+
+> Run #119 and the current repository/Supabase evidence have now been independently read. This update is a documentation/triage record only; no database or runtime configuration was changed.
+
+- [Run #119](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41178528083): **SUCCESS** on `4fa0e5e39d3ee903efdd17b149ac6a1ec356d279`. Both existing jobs passed.
+- The current Staging job invokes `qa-messenger-abc`, not `qa-authz-two-user`. The latter exists only as source in GitHub and is not deployed to Staging.
+- Verified schema counts: Production `51 tables / 144 public policies / 46 migration rows`; Staging `15 tables / 32 public policies / 17 migration rows`.
+- Verified Staging blocker: authenticated SELECT grants plus `USING (true)` policies remain on `posts`, `post_comments`, and `post_reactions`.
+- Profiles clarification: Staging `authenticated` has no direct SELECT grant on base `profiles`; `public_profiles` is `security_invoker=true` and `security_barrier=true`. Preserve this boundary.
+- Staging Messenger and Storage require preview-group membership in addition to the existing conversation/ownership checks.
+- Staging records 17 migrations, while the rebuild branch has 12 SQL migration files. Five versions currently have no matching source file; do not rewrite history or guess SQL.
+- Existing `on_auth_user_created` / `public.handle_new_user()` must be preserved.
+- Current `qa-authz-two-user` source attempts user-JWT INSERT into `profile_private_details`, but authenticated has no INSERT grant. Fix fixture seeding server-side before deployment; keep the actual A/B/C tests on real user JWTs.
+- Production direct profile SELECT path confirmed: grant + `profiles_select_authenticated USING (true)`; three rows existed, with zero populated study/work fields and zero hidden-but-populated location tuples observed. This is a configured privacy access path, not evidence of data exfiltration. Production remains read-only.
+- Three GitHub execution issues opened: [#55 Staging membership/RLS/AuthZ](https://github.com/MYGRAM-DB/mygram-app/issues/55), [#56 Android APK](https://github.com/MYGRAM-DB/mygram-app/issues/56), [#57 Production privacy plan](https://github.com/MYGRAM-DB/mygram-app/issues/57).
+- Initial roster: 8 unique entries, provisionally 1 owner + 7 testers; two roles were inferred, and no invitations were imported.
+- PR #54 remains Open / Draft / Not Merged. Gate A remains OPEN.
+
+Full evidence and execution order: [ENGINEERING-REVIEW-20261031.md](ENGINEERING-REVIEW-20261031.md).
+
+---
+
 # DECISION 09 | Operating model and initial tester intake | 2026-10-31
 
 > Documentation and roster-count update only. The invite list is deliberately not embedded in Git.

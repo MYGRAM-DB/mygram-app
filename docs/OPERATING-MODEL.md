@@ -145,17 +145,18 @@ The following IDs are the controlling short-list. Preserve detailed historical e
 
 | ID | Priority | Work item | Lane | Exit evidence |
 |---|---|---|---|---|
-| MY-0411 | P1 | Invite/membership schema and signup hook | A | Allow/deny tests, preserved profile trigger |
-| MY-0412 | P0/P1 | Replace overbroad Staging feed reads and add membership to all RLS paths | A | Direct JWT tests for A/B/C and revoked user |
-| MY-0413 | P1 | Messenger/Storage/Realtime membership and revocation | A | Two-party and non-member denial tests |
-| MY-0414 | P1 | Capacitor 8 Android native project and local asset build | B | Reproducible APK CI artifact |
-| MY-0415 | P1 | Native Auth callback and password recovery | A/B | Real device email callback tests |
-| MY-0416 | P1 | Android physical-device QA and checksum provenance | F | Signed APK, installed-device matrix |
-| MY-0417 | P1 | Independent `qa-authz-two-user` runtime gate | F | Fresh OIDC token, runtime success and cleanup |
+| MY-0411 | P1 | Invite/membership schema and signup hook | A | [Issue #55](https://github.com/MYGRAM-DB/mygram-app/issues/55): allow/deny tests, preserved profile trigger |
+| MY-0412 | P1 | Replace overbroad Staging feed reads and add membership to all RLS paths | A | [Issue #55](https://github.com/MYGRAM-DB/mygram-app/issues/55): direct JWT tests for A/B/C and revoked user |
+| MY-0413 | P1 | Messenger/Storage/Realtime membership and revocation | A | [Issue #55](https://github.com/MYGRAM-DB/mygram-app/issues/55): two-party and non-member denial tests |
+| MY-0414 | P1 | Capacitor 8 Android native project and local asset build | B | [Issue #56](https://github.com/MYGRAM-DB/mygram-app/issues/56): reproducible APK CI artifact |
+| MY-0415 | P1 | Native Auth callback and password recovery | A/B | [Issue #56](https://github.com/MYGRAM-DB/mygram-app/issues/56): real device email callback tests |
+| MY-0416 | P1 | Android physical-device QA and checksum provenance | F | [Issue #56](https://github.com/MYGRAM-DB/mygram-app/issues/56): signed APK, installed-device matrix |
+| MY-0417 | P1 | Independent `qa-authz-two-user` runtime gate | F | [Issue #55](https://github.com/MYGRAM-DB/mygram-app/issues/55): fresh OIDC token, runtime success and cleanup |
 | MY-0418 | P2 | SMTP delivery verification for invite/auth mail | A/F | External mailbox delivery proof |
 | MY-0419 | P2 | Locale key parity and complete translation pipeline | E | Missing-key/RTL/LTR test report |
 | MY-0420 | P2 | FB/Messenger core UX and feature acceptance | C/D | Product-specific acceptance evidence |
 | MY-0421 | P1 | Human-accessible Staging web preview or approved alternative | B/F | Actual URL and access-control tests |
+| MY-0422 | P1 | Production profiles privacy remediation proposal, Staging-validated only | A/F | [Issue #57](https://github.com/MYGRAM-DB/mygram-app/issues/57): independent review; Production read-only until separate authorization |
 
 Task IDs above are new tracking labels; they do not close, rename, or replace the existing MY-0401 through MY-0410 historical audit items.
 
