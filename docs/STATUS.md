@@ -1,3 +1,18 @@
+# DECISION 11 | Parallel production acceleration | 2026-10-31
+
+> Documentation/control update only. Baseline evidence was rechecked before this update; the new documentation commit requires its own CI run.
+
+- [Run #120](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41180528483): **SUCCESS** on exact SHA `444c3fecd9951aca90695534100bb2f782c7ddea`.
+- PR #54 remains **Open / Draft / Not Merged**. No merge or deployment is authorized.
+- Gate A remains **OPEN**. The current CI does not execute `qa-authz-two-user`; it only runs the existing Staging Messenger QA job.
+- GitHub path-history checks returned zero commits for each of the five missing Staging migration SQL paths. No original source was recovered. Do not invent SQL, rewrite migration history or reset Staging.
+- Parallel lanes are now controlled by [DECISION-11-PARALLEL-EXECUTION.md](DECISION-11-PARALLEL-EXECUTION.md): A migration/membership/AuthZ; B Android; C core FB/Messenger UX; D later feature delivery; E localization automation; F independent QA/release.
+- Android, frontend acceptance and test preparation can proceed using isolated source paths and synthetic/owner fixtures; tester distribution remains blocked on Gate A and independent review.
+- The external owner-held CSV was rechecked: 8 rows, 8 unique non-empty addresses, explicit roles of 1 owner + 7 testers. The earlier statement that two roles were inferred is superseded. No invitations or memberships were imported.
+- No Staging database, Auth setting, Storage policy, Edge Function, Production resource, or Android artifact was changed or created by this documentation decision. Production remains **READ-ONLY**.
+
+---
+
 # DECISION 10 | Verified engineering review and release blockers | 2026-10-31
 
 > Run #119 and the current repository/Supabase evidence have now been independently read. This update is a documentation/triage record only; no database or runtime configuration was changed.

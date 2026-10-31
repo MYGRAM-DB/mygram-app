@@ -146,7 +146,7 @@ The Android work can proceed in parallel using synthetic Staging configuration, 
 
 ## 9. Initial tester roster
 
-The initial batch file contains eight normalized unique addresses: one owner and seven provisional testers. Two roles were inferred as tester from the surrounding request because their original pasted lines did not include role text. The CSV is held outside Git; no invite records were created. Confirm the two inferred roles before activating them. The target remains one owner plus up to 50 testers; 43 additional testers are still needed.
+The owner-held CSV was re-opened and structurally validated: eight rows, eight unique non-empty addresses, no duplicates or empty addresses, and explicit role values of one owner plus seven testers. No roles were inferred. The CSV remains outside Git and no invite records were created. This validation does not prove mailbox deliverability or authorize import. The target remains one owner plus up to 50 testers; 43 additional testers are still needed.
 
 ## 10. Immediate order of execution
 

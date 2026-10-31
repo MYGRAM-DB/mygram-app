@@ -1,3 +1,19 @@
+# MYGRAM | DECISION 11 ADDENDUM — Execution acceleration | 2026-10-31
+
+> This addendum supersedes the older sequence below where it conflicts. The six delivery lanes remain in force; work may run in parallel only with isolated file/schema ownership and serialized integration by one controller.
+
+- Baseline [Run #120](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41180528483): **SUCCESS** on `444c3fecd9951aca90695534100bb2f782c7ddea`. Existing CI only; it does not execute `qa-authz-two-user` or build Android.
+- PR #54 remains **Open / Draft / Not Merged**. Production remains **READ-ONLY**. Gate A remains **OPEN**.
+- GitHub path-specific history returned zero commits for each of the five missing Staging migration files. Do not fabricate SQL or change migration history. Migration source recovery remains the only blocker for dependent Staging DDL; Android, frontend acceptance, test design and localization automation continue independently.
+- Priority lanes: A (migration integrity, membership/RLS/AuthZ) is the security critical path; B (Android) and C (core FB/Messenger experience) start in parallel now; F (independent QA/release evidence) prepares tests in parallel; E (localization automation) proceeds as P2; D (subsequent product breadth) waits until FB/Messenger core acceptance.
+- Release dependencies: no invitation import or tester access before Gate A; no tester APK distribution before Gates A and B plus independent human security review and owner authorization.
+- Initial roster correction: the external CSV was re-opened and validated as 8 unique, non-empty rows with explicit roles: 1 owner + 7 testers. No roles were inferred. The CSV remains outside Git and has not been imported. 43 additional tester places remain to reach the 50-tester limit.
+- Every delivery must cite an issue, branch/commit SHA, exact tests, environment, rollback method and retest evidence. One CI success cannot certify a later SHA.
+
+See [DECISION-11-PARALLEL-EXECUTION.md](DECISION-11-PARALLEL-EXECUTION.md) for the full lane charter, dependency matrix and release gates.
+
+---
+
 # MYGRAM | DECISION 09 — Operating model and parallel execution charter
 
 Date: 2026-10-31  
@@ -164,12 +180,10 @@ Task IDs above are new tracking labels; they do not close, rename, or replace th
 
 The owner supplied an initial list outside the repository.
 
-- Validated unique addresses: 8.
-- Owner role explicitly supplied: 1.
-- Tester role explicitly supplied: 5.
-- Two additional addresses had no role text. Their tester classification is inferred from the surrounding statement that this is the initial testing-email list and that 43 testers remain to complete the 50-person tester group.
-- Provisional normalized batch count: 1 owner + 7 testers.
-- Remaining to target: 43 testers.
+- CSV rows: 8; unique non-empty addresses: 8; empty or duplicate addresses: 0.
+- Every CSV role is explicit: 1 owner + 7 testers; no inferred roles.
+- Remaining to target: 43 additional testers to reach the 50-tester limit, separate from the owner.
+- This checks CSV structure, uniqueness and role values only; it does not prove mailbox deliverability or authorize import.
 - No email addresses are stored in this repository document or the CI workflow.
 - The list has been prepared as an owner-held CSV outside Git. It has not yet been imported into Staging because the invitation/membership schema and Auth hook are not implemented and verified.
 - The tester ceiling is 50 plus the owner, not 50 total.
