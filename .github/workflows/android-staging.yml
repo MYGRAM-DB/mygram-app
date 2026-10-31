@@ -45,8 +45,11 @@ jobs:
         with:
           packages: platform-tools
 
-      - name: Install Android platform and build tools
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Install Android platform, build tools, emulator and test image
+        run: |
+          set -euo pipefail
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "emulator" "system-images;android-35;google_apis;x86_64"
+          yes | sdkmanager --licenses >/dev/null
 
       - name: Validate Staging-only build inputs
         shell: bash
@@ -125,8 +128,56 @@ jobs:
             exit 1
           fi
           grep -R -a -q 'cbyvtehvaojxfcgpelir' android/app/src/main/assets/public
-          sha256sum "$APK"
-          echo "APK built and verified on the ephemeral runner. Binary is intentionally not uploaded."
+          BADGING_LINE="$(printf '%s\\n' "$BADGING" | grep -F "package: name='com.mygram.app.staging'")"
+          printf '%s\\n' "$BADGING_LINE"
+          MIN_SDK="$(printf '%s\\n' "$BADGING" | sed -n "s/.*sdkVersion:'\\([^']*\\)'.*/\\1/p")"
+          TARGET_SDK="$(printf '%s\\n' "$BADGING" | sed -n "s/.*targetSdkVersion:'\\([^']*\\)'.*/\\1/p")"
+          test -n "$MIN_SDK"
+          test -n "$TARGET_SDK"
+          mkdir -p artifacts
+          cp "$APK" artifacts/mygram-staging-debug.apk
+          sha256sum artifacts/mygram-staging-debug.apk > artifacts/SHA256SUMS.txt
+          {
+            echo "commit_sha=$GITHUB_SHA"
+            echo "run_id=$GITHUB_RUN_ID"
+            echo "package=com.mygram.app.staging"
+            echo "version_code=$(printf '%s\\n' "$BADGING" | sed -n "s/.*versionCode='\\([^']*\\)'.*/\\1/p")"
+            echo "version_name=$(printf '%s\\n' "$BADGING" | sed -n "s/.*versionName='\\([^']*\\)'.*/\\1/p")"
+            echo "min_sdk=$MIN_SDK"
+            echo "target_sdk=$TARGET_SDK"
+            echo "signing=ephemeral Android debug key"
+            echo "backend=MYGRAM-STAGING"
+          } > artifacts/build-info.txt
+          echo "APK built, signature and Staging identity verified; ready for emulator smoke test."
+
+      - name: Boot Android 15 emulator and smoke-test APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "no" | avdmanager create avd -n mygram-api35 -k "system-images;android-35;google_apis;x86_64" -d pixel_2 --force
+          emulator -avd mygram-api35 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -wipe-data > /tmp/mygram-emulator.log 2>&1 &
+          adb wait-for-device
+          for attempt in $(seq 1 90); do
+            if [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\\r')" = "1" ]; then
+              break
+            fi
+            if [ "$attempt" -eq 90 ]; then
+              cat /tmp/mygram-emulator.log
+              echo "::error::Android emulator did not finish booting."
+              exit 1
+            fi
+            sleep 5
+          done
+          adb install artifacts/mygram-staging-debug.apk
+          adb logcat -c
+          adb shell monkey -p com.mygram.app.staging 1
+          sleep 12
+          adb shell pidof com.mygram.app.staging
+          if adb logcat -d -t 5000 | grep -E "FATAL EXCEPTION|Process: com\\.mygram\\.app\\.staging" ; then
+            echo "::error::Android app crashed during emulator smoke test."
+            exit 1
+          fi
+          echo "Android 15 emulator installed and launched MYGRAM STAGING successfully."
 
       - name: Package generated source for review (no APK)
         run: |
@@ -141,7 +192,15 @@ jobs:
           zip -qr android-source-review.zip android capacitor.config.json package.json package-lock.json
           unzip -l android-source-review.zip | tail -n 5
 
-      - name: Upload generated source only
+      - name: Upload installable APK and build evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mygram-android-staging-apk-${{ github.sha }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload generated Android source for review
         uses: actions/upload-artifact@v4
         with:
           name: mygram-android-staging-source-${{ github.sha }}
