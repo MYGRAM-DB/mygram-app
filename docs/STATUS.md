@@ -182,3 +182,33 @@ The repository owner must configure and verify branch rules in GitHub Settings. 
 - No signed avatar URL service, independent AuthZ CI gate, Migration Validator, SMTP/recovery journey, or rollback proof has been completed.
 - Gate A: OPEN. No merge, no public deployment, no Production changes.
 
+
+
+## Decision 04 correction | verified 2026-10-31 00:02 UTC
+
+### MY-0401 branch protection
+- Status: **CLOSED (owner-reported API read-back evidence)**.
+- The repository owner supplied GitHub API read-back details for two Active rulesets:
+  - `main-branch-protection`, ruleset ID `26248287`, target `main`.
+  - `rebuild-branch-safety`, ruleset ID `26248473`, target `rebuild/phase-a-architecture`.
+- Owner-supplied verification reports one required approval, stale approval dismissal, conversation resolution, required CI checks, branch-up-to-date requirement, deletion/force-push prevention, and empty bypass lists for `main`; rebuild ruleset blocks deletion and force-push while retaining the authorized direct-development path and empty bypass list.
+- Evidence links: [main ruleset](https://github.com/MYGRAM-DB/mygram-app/rules/26248287), [rebuild ruleset](https://github.com/MYGRAM-DB/mygram-app/rules/26248473), [all rulesets](https://github.com/MYGRAM-DB/mygram-app/settings/rules).
+- Audit provenance: these rule IDs and settings were supplied in the owner's report. The connected GitHub read-only surface used for this update does not expose a ruleset-read action, so this entry records owner-provided API read-back evidence and does not claim an independent connector read-back in this run.
+
+### Run #112
+- Status: **SUCCESS**, independently confirmed from GitHub Actions jobs for run ID `41144025980`.
+- Head: `29bbf1dd60f8ea7c339063c43cc1a33c1ac5453f`.
+- Both jobs completed successfully:
+  1. `Typecheck, unit tests, Playwright, and production build`.
+  2. `Real JWT, Profile Privacy, Storage, Messenger A/B/C, and Realtime`.
+- The first job's AuthZ integration-file step is syntax validation only. The Staging job runs the existing Messenger/JWT/Profile Privacy/Storage/Realtime suite. Neither job invokes `qa-authz-two-user`; its deployment and runtime execution remain outstanding.
+- [Run #112](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41144025980).
+
+### PR #54
+- Owner-reported state: Open / Draft / Not Merged, head `29bbf1d`, base `main`; preserve this state.
+- No merge, close, Ready-for-review transition, or Production change is authorized by this correction.
+
+### Gate A
+- MY-0401 is closed based on the owner-supplied ruleset API read-back evidence above.
+- Gate A remains **OPEN**. AuthZ fixture seeding, real OIDC acceptance/rejection/replay tests, token expiry and refresh revocation runtime tests, signed avatar URL authorization/expiry tests, AuthZ-specific independent CI, cleanup proof, four missing migration sources/baseline decision, Production privacy remediation plan, and identity SMTP/recovery tests remain open.
+- Production remains read-only. The overbroad `profiles` SELECT path is an access-control finding; audit-time aggregates did not establish that study/work/hidden-location values were populated.
