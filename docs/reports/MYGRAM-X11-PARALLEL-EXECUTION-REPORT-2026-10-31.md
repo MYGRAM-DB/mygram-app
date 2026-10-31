@@ -51,6 +51,13 @@ The workflow SHA pin is intentionally `null` pending Security approval of the ex
 
 The run did **not** invoke either Staging QA function, deploy an Edge Function, write to Staging, prove deployed-source parity, or close Gate A.
 
+### Current Staging Edge Function inventory
+
+- `qa-messenger-abc`: ACTIVE, version 5, `verify_jwt=false`, deployed bundle digest `0868b0afefd8cd5969185c4f9f350373640c83c3a76edfad508932c17acbc6a7`.
+- `qa-authz-two-user`: not present in the current Edge Function listing; it remains source-only.
+- The deployed bundle digest is not a Git commit SHA and does not prove source parity.
+- The shared policy's unset workflow SHA means the reviewed source is fail-closed until Security supplies the exact pin. No QA function was invoked or deployed.
+
 The W10 branch source also contains server-admin-only QA fixture creation and independent user-JWT assertions in `qa-authz-two-user`, refresh-token revocation coverage, and isolated cleanup/absence checks in both QA functions. These remain source-level evidence until the deployed functions are independently proven to match and are run under an approved trusted workflow.
 
 ## 3. Fresh Staging database inventory — read-only
