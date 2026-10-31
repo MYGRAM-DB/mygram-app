@@ -207,7 +207,7 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
   async function addComment(postId: string, event: FormEvent<HTMLFormElement>, parentCommentId: string | null = null) {
     event.preventDefault();
     if (!supabase || busyPost) return;
-    const content = (parentCommentId ? replyDrafts[parentCommentId] : commentDrafts[postId] ?? "").trim();
+    const content = (parentCommentId ? replyDrafts[parentCommentId] ?? "" : commentDrafts[postId] ?? "").trim();
     if (!content) return;
     if (content.length > 2000) {
       setError("التعليق يتجاوز الحد الأقصى البالغ 2000 حرف.");
