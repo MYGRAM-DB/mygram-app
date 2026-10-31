@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {mergeMessages,attachmentTransition} from "../../src/lib/workshops/messenger.mjs";
+test("pagination merges overlap without duplicates and sorts by sequence",()=>{const a={id:"1",sequence:1},b={id:"2",sequence:2};assert.deepEqual(mergeMessages([b],[a,b]).map(x=>x.id),["1","2"])});
+test("failed attachments can retry; uploaded cannot regress",()=>{assert.equal(attachmentTransition("failed","queued"),"queued");assert.throws(()=>attachmentTransition("uploaded","queued"),/INVALID_ATTACHMENT_TRANSITION/)})
