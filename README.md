@@ -26,7 +26,7 @@
 
 ```bash
 cp .env.example .env
-# أضف VITE_SUPABASE_URL و VITE_SUPABASE_PUBLISHABLE_KEY عند توفر الإعدادات
+# أضف VITE_SUPABASE_URL وVITE_SUPABASE_PUBLISHABLE_KEY عند توفر الإعدادات
 npm ci
 npm test
 npx playwright install chromium
@@ -43,8 +43,7 @@ npm run dev
 
 ## وثائق المشروع
 
-ابدأ من [ARCHITECTURE](docs/ARCHITECTURE.md)، [DATABASE](docs/DATABASE.md)، [SECURITY](docs/SECURITY.md)، [AUTH](docs/AUTH.md)، [LOCALIZATION](docs/LOCALIZATION.md)، [TESTING](docs/TESTING.md)، [DEPLOYMENT](docs/DEPLOYMENT.md)، [ROLLBACK](docs/ROLLBACK.md)، [WALLET](docs/WALLET.md)، [STATUS](docs/STATUS.md)، و[SCHEMA DRIFT](docs/SCHEMA_DRIFT.md).
-
+ابدأ من [ARCHITECTURE](docs/ARCHITECTURE.md)، [DATABASE](docs/DATABASE.md)، [SECURITY](docs/SECURITY.md)، [AUTH](docs/AUTH.md)، [LOCALIZATION](docs/LOCALIZATION.md)، [TESTING](docs/TESTING.md)، [DEPLOYMENT](docs/DEPLOYMENT.md)، [ANDROID TESTING](docs/ANDROID-TESTING.md)، [ROLLBACK](docs/ROLLBACK.md)، [WALLET](docs/WALLET.md)، [STATUS](docs/STATUS.md)، و[SCHEMA DRIFT](docs/SCHEMA_DRIFT.md).
 
 ## حالة الهوية
 - التسجيل الأولي بالبريد وكلمة المرور فقط.

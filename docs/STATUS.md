@@ -1,3 +1,27 @@
+# DECISION 08 | Android APK testing track | 2026-10-31
+
+> This is a documentation-only decision on top of the Run #117-tested parent SHA. The new documentation commit must receive its own CI result; Run #117 is not inherited as a test of a later commit.
+
+- Repository: `MYGRAM-DB/mygram-app`.
+- Branch: `rebuild/phase-a-architecture`.
+- Parent SHA at decision time: `cf5c848879d218f76fdc5133589ef7a99e0b2877`.
+- [Run #117](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41150200153): SUCCESS on the parent SHA only.
+- PR #54 remains **Open / Draft / Not Merged**.
+- No Android project, Capacitor config/dependencies, APK build job, or APK artifact exists yet.
+- `vite.config.ts` still has `base: "/mygram-app/"` and `sourcemap: true`; Android requires a separate relative-base build with source maps disabled.
+- The current Auth client has no native deep-link callback handler and signup does not pass a native `emailRedirectTo`.
+- Staging currently has no preview invitation/membership table in the inspected public table list.
+- The existing `on_auth_user_created` trigger calling `public.handle_new_user()` must be preserved. Its current function inserts the profile row; membership attachment requires a reviewed additive design.
+- Verified Staging access gap: feed SELECT policies for `posts`, `post_comments`, and `post_reactions` currently use `USING (true)` for `authenticated`. Messenger policies require conversation membership but do not yet require preview membership.
+- Verified both `profile-avatars` and `messenger-attachments` Storage buckets are private. Keep them private.
+- APK must bundle the local web build and target only Staging ref `cbyvtehvaojxfcgpelir`. The Production ref `rocztskcyakvekokftfx` remains read-only.
+- The owner's CSV containing one owner and up to 50 testers is still required to create membership records and the tester group. Do not infer the owner email.
+- Gate A remains **OPEN**. No new tables, policies, Auth hooks, APK, distribution project, public preview, or Production changes were created in this documentation update.
+
+See [Android APK test-track specification](ANDROID-TESTING.md) for the build architecture, auth deep links, RLS/Storage controls, distribution options, device tests, and exit criteria.
+
+---
+
 # DECISION 06 | Latest verified snapshot | 2026-10-31
 
 > This entry supersedes earlier current-state summaries below. Historical snapshots remain preserved for audit.
