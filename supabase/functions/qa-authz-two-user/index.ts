@@ -291,7 +291,7 @@ Deno.serve(async (request: Request) => {
 
     async function cleanupAttempt(
       name: string,
-      operation: () => Promise<{ error: unknown | null }>,
+      operation: () => PromiseLike<{ error: unknown | null }>,
     ) {
       try {
         const result = await operation();
