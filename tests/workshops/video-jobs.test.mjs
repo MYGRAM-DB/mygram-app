@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {transitionJob} from "../../src/lib/workshops/video-jobs.mjs";
+test("processing job can complete or fail",()=>{const j={state:"processing",attempts:1,maxAttempts:2};assert.equal(transitionJob(j,"ready").state,"ready");assert.equal(transitionJob(j,"failed").state,"failed")});
+test("retry is bounded",()=>{const j={state:"failed",attempts:2,maxAttempts:2};assert.throws(()=>transitionJob(j,"queued"),/RETRY_LIMIT_REACHED/)})
