@@ -369,26 +369,32 @@ Deno.serve(async (request: Request) => {
       }
     }
 
-    // Isolate deletion attempts: one timeout or rejected request must not
-    // prevent cleanup of the remaining temporary QA resources.
-    await Promise.all([
-      ...(profileAvatarPaths.length > 0 ? [cleanupAttempt(
+    // Isolate deletion attempts while respecting foreign-key dependencies:
+    // objects first, then conversation-owned rows, then Auth users.
+    if (profileAvatarPaths.length > 0) {
+      await cleanupAttempt(
         "PROFILE_AVATAR_STORAGE_DELETE_FAILED",
         () => admin.storage.from("profile-avatars").remove(profileAvatarPaths),
-      )] : []),
-      ...(objectPath ? [cleanupAttempt(
+      );
+    }
+    if (objectPath) {
+      await cleanupAttempt(
         "STORAGE_OBJECT_DELETE_FAILED",
         () => admin.storage.from(BUCKET).remove([objectPath!]),
-      )] : []),
-      ...(conversationId ? [cleanupAttempt(
+      );
+    }
+    if (conversationId) {
+      await cleanupAttempt(
         "CONVERSATION_DELETE_FAILED",
         () => admin.from("messenger_conversations").delete().eq("id", conversationId!),
-      )] : []),
-      ...[...createdUserIds].reverse().map((userId) => cleanupAttempt(
+      );
+    }
+    for (const userId of [...createdUserIds].reverse()) {
+      await cleanupAttempt(
         "EPHEMERAL_AUTH_USER_DELETE_FAILED",
         () => admin.auth.admin.deleteUser(userId),
-      )),
-    ]);
+      );
+    }
 
     async function countRows(
       operation: () => PromiseLike<{ count: number | null; error: unknown | null }>,
