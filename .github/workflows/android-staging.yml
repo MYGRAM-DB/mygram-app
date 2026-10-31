@@ -85,6 +85,14 @@ jobs:
           set -euo pipefail
           npx cap add android
           npx cap sync android
+          python3 - <<'PY'
+          from pathlib import Path
+          manifest = Path("android/app/src/main/AndroidManifest.xml")
+          source = manifest.read_text()
+          if 'android:allowBackup="true"' not in source:
+              raise SystemExit("Expected generated Android backup setting was not found; refusing to continue.")
+          manifest.write_text(source.replace('android:allowBackup="true"', 'android:allowBackup="false"', 1))
+          PY
           cd android
           ./gradlew --no-daemon assembleDebug
 
