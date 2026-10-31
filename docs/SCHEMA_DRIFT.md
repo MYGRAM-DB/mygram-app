@@ -1,3 +1,41 @@
+# DECISION 05 | LATEST VERIFIED SNAPSHOT | 2026-10-31
+
+> This snapshot supersedes the preceding Decision 05 addendum for current state. Older entries remain historical evidence and are not deleted.
+
+- Repository: `MYGRAM-DB/mygram-app`.
+- Branch: `rebuild/phase-a-architecture`.
+- Current tested HEAD: `8630647227ea0a21fca4f98c990acc4af168b57a`.
+- [Run #115](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41149093354): **SUCCESS** on that exact HEAD. Both jobs completed successfully:
+  1. `Typecheck, unit tests, Playwright, and production build`.
+  2. `Real JWT, Profile Privacy, Storage, Messenger A/B/C, and Realtime`.
+- [Run #114](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41147969397): **SUCCESS** on preceding HEAD `1b8a66b16f61984ee91350bfce400e25633026a7`.
+- [Run #113](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41147962375): **CANCELLED**; not counted as pass or fail.
+- **Critical test boundary:** Run #115, like Run #114, syntax-checks `tests/authz.integration.mjs` only. The Staging job invokes `qa-messenger-abc`, not `qa-authz-two-user`. AuthZ remains undeployed and unexecuted.
+- MY-0401: **CLOSED** based on the repository owner's supplied API read-back evidence. Active rulesets: `main-branch-protection` ID `26248287`; `rebuild-branch-safety` ID `26248473`. Do not reopen absent contradictory evidence.
+- PR #54: **Open / Draft / Not Merged**. No merge, Ready transition, close, or public release.
+- Production remains **read-only**. No Production migration, data, Auth, Storage, Edge Function, configuration, or deployment changes.
+- Gate A remains **OPEN**.
+
+## AuthZ source review | static review only, not runtime verification
+
+- Positive control observed: the function uses `jose.jwtVerify` with GitHub's remote JWKS, issuer and audience validation, and RS256; it checks expiry/not-before and repository/owner IDs.
+- OIDC trust remains incomplete for Decision 05 acceptance: `workflow_ref` is checked with `startsWith`, not a pinned trusted workflow identity/SHA; the allowlist does not bind an immutable trusted workflow revision or independently establish the PR head repository provenance. The fixed branch and event claims alone are not accepted as proof against untrusted PR workflow changes. Add positive/negative claim tests and a trusted-workflow design before deployment.
+- Replay guard hashes the presented OIDC token and inserts it into `qa_run_challenges`; duplicate/rejected insertion returns 409. Runtime replay behavior has not been tested.
+- **Confirmed fixture defect:** `ensurePrivateRow` inserts `profile_private_details` using `session.client` (user JWT), which conflicts with Staging's lack of authenticated INSERT/UPDATE grants. The separate `tests/authz.integration.mjs` fixture helper also attempts a user-JWT INSERT. Both remain syntax-only/unexecuted.
+- Required architecture: server-only admin client seeds and records each temporary fixture; every read/update/denial assertion remains on independent A/B/C JWT clients; admin is used for cleanup only.
+- Cleanup currently records Auth user deletion errors and verifies private-row/avatar-object absence, but it does not independently query to prove each Auth user is absent after deletion. Cleanup calls also need per-resource exception isolation so one thrown cleanup operation cannot prevent later cleanup. Therefore `cleanup_complete` is not yet the complete evidence required by Decision 05.
+- No source patch, function deployment, or Staging schema change is included in this documentation update. Do not deploy until the fixture, OIDC trust, cleanup verification, and runtime test design are reviewed.
+
+## Remaining Gate A blockers
+
+- MY-0402: correct fixtures and prove A/B/C real-JWT isolation, trusted-field denial, and cleanup on success/failure.
+- MY-0404/0405: OIDC positive/negative/replay validation and an independent functional AuthZ CI job with a fresh token.
+- Access-token expiry and refresh-token revocation runtime evidence.
+- MY-0403 signed avatar URL authorization/expiry/block contract and tests.
+- MY-0407: recover four source-missing migrations from trusted provenance or approve a documented baseline exception; Migration Validator is not implemented.
+- Production `profiles` privacy remediation plan and Staging-tested proposal only; no Production change.
+- SMTP/confirmation/password recovery/session journey and Staging rollback proof.
+
 # DECISION 05 | CURRENT EXECUTION SNAPSHOT | 2026-10-31
 
 > This is the controlling current-state addendum. Older entries below are retained as historical snapshots and must not override this section.
