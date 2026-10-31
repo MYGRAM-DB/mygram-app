@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { MygramUser } from "../lib/supabase";
 import { supabase } from "../lib/supabase";
 
@@ -439,7 +439,7 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
                 </div>
                 <div className="social-comments">
                   {(() => {
-                    const renderComment = (comment: CommentRow & { author: PublicProfile | null }, depth = 0): React.ReactNode => (
+                    const renderComment = (comment: CommentRow & { author: PublicProfile | null }, depth = 0): ReactNode => (
                       <div className="social-comment-thread" key={comment.id} style={{ marginInlineStart: Math.min(depth, 4) * 18 }}>
                         <div className="social-comment">
                           <span className="social-comment-avatar">{profileName(comment.author, comment.user_id).slice(0, 1)}</span>
