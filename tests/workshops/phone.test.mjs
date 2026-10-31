@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {normalizePhone} from "../../src/lib/workshops/phone.mjs";
+test("normalizes international and local phone notation",()=>{assert.equal(normalizePhone("00963 944 123 456"),"+963944123456");assert.equal(normalizePhone("0944-123-456","963"),"+963944123456")});
+test("rejects malformed phone values",()=>{assert.equal(normalizePhone("abc"),null);assert.equal(normalizePhone("123"),null)})
