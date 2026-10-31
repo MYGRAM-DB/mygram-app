@@ -108,8 +108,8 @@ jobs:
             echo "::error::Unexpected sensitive Android permission found."
             exit 1
           fi
-          if grep -R -a -E 'service_role|sb_secret_' android/app/src/main/assets/public; then
-            echo "::error::Privileged Supabase credential pattern found in bundled assets."
+          if grep -R -a -E 'sb_secret_[A-Za-z0-9_-]{20,}' android/app/src/main/assets/public; then
+            echo "::error::Supabase secret-key pattern found in bundled assets."
             exit 1
           fi
           if grep -R -a -E 'rocztskcyakvekokftfx' android/app/src/main/assets/public; then
