@@ -1,7 +1,7 @@
 # MYGRAM X10 — Unified Engineering, Security and Delivery Evidence Report
 
 **Report ID:** X10-UNIFIED-2026-10-31  
-**Audit cut-off:** 2026-10-31, approximately 13:40–13:42 UTC. Supabase Security Advisor observations were timestamped 13:40:54Z and Performance Advisor observations 13:40:55Z. GitHub PR/CI snapshots were read during the same audit session.  
+**Original audit baseline:** 2026-10-31, approximately 13:40–13:42 UTC. **Latest evidence addendum:** 2026-10-31, after 17:20 UTC (local project-owner time approximately 20:20+03). The original sections remain a timestamped historical snapshot; Section 10 supersedes their current PR/CI, Staging inventory, policy, Storage, and Advisor state where explicitly stated.  
 **Repository:** [MYGRAM-DB/mygram-app](https://github.com/MYGRAM-DB/mygram-app)  
 **Integration branch:** `rebuild/phase-a-architecture`  
 **Staging:** `MYGRAM-STAGING` / `cbyvtehvaojxfcgpelir`  
@@ -707,3 +707,131 @@ No paid provider activation or new schema migration without separate review/appr
 | Project owner | Review report and explicitly authorize any future protected operation | Pending |
 
 This report is an evidence-backed audit snapshot. Any later change must update the exact branch/SHA/run and the corresponding evidence row. Do not edit historical evidence to make a newer result appear to have existed earlier.
+
+
+---
+
+## 10. Latest evidence refresh — 2026-10-31 after 17:20 UTC
+
+This section is a dated delta against the original 13:40–13:42 UTC audit. It does not silently rewrite historical observations. Where this section states a newer live value, it is the current value for this report. Read-only evidence was refreshed from GitHub and MYGRAM-STAGING. No protected operation was performed.
+
+### 10.1 Current GitHub PR and exact-head CI snapshot
+
+All six PRs below were re-fetched. All remain **OPEN / DRAFT / NOT MERGED**.
+
+| PR | Scope | Base ← head branch | Exact head SHA | Exact-head run | Job(s) and result | Changed paths / interpretation |
+|---|---|---|---|---|---|---|
+| [#54](https://github.com/MYGRAM-DB/mygram-app/pull/54) | Foundation / integration baseline | `main` ← `rebuild/phase-a-architecture` | `c797e293f23fbc337510a95e7a051b42f72bfef7` | [#133](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41192176699) | `Typecheck, unit tests, Playwright, and production build` — SUCCESS; `Real JWT, Profile Privacy, Storage, Messenger A/B/C, and Realtime` — SUCCESS | Foundation app, docs, CI, E2E, QA source and 12 migration SQL files. Historical Staging run executed on legacy PR-triggered OIDC path; not current Gate A approval. |
+| [#59](https://github.com/MYGRAM-DB/mygram-app/pull/59) | Android Staging bootstrap | `rebuild/phase-a-architecture` ← `feature/android-staging` | `f2edc7fcc28c971bad4914c80b7408998da84218` | [#9](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41185503288) | `android-bootstrap` — SUCCESS | Workflow, Capacitor config and Vite Android mode. Ephemeral debug build/source artifact only; generated native source is not committed in the PR and no physical-device test is evidenced. |
+| [#87](https://github.com/MYGRAM-DB/mygram-app/pull/87) | GLOBAL 90 execution-order documentation | `rebuild/phase-a-architecture` ← `docs/global-90-execution-order` | `d5db6fd181d67609cd657ed532e257e4668b711e` | No PR-triggered run returned for this exact SHA | No CI result established | One documentation file: `docs/MYGRAM-GLOBAL-90-EXECUTION-ORDER.md`. Do not infer CI success from adjacent PRs. |
+| [#90](https://github.com/MYGRAM-DB/mygram-app/pull/90) | W10 contracts / CI / protected workflow | `rebuild/phase-a-architecture` ← `feature/workshop-platform-contracts` | `1a8b2763f9f3f061c3dfb4f7160810609f8354f1` | [#169](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41199790121) | `Unit tests, Playwright, and production build` — SUCCESS | Central CI, protected workflow, ownership, shared contracts, OIDC policy, QA source and tests. Seven baseline Playwright tests; Deno checks are source typechecks, not deployed runtime. |
+| [#91](https://github.com/MYGRAM-DB/mygram-app/pull/91) | W1 FB | `rebuild/phase-a-architecture` ← `feature/workshop-fb` | `d5a2f6c657986c51a232ef1b5826cb7b3d4265d9` | [#156](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41197385536) | `Unit tests, Playwright, and production build` — SUCCESS | `SocialFeedWorkspace.tsx`, FB helpers/tests, #95 proposal, and duplicate central `ci.yml`. CI does not close #93/#95 or prove A/B/C denial. |
+| [#92](https://github.com/MYGRAM-DB/mygram-app/pull/92) | W2 Messenger | `rebuild/phase-a-architecture` ← `feature/workshop-messenger` | `02a83a6dba6d7d5299bd4043b516db40060f3c7b` | [#157](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41197405337) | `Unit tests, Playwright, and production build` — SUCCESS | `MessengerWorkspace.tsx`, Messenger helpers/types/tests, and duplicate central `ci.yml`. CI does not prove authenticated Staging reconnect, signed URL lifecycle or A/B/C attachment isolation. |
+
+**Exact job-step boundary:** Runs #169, #156 and #157 each contain one combined successful job. Run #169's steps include unit/contract tests, Playwright browser E2E, integration-source syntax checks, Deno typechecks for both QA function sources, TypeScript and Vite build. Runs #156 and #157 contain unit/contract tests, Playwright browser E2E, integration-source syntax checks, TypeScript and Vite build. Run #9 contains one Android bootstrap job, including ephemeral native generation/build/signature checks and source-only artifact upload. Run #133 contains two jobs, including a historical real Staging A/B/C Messenger suite. These are not equivalent evidence classes.
+
+**CI ownership remains unresolved:** #91 and #92 still include `.github/workflows/ci.yml` in their changed paths. Do not remove those transition changes until W10's safe workflow is independently reviewed, owner-approved and present on integration. No PR was merged in this refresh.
+
+### 10.2 Current Staging inventory and migration-source reconciliation
+
+Latest read-only catalog and migration inspection reconfirm:
+
+| Inventory item | Current observed value | Evidence boundary |
+|---|---:|---|
+| Staging project | `MYGRAM-STAGING` / `cbyvtehvaojxfcgpelir` | Project metadata |
+| Project status / region | `ACTIVE_HEALTHY` / `eu-west-1` | Project metadata |
+| PostgreSQL | 17.11.0.003 / engine 17 | Project metadata |
+| Applied migration ledger | **17** | Supabase migration ledger and `supabase_migrations.schema_migrations` count |
+| Public base tables | **15** | `information_schema.tables` BASE TABLE count |
+| Public views | **1** | `public.public_profiles` |
+| SQL migration files on integration source | **12** | Exact changed-path inventory of PR #54 / integration baseline |
+| Applied versions with no matching SQL source | **5** | Five expected path/ref checks recorded in Section 3.2 |
+| Public RLS policies | **32** | `pg_policies` count |
+| Broad FB authenticated SELECT policies | **3** | Posts, comments and reactions each use `USING (true)` |
+| QA challenge rows | **2** | `qa_run_challenges` row count at refresh |
+| Storage buckets | **2, both private** | `storage.buckets`, public=false |
+
+The five applied migration versions without a matching SQL file on the integration source are:
+
+| Missing version | Expected source filename | Status |
+|---|---|---|
+| `20261029200719` | `20261029200719_create_profile_for_new_auth_users.sql` | Missing; source not recovered |
+| `20261029200728` | `20261029200728_revoke_public_execute_handle_new_user.sql` | Missing; source not recovered |
+| `20261029211249` | `20261029211249_mygram_staging_profiles_rls_core.sql` | Missing; source not recovered |
+| `20261029223828` | `20261029223828_create_supported_locales_public_read.sql` | Missing; source not recovered |
+| `20261030194646` | `20261030194646_enable_messenger_postgres_changes.sql` | Missing; source not recovered |
+
+The other 12 ledger versions have corresponding SQL files in the integration source. The 17 applied ledger entries, 15 base tables, one view and 12 checked-in SQL files are separate counts. The five missing SQL sources remain a provenance blocker. No SQL was reconstructed, no migration history was rewritten and no migration was applied.
+
+### 10.3 Current policy, Storage and grants evidence
+
+- All 15 inspected public base tables have RLS enabled.
+- The live policy query returned 32 public policies.
+- The three broad FB SELECT policies remain: `posts_select_authenticated`, `post_comments_select_authenticated`, and `post_reactions_select_authenticated`, each authenticated SELECT with permissive `USING (true)`.
+- `posts` still has no persisted `visibility`, `audience` or `privacy` column.
+- `post_comments.parent_comment_id` still references only `post_comments.id`; the FK does not enforce same-`post_id` parent/child integrity.
+- `public_profiles` is the one public view. It projects profile-safe fields and conditionally exposes living-location fields only when the profile's sharing flag is enabled.
+- `profile-avatars` and `messenger-attachments` both have `public=false`. Their observed Storage policies constrain profile avatar access to the owner folder and Messenger object access to conversation participants, with uploader-folder constraints for writes. This is policy/catalog evidence, not signed-URL expiry/renewal runtime acceptance.
+- Grants on `qa_run_challenges`, `ui_translation_cache` and `ui_translation_daily_usage` were observed for `postgres` and `service_role`; no `anon` or `authenticated` grants appeared in the returned table-grant rows. Their RLS-enabled/no-policy Advisor INFO finding is consistent with service-only access, but should remain under Security review.
+
+### 10.4 Current Supabase Advisor snapshot
+
+Advisor observations were timestamped **2026-10-31 17:20:25 UTC** (approximately 20:20:25 +03). This supersedes the earlier 13:40 UTC Advisor snapshot for current findings.
+
+| Advisor | Level | Count | Finding | Interpretation / action |
+|---|---|---:|---|---|
+| Security | INFO | 3 | RLS enabled, no policies: `qa_run_challenges`, `ui_translation_cache`, `ui_translation_daily_usage` | Appears intentional service-only design; grants were checked and no anon/authenticated table grants appeared. Security to confirm. |
+| Security | WARN | 1 | Authenticated can execute `SECURITY DEFINER` RPC `complete_mygram_profile` | Review full function body, fixed search_path, identity derivation and input authorization; authenticated execution may be intentional onboarding behavior but requires independent review. |
+| Security | WARN | 1 | Leaked-password protection disabled | Remains disabled. Prior plan limitation was recorded; no setting change made. |
+| Performance | INFO | 2 | Unused indexes: `posts_created_at_idx`, `post_comments_parent_comment_id_idx` | Informational only; do not remove without workload/EXPLAIN review. |
+
+No Advisor remediation was applied. No RLS, grant, index, Auth setting or function was changed.
+
+### 10.5 Current Edge Function and OIDC state
+
+The live function listing still reports:
+- `qa-messenger-abc`: ACTIVE, version 5, `verify_jwt=false`, provider bundle digest `0868b0afefd8cd5969185c4f9f350373640c83c3a76edfad508932c17acbc6a7`.
+- `qa-authz-two-user`: not deployed.
+
+The deployed Messenger QA source was previously retrieved and still contains the legacy identity contract: `event_name=pull_request`, workflow path prefix `.github/workflows/ci.yml@`, workflow name `MYGRAM Build and Quality Gate`, and a pull-request subject. W10's reviewed branch instead defines a separate protected push workflow. The provider digest is not a Git SHA and no independently verifiable deployed-source provenance mapping was established.
+
+Replay:
+- `qa_run_challenges.token_hash` is a PRIMARY KEY and the table currently has two rows.
+- The current QA source deletes expired challenges before attempting to insert the new hash; duplicate insertion is rejected by the primary key and returned as a conflict.
+- This source-level flow does **not** establish concurrent exactly-one-success behavior, write-failure fail-closed behavior under real database faults, bounded expiry housekeeping, or live cleanup absence verification.
+- Expired records are intended to be pruned on a later QA invocation; no scheduled retention process was verified.
+- No QA invocation, function deployment, repository-variable change or Staging write occurred in this refresh. The value of `MYGRAM_STAGING_QA_ENABLED` was not inspected.
+
+### 10.6 Updated acceptance and readiness state
+
+| Evidence stage | Latest status | Reason |
+|---|---|---|
+| Source reviewed | Partial | Selected PR source/diffs reviewed; five migration sources missing and deployed-function provenance absent |
+| Unit / contract tests | Passed on selected exact SHAs | CI evidence for #90/#91/#92 and foundation #54 |
+| Build | Passed on selected exact SHAs | Build success is not runtime acceptance |
+| Browser E2E | Baseline suite passed on selected exact SHAs | Product-specific real-user journeys remain unproven |
+| Staging runtime | Partial historical evidence | Run #133 had 11/11 Messenger A/B/C checks on an older SHA and legacy OIDC path; no current approved Gate A run |
+| A/B/C AuthZ | Partial historical evidence | Historical Messenger/profile/Storage/Realtime assertions only; not full current Gate A |
+| Independent Security review | Not passed / not evidenced | No independent sign-off recorded |
+| Acceptance Passed | **0 accepted journeys** | Strict X10 definition not met |
+| Release Ready | **No** | Gate A and product/privacy/provenance blockers remain |
+
+### 10.7 Report branch delivery state
+
+- Documentation branch: `docs/x10-unified-evidence-2026-10-31`.
+- It is two commits ahead of `rebuild/phase-a-architecture` and zero commits behind at the latest comparison.
+- This report is a documentation-only change; no application source, migration, workflow or environment file is changed by the report update.
+- The five missing migration files are not reconstructed or added by this report.
+- W10, Security, Database and workshop-owner reviews remain **PENDING**. This report is not an independent review or sign-off.
+
+### 10.8 Explicit non-actions and governance
+
+During this evidence refresh:
+- No Production read/write mutation occurred; Production remains READ-ONLY.
+- No Staging write, migration, RLS/grant/Storage/Auth/Realtime/config change occurred.
+- No Edge Function was deployed or invoked.
+- No QA activation or repository variable change occurred.
+- No PR was merged, no auto-merge enabled, no preview invitation sent, no APK distributed and no public release performed.
+- No paid provider, Wallet or Payments was activated.
+
+**Decision:** The report is now refreshed with the later PR/CI and Staging/Advisor evidence, but its acceptance state remains unchanged: Gate A OPEN, zero accepted journeys, Release Ready NO. The documentation PR itself still requires CI and W10/Security/Database review before the report task can be closed.
