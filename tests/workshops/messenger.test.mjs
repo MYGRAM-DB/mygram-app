@@ -66,3 +66,35 @@ test("realtime newest-page refresh preserves older pages already loaded", () => 
   );
   assert.equal(new Set(refreshed.map((message) => message.id)).size, 3);
 });
+
+
+test("file-only attachment failure removes both uploaded object and empty message", async () => {
+  const calls = [];
+  const result = await (await import("../../src/lib/workshops/messenger.mjs")).compensateAttachmentInsertFailure({
+    removeStorageObject: async () => { calls.push("storage"); return { error: null }; },
+    deleteEmptyMessage: async () => { calls.push("message"); return { error: null }; },
+    hasTextBody: false,
+  });
+  assert.deepEqual(calls, ["storage", "message"]);
+  assert.deepEqual(result, { storageRemoved: true, messageResolved: true });
+});
+
+test("text-plus-file failure preserves the valid text message and removes the object", async () => {
+  const calls = [];
+  const result = await (await import("../../src/lib/workshops/messenger.mjs")).compensateAttachmentInsertFailure({
+    removeStorageObject: async () => { calls.push("storage"); return { error: null }; },
+    deleteEmptyMessage: async () => { calls.push("message"); return { error: null }; },
+    hasTextBody: true,
+  });
+  assert.deepEqual(calls, ["storage"]);
+  assert.deepEqual(result, { storageRemoved: true, messageResolved: true });
+});
+
+test("cleanup failures are reported instead of being silently treated as success", async () => {
+  const result = await (await import("../../src/lib/workshops/messenger.mjs")).compensateAttachmentInsertFailure({
+    removeStorageObject: async () => ({ error: new Error("storage unavailable") }),
+    deleteEmptyMessage: async () => { throw new Error("delete unavailable"); },
+    hasTextBody: false,
+  });
+  assert.deepEqual(result, { storageRemoved: false, messageResolved: false });
+});
