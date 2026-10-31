@@ -277,7 +277,8 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
   }, [loadConversations]);
 
   useEffect(() => {
-    if (!selectedId || !supabase) {
+    const activeClient = supabase;
+    if (!selectedId || !activeClient) {
       activeConversationId.current = null;
       setMessages([]);
       setHasOlderMessages(false);
@@ -288,9 +289,9 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
     activeConversationId.current = selectedId;
     setError("");
     void loadMessages(selectedId);
-    void supabase.realtime.setAuth();
+    void activeClient.realtime.setAuth();
 
-    const channel = supabase
+    const channel = activeClient
       .channel(`messenger:${selectedId}:messages`, { config: { private: true } })
       .on("broadcast", { event: "INSERT" }, () => {
         if (active) {
@@ -310,7 +311,7 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
       active = false;
       if (activeConversationId.current === selectedId) activeConversationId.current = null;
       messageRequestVersion.current += 1;
-      void supabase.removeChannel(channel);
+      void activeClient.removeChannel(channel);
     };
   }, [selectedId, loadMessages, loadConversations]);
 
