@@ -204,3 +204,17 @@ The next report must distinguish:
 Do not collapse these into one “completed” label.
 
 **Final command:** Start the integration work immediately, in parallel on isolated branches. W10 controls shared contracts; W1/W2 receive first full UI/API wiring priority; W3–W9 and W11–W13 continue their product-specific consumer work without waiting where independent. One PR at a time is reviewed and integrated into the central branch. Gate A continues in parallel. No bulk merge.
+
+
+## 9. Tracking issues opened
+
+- [#88 — Integrate workshop helpers into real React and Supabase product journeys](https://github.com/MYGRAM-DB/mygram-app/issues/88)
+- [#89 — Consolidate the full PR quality gate](https://github.com/MYGRAM-DB/mygram-app/issues/89)
+
+Each workshop issue #73–#85 now has an additional comment naming the next UI/API/integration deliverable and its evidence criteria. The new comments distinguish helper delivered from UI integrated, persistence integrated, authorization tested and end-to-end accepted.
+
+The Decision 18 commit and its existing workflow result:
+- Commit: `e4a5f30c8d7be097f82b0cc948749208f339478a`
+- [Run #41192057286](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41192057286): completed SUCCESS on the exact Decision 18 SHA for the two existing integration workflow jobs.
+
+PR #54 remains Open / Draft / Not Merged; PR #59 remains Open / Draft / Not Merged. Issues #55 and #60 remain open; Gate A is not closed by workshop unit CI.
