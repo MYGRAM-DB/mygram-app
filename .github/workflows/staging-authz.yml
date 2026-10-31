@@ -1,4 +1,4 @@
-name: MYGRAM Trusted Staging QA Smoke
+name: MYGRAM Trusted Staging QA
 
 on:
   push:
@@ -13,9 +13,12 @@ concurrency:
 
 jobs:
   staging-authz:
-    name: Staging QA smoke, real A/B/C JWTs, profile projection, private Storage and Realtime
+    # Enable only after both reviewed QA function sources are separately deployed
+    # to MYGRAM-STAGING and their deployed source SHA has been verified.
+    if: ${{ vars.MYGRAM_STAGING_QA_ENABLED == 'true' }}
+    name: Two deployed Staging QA smoke suites (identity/profile/Storage + Messenger)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       contents: read
       id-token: write
@@ -26,8 +29,27 @@ jobs:
           set -euo pipefail
           test "${GITHUB_REF}" = "refs/heads/rebuild/phase-a-architecture"
           test "${GITHUB_EVENT_NAME}" = "push"
-      # This invokes qa-messenger-abc only. It is not the complete Gate A suite tracked by Issue #60.
-      - name: Run Messenger and profile-projection Staging QA with GitHub OIDC
+
+      # Obtain a new GitHub OIDC token for every endpoint call. Tokens are
+      # single-use at the function boundary; never reuse one across functions.
+      - name: Run identity, profile privacy and private avatar Storage suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          OIDC_RESPONSE="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=mygram-staging-qa")"
+          OIDC_TOKEN="$(printf '%s' "$OIDC_RESPONSE" | jq -er '.value')"
+          unset OIDC_RESPONSE
+          curl --fail --silent --show-error \
+            --request POST \
+            "https://cbyvtehvaojxfcgpelir.supabase.co/functions/v1/qa-authz-two-user" \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{}'
+          unset OIDC_TOKEN
+
+      - name: Run Messenger A/B/C, private Realtime and attachment Storage suite
         shell: bash
         run: |
           set -euo pipefail
