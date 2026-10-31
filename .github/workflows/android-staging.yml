@@ -51,8 +51,8 @@ jobs:
       - name: Validate Staging-only build inputs
         shell: bash
         env:
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_URL: https://cbyvtehvaojxfcgpelir.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_cBsp8a-ePFL_0KWebtS0sw_xuayxMjm
         run: |
           set -euo pipefail
           test "${VITE_SUPABASE_URL}" = "https://cbyvtehvaojxfcgpelir.supabase.co" || {
@@ -73,8 +73,8 @@ jobs:
 
       - name: Typecheck and build local Android web assets
         env:
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_URL: https://cbyvtehvaojxfcgpelir.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_cBsp8a-ePFL_0KWebtS0sw_xuayxMjm
         run: |
           set -euo pipefail
           npm run typecheck
