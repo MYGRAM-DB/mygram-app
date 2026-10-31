@@ -32,3 +32,29 @@ export function mergeMessagesByCreatedAtId(current, incoming) {
     return time || left.id.localeCompare(right.id);
   });
 }
+
+
+/**
+ * Compensate when an uploaded object cannot be linked to its message row.
+ * Operations return Supabase-style { error } results; thrown errors also fail closed.
+ */
+export async function compensateAttachmentInsertFailure({
+  removeStorageObject,
+  deleteEmptyMessage,
+  hasTextBody,
+}) {
+  async function attempt(operation) {
+    try {
+      const result = await operation();
+      return !result?.error;
+    } catch {
+      return false;
+    }
+  }
+
+  const storageRemoved = await attempt(removeStorageObject);
+  // A text-bearing message remains a valid text message. File-only messages
+  // must be removed when their attachment metadata cannot be persisted.
+  const messageResolved = hasTextBody ? true : await attempt(deleteEmptyMessage);
+  return { storageRemoved, messageResolved };
+}
