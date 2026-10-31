@@ -466,7 +466,7 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
         if (attachmentError) {
           const cleanup = await compensateAttachmentInsertFailure({
             removeStorageObject: () => supabase!.storage.from("messenger-attachments").remove([uploadedPath!]),
-            deleteEmptyMessage: () => supabase!.from("messenger_messages")
+            deleteEmptyMessage: async () => await supabase!.from("messenger_messages")
               .delete()
               .eq("id", message.id)
               .eq("sender_id", user.id),
