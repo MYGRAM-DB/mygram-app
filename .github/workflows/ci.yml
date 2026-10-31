@@ -39,5 +39,14 @@ jobs:
         run: |
           node --check tests/authz.integration.mjs
           node --check tests/messenger-three-party.integration.mjs
+      - name: Set up Deno for Edge Function checks
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.7.0
+          cache: true
+      - name: Typecheck Staging QA Edge Functions
+        run: |
+          deno check --no-lock supabase/functions/qa-authz-two-user/index.ts
+          deno check --no-lock supabase/functions/qa-messenger-abc/index.ts
       - name: TypeScript validation and production build
         run: npm run build
