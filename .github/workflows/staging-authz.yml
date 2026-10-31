@@ -1,4 +1,4 @@
-name: MYGRAM Trusted Staging Authorization Gate
+name: MYGRAM Trusted Staging QA Smoke
 
 on:
   push:
@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   staging-authz:
-    name: Real JWT, Profile Privacy, Storage, Messenger A/B/C, and Realtime
+    name: Staging QA smoke, real A/B/C JWTs, profile projection, private Storage and Realtime
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -26,7 +26,8 @@ jobs:
           set -euo pipefail
           test "${GITHUB_REF}" = "refs/heads/rebuild/phase-a-architecture"
           test "${GITHUB_EVENT_NAME}" = "push"
-      - name: Run isolated Staging security suite with GitHub OIDC
+      # This invokes qa-messenger-abc only. It is not the complete Gate A suite tracked by Issue #60.
+      - name: Run Messenger and profile-projection Staging QA with GitHub OIDC
         shell: bash
         run: |
           set -euo pipefail
