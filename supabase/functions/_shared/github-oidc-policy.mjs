@@ -8,6 +8,8 @@ export const TRUSTED_STAGING_WORKFLOW = Object.freeze({
   refType: "branch",
   workflowRef: "MYGRAM-DB/mygram-app/.github/workflows/staging-authz.yml@refs/heads/rebuild/phase-a-architecture",
   workflow: "MYGRAM Trusted Staging QA Smoke",
+  // Fail closed until Security pins the immutable workflow-file SHA after review.
+  workflowSha: null,
   subject: "repo:MYGRAM-DB@346374775/mygram-app@1429829602:ref:refs/heads/rebuild/phase-a-architecture",
   audience: "mygram-staging-qa",
   issuer: "https://token.actions.githubusercontent.com",
@@ -47,8 +49,9 @@ export function isTrustedStagingWorkflowClaims(
     claims.sub === TRUSTED_STAGING_WORKFLOW.subject &&
     typeof claims.sha === "string" &&
     SHA_PATTERN.test(claims.sha) &&
-    typeof claims.workflow_sha === "string" &&
-    SHA_PATTERN.test(claims.workflow_sha) &&
+    typeof TRUSTED_STAGING_WORKFLOW.workflowSha === "string" &&
+    SHA_PATTERN.test(TRUSTED_STAGING_WORKFLOW.workflowSha) &&
+    claims.workflow_sha === TRUSTED_STAGING_WORKFLOW.workflowSha &&
     /^[0-9]+$/.test(String(claims.run_id ?? "")) &&
     Number.isSafeInteger(Number(claims.run_attempt)) &&
     Number(claims.run_attempt) >= 1
