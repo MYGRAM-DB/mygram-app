@@ -128,10 +128,10 @@ jobs:
             exit 1
           fi
           grep -R -a -q 'cbyvtehvaojxfcgpelir' android/app/src/main/assets/public
-          BADGING_LINE="$(printf '%s\\n' "$BADGING" | grep -F "package: name='com.mygram.app.staging'")"
-          printf '%s\\n' "$BADGING_LINE"
-          MIN_SDK="$(printf '%s\\n' "$BADGING" | sed -n "s/.*sdkVersion:'\\([^']*\\)'.*/\\1/p")"
-          TARGET_SDK="$(printf '%s\\n' "$BADGING" | sed -n "s/.*targetSdkVersion:'\\([^']*\\)'.*/\\1/p")"
+          BADGING_LINE="$(printf '%s\n' "$BADGING" | grep -F "package: name='com.mygram.app.staging'")"
+          printf '%s\n' "$BADGING_LINE"
+          MIN_SDK="$(printf '%s\n' "$BADGING" | sed -n "s/.*sdkVersion:'\\([^']*\\)'.*/\\1/p")"
+          TARGET_SDK="$(printf '%s\n' "$BADGING" | sed -n "s/.*targetSdkVersion:'\\([^']*\\)'.*/\\1/p")"
           test -n "$MIN_SDK"
           test -n "$TARGET_SDK"
           mkdir -p artifacts
@@ -141,8 +141,8 @@ jobs:
             echo "commit_sha=$GITHUB_SHA"
             echo "run_id=$GITHUB_RUN_ID"
             echo "package=com.mygram.app.staging"
-            echo "version_code=$(printf '%s\\n' "$BADGING" | sed -n "s/.*versionCode='\\([^']*\\)'.*/\\1/p")"
-            echo "version_name=$(printf '%s\\n' "$BADGING" | sed -n "s/.*versionName='\\([^']*\\)'.*/\\1/p")"
+            echo "version_code=$(printf '%s\n' "$BADGING" | sed -n "s/.*versionCode='\\([^']*\\)'.*/\\1/p")"
+            echo "version_name=$(printf '%s\n' "$BADGING" | sed -n "s/.*versionName='\\([^']*\\)'.*/\\1/p")"
             echo "min_sdk=$MIN_SDK"
             echo "target_sdk=$TARGET_SDK"
             echo "signing=ephemeral Android debug key"
@@ -158,7 +158,7 @@ jobs:
           emulator -avd mygram-api35 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -wipe-data > /tmp/mygram-emulator.log 2>&1 &
           adb wait-for-device
           for attempt in $(seq 1 90); do
-            if [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\\r')" = "1" ]; then
+            if [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; then
               break
             fi
             if [ "$attempt" -eq 90 ]; then
