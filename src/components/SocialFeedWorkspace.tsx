@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { MygramUser } from "../lib/supabase";
 import { supabase } from "../lib/supabase";
+import { mergePostsByCreatedAtId } from "../lib/workshops/fb.mjs";
 
 type PublicProfile = {
   id: string;
@@ -80,18 +81,29 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [draft, setDraft] = useState("");
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [replyingTo, setReplyingTo] = useState<Record<string, string | null>>({});
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [hasOlderPosts, setHasOlderPosts] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [busyPost, setBusyPost] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  const loadFeed = useCallback(async () => {
+  const loadFeed = useCallback(async (before: Pick<PostRow, "created_at" | "id"> | null = null, append = false) => {
     if (!supabase) return;
-    const { data: postRows, error: postError } = await supabase
+    let postQuery = supabase
       .from("posts")
-      .select("id,user_id,content,media_url,media_type,created_at")
+      .select("id,user_id,content,media_url,media_type,created_at");
+    if (before) {
+      postQuery = postQuery.or(`created_at.lt.${before.created_at},and(created_at.eq.${before.created_at},id.lt.${before.id})`);
+    }
+    const { data: postRows, error: postError } = await postQuery
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .limit(50);
 
     if (postError) {
@@ -102,7 +114,8 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
 
     const rows = (postRows ?? []) as PostRow[];
     if (rows.length === 0) {
-      setPosts([]);
+      if (!append) setPosts([]);
+      if (!append || before) setHasOlderPosts(false);
       setLoading(false);
       return;
     }
@@ -144,7 +157,7 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
       reactionsByPost.set(reaction.post_id, [...(reactionsByPost.get(reaction.post_id) ?? []), reaction]);
     }
 
-    setPosts(rows.map((post) => ({
+    const incoming = rows.map((post) => ({
       ...post,
       author: profileById.get(post.user_id) ?? null,
       comments: (commentsByPost.get(post.id) ?? []).map((comment) => ({
@@ -152,7 +165,11 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
         author: profileById.get(comment.user_id) ?? null,
       })),
       reactions: reactionsByPost.get(post.id) ?? [],
-    })));
+    }));
+    // Merge page and refresh responses so a late response cannot erase a page
+    // already loaded. The helper deduplicates IDs and keeps created_at + id order.
+    setPosts((current) => mergePostsByCreatedAtId(current, incoming));
+    if (!append || before) setHasOlderPosts(rows.length === 50);
     setLoading(false);
   }, []);
 
@@ -192,7 +209,7 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
       if (insertError) throw insertError;
       setDraft("");
       setNotice("تم نشر منشورك.");
-      await loadFeed();
+      await loadFeed(null, true);
     } catch {
       setError("تعذر نشر المنشور. تحقق من الجلسة ثم أعد المحاولة.");
     } finally {
@@ -200,10 +217,10 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
     }
   }
 
-  async function addComment(postId: string, event: FormEvent<HTMLFormElement>) {
+  async function addComment(postId: string, event: FormEvent<HTMLFormElement>, parentCommentId: string | null = null) {
     event.preventDefault();
     if (!supabase || busyPost) return;
-    const content = (commentDrafts[postId] ?? "").trim();
+    const content = (parentCommentId ? replyDrafts[parentCommentId] ?? "" : commentDrafts[postId] ?? "").trim();
     if (!content) return;
     if (content.length > 2000) {
       setError("التعليق يتجاوز الحد الأقصى البالغ 2000 حرف.");
@@ -217,10 +234,16 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
         post_id: postId,
         user_id: user.id,
         content,
+        parent_comment_id: parentCommentId,
       });
       if (insertError) throw insertError;
-      setCommentDrafts((current) => ({ ...current, [postId]: "" }));
-      await loadFeed();
+      if (parentCommentId) {
+        setReplyDrafts((current) => ({ ...current, [parentCommentId]: "" }));
+        setReplyingTo((current) => ({ ...current, [postId]: null }));
+      } else {
+        setCommentDrafts((current) => ({ ...current, [postId]: "" }));
+      }
+      await loadFeed(null, true);
     } catch {
       setError("تعذر إضافة التعليق.");
     } finally {
@@ -250,9 +273,38 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
         });
         if (insertError) throw insertError;
       }
-      await loadFeed();
+      await loadFeed(null, true);
     } catch {
       setError("تعذر حفظ التفاعل. قد يكون هناك تفاعل آخر قيد الحفظ.");
+    } finally {
+      setBusyPost(null);
+    }
+  }
+
+  async function updatePost(postId: string) {
+    if (!supabase || busyPost) return;
+    const content = editDraft.trim();
+    if (!content || content.length > 5000) {
+      setError("اكتب محتوى صحيحاً لا يتجاوز 5000 حرف.");
+      return;
+    }
+    setBusyPost(postId);
+    setError("");
+    try {
+      const { data, error: updateError } = await supabase.from("posts")
+        .update({ content })
+        .eq("id", postId)
+        .eq("user_id", user.id)
+        .select("id")
+        .maybeSingle();
+      if (updateError) throw updateError;
+      if (!data) throw new Error("POST_UPDATE_NOT_AUTHORIZED");
+      setEditingPostId(null);
+      setEditDraft("");
+      await loadFeed(null, true);
+      setNotice("تم تحديث المنشور.");
+    } catch {
+      setError("تعذر تعديل المنشور. قد لا تملك صلاحية تعديله.");
     } finally {
       setBusyPost(null);
     }
@@ -266,7 +318,8 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
       const { error: deleteError } = await supabase.from("posts").delete()
         .eq("id", postId).eq("user_id", user.id);
       if (deleteError) throw deleteError;
-      await loadFeed();
+      setPosts((current) => current.filter((post) => post.id !== postId));
+      await loadFeed(null, true);
       setNotice("تم حذف المنشور.");
     } catch {
       setError("تعذر حذف المنشور.");
@@ -283,11 +336,23 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
       const { error: deleteError } = await supabase.from("post_comments").delete()
         .eq("id", commentId).eq("user_id", user.id);
       if (deleteError) throw deleteError;
-      await loadFeed();
+      await loadFeed(null, true);
     } catch {
       setError("تعذر حذف التعليق.");
     } finally {
       setBusyPost(null);
+    }
+  }
+
+  async function loadOlderPosts() {
+    if (!posts.length || loadingOlder || !hasOlderPosts) return;
+    setLoadingOlder(true);
+    setError("");
+    try {
+      const oldest = posts[posts.length - 1];
+      await loadFeed({ created_at: oldest.created_at, id: oldest.id }, true);
+    } finally {
+      setLoadingOlder(false);
     }
   }
 
@@ -360,12 +425,19 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
                     <small>{post.author?.username ? `@${post.author.username} · ` : ""}{relativeTime(post.created_at)}</small>
                   </div>
                   {post.user_id === user.id && (
-                    <button className="social-delete" type="button" onClick={() => void deletePost(post.id)} disabled={busyPost === post.id}>
-                      حذف
-                    </button>
+                    <div className="social-post-actions">
+                      <button className="social-edit" type="button" onClick={() => { setEditingPostId(post.id); setEditDraft(post.content); }} disabled={busyPost === post.id}>تعديل</button>
+                      <button className="social-delete" type="button" onClick={() => void deletePost(post.id)} disabled={busyPost === post.id}>حذف</button>
+                    </div>
                   )}
                 </header>
-                <p className="social-post-content">{post.content}</p>
+                {editingPostId === post.id ? (
+                  <form className="social-edit-form" onSubmit={(event) => { event.preventDefault(); void updatePost(post.id); }}>
+                    <textarea value={editDraft} onChange={(event) => setEditDraft(event.target.value)} maxLength={5000} rows={4} aria-label="تعديل نص المنشور" />
+                    <button className="button primary" type="submit" disabled={busyPost === post.id || !editDraft.trim()}>حفظ التعديل</button>
+                    <button className="text-btn" type="button" onClick={() => { setEditingPostId(null); setEditDraft(""); }}>إلغاء</button>
+                  </form>
+                ) : <p className="social-post-content">{post.content}</p>}
                 {summaries.length > 0 && (
                   <div className="social-reaction-summary">
                     <span>{summaries.slice(0, 4).map((item) => item.glyph).join(" ")}</span>
@@ -392,18 +464,31 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
                   })}
                 </div>
                 <div className="social-comments">
-                  {post.comments.map((comment) => (
-                    <div className="social-comment" key={comment.id}>
-                      <span className="social-comment-avatar">{profileName(comment.author, comment.user_id).slice(0, 1)}</span>
-                      <div className="social-comment-body">
-                        <b>{profileName(comment.author, comment.user_id)}</b>
-                        <p>{comment.content}</p>
+                  {(() => {
+                    const renderComment = (comment: CommentRow & { author: PublicProfile | null }, depth = 0): ReactNode => (
+                      <div className="social-comment-thread" key={comment.id} style={{ marginInlineStart: Math.min(depth, 4) * 18 }}>
+                        <div className="social-comment">
+                          <span className="social-comment-avatar">{profileName(comment.author, comment.user_id).slice(0, 1)}</span>
+                          <div className="social-comment-body">
+                            <b>{profileName(comment.author, comment.user_id)}</b>
+                            <p>{comment.content}</p>
+                          </div>
+                          <button className="social-reply" type="button" onClick={() => setReplyingTo((current) => ({ ...current, [post.id]: current[post.id] === comment.id ? null : comment.id }))} disabled={busyPost === post.id}>رد</button>
+                          {comment.user_id === user.id && (
+                            <button type="button" onClick={() => void deleteComment(comment.id, post.id)} disabled={busyPost === post.id} aria-label="حذف التعليق">×</button>
+                          )}
+                        </div>
+                        {replyingTo[post.id] === comment.id && (
+                          <form className="social-comment-form social-reply-form" onSubmit={(event) => void addComment(post.id, event, comment.id)}>
+                            <input value={replyDrafts[comment.id] ?? ""} onChange={(event) => setReplyDrafts((current) => ({ ...current, [comment.id]: event.target.value }))} placeholder="اكتب رداً..." maxLength={2000} disabled={busyPost === post.id} />
+                            <button type="submit" disabled={busyPost === post.id || !(replyDrafts[comment.id] ?? "").trim()}>إرسال الرد</button>
+                          </form>
+                        )}
+                        {post.comments.filter((child) => child.parent_comment_id === comment.id).map((child) => renderComment(child, depth + 1))}
                       </div>
-                      {comment.user_id === user.id && (
-                        <button type="button" onClick={() => void deleteComment(comment.id, post.id)} disabled={busyPost === post.id} aria-label="حذف التعليق">×</button>
-                      )}
-                    </div>
-                  ))}
+                    );
+                    return post.comments.filter((comment) => comment.parent_comment_id === null).map((comment) => renderComment(comment));
+                  })()}
                   <form className="social-comment-form" onSubmit={(event) => void addComment(post.id, event)}>
                     <input
                       value={commentDrafts[post.id] ?? ""}
@@ -419,6 +504,13 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
             );
           })}
       </div>
+      {hasOlderPosts && (
+        <div className="social-load-older">
+          <button type="button" onClick={() => void loadOlderPosts()} disabled={loadingOlder}>
+            {loadingOlder ? "جارٍ تحميل المنشورات…" : "تحميل منشورات أقدم"}
+          </button>
+        </div>
+      )}
     </section>
   );
 }
