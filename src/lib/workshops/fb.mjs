@@ -1,0 +1,2 @@
+export function addReply(rows,parentId,reply){if(!rows.some(x=>x.id===parentId))throw Error("PARENT_NOT_FOUND");if(reply.parentId!==parentId||!reply.body.trim())throw Error("INVALID_REPLY");if(rows.some(x=>x.id===reply.id))throw Error("DUPLICATE_COMMENT");return [...rows,{...reply,body:reply.body.trim()}]}
+export function editOwnedPost(post,actorId,body){if(post.authorId!==actorId)throw Error("FORBIDDEN");body=body.trim();if(!body||body.length>5000)throw Error("INVALID_POST_BODY");return {...post,body}}
