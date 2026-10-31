@@ -221,7 +221,7 @@ No completion percentage is published because no approved weighted acceptance sc
 
 ## 9. Safety and governance log
 
-No Production or Staging writes, migrations, RLS/Auth/Storage/Realtime/Function/Secret changes, QA invocation, Edge Function deployment, merge, auto-merge, invitations, APK distribution, public release, paid provider activation, Wallet or Payments action occurred in this X11 cycle.
+No Staging or Production environment mutation occurred: no database writes or migrations, no RLS/Auth/Storage/Realtime changes, no Edge Function deployment or Secret changes, no QA invocation, merge, auto-merge, invitations, APK distribution, public release, paid provider activation, Wallet or Payments action. GitHub source changes are confined to the isolated W10 development branch and the X11 documentation branch.
 
 PR #96 remains unchanged and OPEN / DRAFT / NOT MERGED. PR #90 remains OPEN / DRAFT / NOT MERGED. All other PRs remain unmerged. The X11 report is a coordination/evidence artifact, not a release certificate.
 
