@@ -134,7 +134,7 @@ The proposal specifies a composite self-FK `(parent_comment_id, post_id) -> (id,
 
 ## 5. PR and CI ledger
 
-All seven listed PRs remain OPEN / DRAFT / NOT MERGED at this checkpoint.
+All seven pre-existing PRs listed below remain OPEN / DRAFT / NOT MERGED at this checkpoint.
 
 | PR | Workstream | Exact head SHA | Latest exact-head run | Result |
 |---|---|---|---|---|
@@ -147,6 +147,8 @@ All seven listed PRs remain OPEN / DRAFT / NOT MERGED at this checkpoint.
 | [#96](https://github.com/MYGRAM-DB/mygram-app/pull/96) | X10 documentation only | `0e14501a9cc182367cf95e0104caef63e782adca` | None found | Zero workflow runs / zero commit statuses |
 
 Run #133's earlier 11/11 Messenger A/B/C result remains historical evidence on the legacy OIDC path. It is not a current trusted-workflow run and does not satisfy Gate A.
+
+The X11 report and the two Database proposals in this document are delivered separately through [PR #97](https://github.com/MYGRAM-DB/mygram-app/pull/97), which remains OPEN / DRAFT / NOT MERGED. Its exact head, blob SHA, branch comparison and no-CI status are recorded in the PR description and the X11 delivery comment on Issue #94.
 
 PR #96 remains the X10 report PR only. It was not edited by X11. Its last verified branch comparison was 4 ahead / 0 behind; verify again before any future decision. It remains documentation-only, OPEN / DRAFT / NOT MERGED.
 
