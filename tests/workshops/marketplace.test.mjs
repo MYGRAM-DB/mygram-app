@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {publishListing,adEligible,canShowAdToday} from "../../src/lib/workshops/marketplace.mjs";
+test("marketplace listing can only be published by seller",()=>{const l={sellerId:"u1",title:" chair ",status:"draft"};assert.equal(publishListing(l,"u1").title,"chair");assert.throws(()=>publishListing(l,"u2"),/FORBIDDEN/)});
+test("ad eligibility blocks sensitive targeting and caps repeats",()=>{assert.equal(adEligible({approved:true,moderationPassed:true,sensitiveTargeting:true}),false);assert.equal(adEligible({approved:true,moderationPassed:true}),true);assert.equal(canShowAdToday(3,3),false)})
