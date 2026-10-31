@@ -125,7 +125,7 @@ jobs:
           set -euo pipefail
           rm -rf android/app/build android/.gradle
           find android -name local.properties -delete
-          zip -qr android-source-review.zip android capacitor.config.ts package.json package-lock.json
+          zip -qr android-source-review.zip android capacitor.config.json package.json package-lock.json
           unzip -l android-source-review.zip | tail -n 5
 
       - name: Upload generated source only
