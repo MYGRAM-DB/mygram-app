@@ -1,0 +1,2 @@
+export function storyVisible(story,viewerId,now=Date.now()){if(Date.parse(story.expiresAt)<=now)return false;return story.audience==="public"||story.ownerId===viewerId}
+export function activeStories(stories,now=Date.now()){return stories.filter(s=>Date.parse(s.expiresAt)>now).sort((a,b)=>Date.parse(a.createdAt)-Date.parse(b.createdAt))}
