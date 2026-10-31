@@ -232,7 +232,9 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
       attachments: byMessage.get(message.id) ?? [],
     }));
     setMessages((current) => mergeMessagesByCreatedAtId(append ? current : [], incoming));
-    setHasOlderMessages(rows.length === pageSize);
+    // A latest-page refresh must preserve the current older-page availability.
+    // Only a first-page load or an older-page cursor request can change this flag.
+    if (!append || before) setHasOlderMessages(rows.length === pageSize);
     if (!append) setMessagesLoading(false);
   }, []);
 
@@ -295,7 +297,8 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
       .channel(`messenger:${selectedId}:messages`, { config: { private: true } })
       .on("broadcast", { event: "INSERT" }, () => {
         if (active) {
-          void loadMessages(selectedId);
+          // Refresh the newest page without discarding older pages already loaded.
+          void loadMessages(selectedId, null, true);
           void loadConversations();
         }
       })
@@ -447,7 +450,8 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
       setDraft("");
       if (fileInput.current) fileInput.current.value = "";
       setFileName("");
-      await Promise.all([loadMessages(selectedId), loadConversations()]);
+      // Keep history already paged in by the user when refreshing after send.
+      await Promise.all([loadMessages(selectedId, null, true), loadConversations()]);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "";
       setError(message.includes("row-level security")
