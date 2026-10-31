@@ -49,9 +49,8 @@ export function isTrustedStagingWorkflowClaims(
     SHA_PATTERN.test(claims.sha) &&
     typeof claims.workflow_sha === "string" &&
     SHA_PATTERN.test(claims.workflow_sha) &&
-    typeof claims.run_id === "string" &&
-    /^[0-9]+$/.test(claims.run_id) &&
-    Number.isSafeInteger(claims.run_attempt) &&
-    claims.run_attempt >= 1
+    /^[0-9]+$/.test(String(claims.run_id ?? "")) &&
+    Number.isSafeInteger(Number(claims.run_attempt)) &&
+    Number(claims.run_attempt) >= 1
   );
 }
