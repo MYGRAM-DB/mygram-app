@@ -91,3 +91,28 @@ Daily report: workshop ID, owner, issue, branch, current SHA, changed files/sche
 Open nine child product issues under #58 and four shared-workshop issues. Create isolated branches from the latest verified integration commit. Assign accountable owners through the project owner; until then, tickets remain unassigned and no human resource is presumed to be working. Keep the P0 security lane moving in parallel. All workshops begin now; no workshop may claim completion until its end-to-end acceptance evidence passes.
 
 **This decision starts parallel workshops and authorizes isolated Staging development. It does not authorize a Production mutation, payment/provider spend, migration deployment without review, merge, tester invitation, or public release.**
+
+
+## 9. Opened workshop register | 2026-10-31
+
+The following child issues and isolated feature branches have been created from last verified integration SHA `639dd4d3372b189c735a838cb1bbf3ee5d92f286` (Run #128 / workflow run `41188546230`, completed SUCCESS for its two existing jobs). Branches are deliberately based on the verified commit before the Decision 16 documentation-only commit; rebase/merge the current integration docs before opening a product PR.
+
+| Workshop | Issue | Branch |
+|---|---:|---|
+| W1 — MYGRAM FB | [#73](https://github.com/MYGRAM-DB/mygram-app/issues/73) | `feature/workshop-fb` |
+| W2 — MYGRAM Messenger | [#74](https://github.com/MYGRAM-DB/mygram-app/issues/74) | `feature/workshop-messenger` |
+| W3 — WHATSMYGRAM | [#75](https://github.com/MYGRAM-DB/mygram-app/issues/75) | `feature/workshop-whatsmygram` |
+| W4 — MYGRAM Insta | [#76](https://github.com/MYGRAM-DB/mygram-app/issues/76) | `feature/workshop-insta` |
+| W5 — MYGRAM Twitty | [#77](https://github.com/MYGRAM-DB/mygram-app/issues/77) | `feature/workshop-twitty` |
+| W6 — MYGRAM Meeting | [#78](https://github.com/MYGRAM-DB/mygram-app/issues/78) | `feature/workshop-meeting` |
+| W7 — MYGRAM Tube | [#79](https://github.com/MYGRAM-DB/mygram-app/issues/79) | `feature/workshop-tube` |
+| W8 — MYGRAM TikToks | [#80](https://github.com/MYGRAM-DB/mygram-app/issues/80) | `feature/workshop-tiktoks` |
+| W9 — MYGRAM AI | [#81](https://github.com/MYGRAM-DB/mygram-app/issues/81) | `feature/workshop-ai` |
+| W10 — Shared platform contracts | [#82](https://github.com/MYGRAM-DB/mygram-app/issues/82) | `feature/workshop-platform-contracts` |
+| W11 — Localization and country data | [#83](https://github.com/MYGRAM-DB/mygram-app/issues/83) | `feature/workshop-localization` |
+| W12 — Marketplace and internal ads | [#84](https://github.com/MYGRAM-DB/mygram-app/issues/84) | `feature/workshop-marketplace-ads` |
+| W13 — Admin and operations | [#85](https://github.com/MYGRAM-DB/mygram-app/issues/85) | `feature/workshop-admin-ops` |
+
+Existing cross-cutting execution remains tracked separately: [#55 membership/signup gate](https://github.com/MYGRAM-DB/mygram-app/issues/55), [#60 Gate A security](https://github.com/MYGRAM-DB/mygram-app/issues/60), [#56 Android Staging](https://github.com/MYGRAM-DB/mygram-app/issues/56), and [#57 Production privacy proposal](https://github.com/MYGRAM-DB/mygram-app/issues/57). The product portfolio parent [#58](https://github.com/MYGRAM-DB/mygram-app/issues/58) contains the launch notice and full register.
+
+**Resource assignment status:** issues and branches are opened; no engineer or human reviewer was assigned because no authorized assignee roster was provided. The project owner must assign one accountable implementer and one non-author reviewer per workshop. No worker activity or code completion is claimed merely from creating these workspaces.
