@@ -1,0 +1,44 @@
+name: MYGRAM Trusted Staging Authorization Gate
+
+on:
+  push:
+    branches: ["rebuild/phase-a-architecture"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mygram-staging-authz-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  staging-authz:
+    name: Real JWT, Profile Privacy, Storage, Messenger A/B/C, and Realtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Require protected integration branch context
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF}" = "refs/heads/rebuild/phase-a-architecture"
+          test "${GITHUB_EVENT_NAME}" = "push"
+      - name: Run isolated Staging security suite with GitHub OIDC
+        shell: bash
+        run: |
+          set -euo pipefail
+          OIDC_RESPONSE="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=mygram-staging-qa")"
+          OIDC_TOKEN="$(printf '%s' "$OIDC_RESPONSE" | jq -er '.value')"
+          unset OIDC_RESPONSE
+          curl --fail --silent --show-error \
+            --request POST \
+            "https://cbyvtehvaojxfcgpelir.supabase.co/functions/v1/qa-messenger-abc" \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{}'
+          unset OIDC_TOKEN
