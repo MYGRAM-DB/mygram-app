@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {translate,direction,assertParity} from "../../src/lib/workshops/locales.mjs";
+test("localization dictionaries have key parity",()=>{assert.doesNotThrow(assertParity);assert.equal(translate("ar","post"),"منشور");assert.equal(translate("en","post"),"Post")});
+test("locale direction and unsupported locale",()=>{assert.equal(direction("ar"),"rtl");assert.equal(direction("en"),"ltr");assert.throws(()=>direction("fr"),/UNSUPPORTED_LOCALE/)})
