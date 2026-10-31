@@ -54,3 +54,13 @@ export function isTrustedStagingWorkflowClaims(
     Number(claims.run_attempt) >= 1
   );
 }
+
+/**
+ * Extract one bearer token from an Authorization header.
+ * Reject missing tokens and ambiguous values containing whitespace.
+ */
+export function extractBearerToken(authorization) {
+  if (typeof authorization !== "string") return null;
+  const match = authorization.match(/^Bearer\\s+(\\S+)$/i);
+  return match?.[1] ?? null;
+}
