@@ -179,7 +179,9 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
     append = false,
   ) => {
     if (!supabase || !isUuid(conversationId)) return;
-    const requestVersion = ++messageRequestVersion.current;
+    // Concurrent page/realtime reads for the same conversation must coexist.
+    // The version changes only when the selected conversation changes or unmounts.
+    const requestVersion = messageRequestVersion.current;
     if (!append) setMessagesLoading(true);
     const pageSize = 50;
     let query = supabase.from("messenger_messages")
@@ -234,7 +236,9 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
       message_type: message.message_type as MessageView["message_type"],
       attachments: byMessage.get(message.id) ?? [],
     }));
-    setMessages((current) => mergeMessagesByCreatedAtId(append ? current : [], incoming));
+    // Merge every response into the current timeline. A realtime refresh may
+    // finish before an older-page request; neither response may erase the other.
+    setMessages((current) => mergeMessagesByCreatedAtId(current, incoming));
     // A latest-page refresh must preserve the current older-page availability.
     // Only a first-page load or an older-page cursor request can change this flag.
     if (!append || before) setHasOlderMessages(rows.length === pageSize);
