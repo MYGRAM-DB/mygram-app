@@ -1,0 +1,2 @@
+export function createShortPost(p){const body=p.body.trim();if(!body||[...body].length>280)throw Error("INVALID_SHORT_POST");if(p.replyTo&&p.repostOf)throw Error("CONFLICTING_RELATION");return {...p,body}}
+export function rankTimeline(posts){return [...posts].sort((a,b)=>Date.parse(b.createdAt)-Date.parse(a.createdAt)||a.id.localeCompare(b.id))}
