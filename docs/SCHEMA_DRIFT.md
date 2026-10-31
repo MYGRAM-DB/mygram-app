@@ -1,3 +1,28 @@
+# DECISION 05 | CURRENT EXECUTION SNAPSHOT | 2026-10-31
+
+> This is the controlling current-state addendum. Older entries below are retained as historical snapshots and must not override this section.
+
+- Repository: `MYGRAM-DB/mygram-app`.
+- Execution branch: `rebuild/phase-a-architecture`.
+- Current HEAD at this snapshot: `1b8a66b16f61984ee91350bfce400e25633026a7`.
+- [Run #114](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41147969397): **SUCCESS** on that exact HEAD. The build/verify job and existing Staging Security Suite both completed successfully.
+- [Run #113](https://github.com/MYGRAM-DB/mygram-app/actions/runs/41147962375): **CANCELLED** on `0d31424f1d2b47bfe483c536eab8139e3003e634`; it is neither a passing nor failing test result.
+- Run #114 does **not** execute `qa-authz-two-user`. Its build job runs `node --check tests/authz.integration.mjs` only; the Staging job invokes `qa-messenger-abc`, not the AuthZ-specific function.
+- MY-0401 branch protection: **CLOSED** based on the repository owner's supplied GitHub API read-back evidence. Active rulesets: `main-branch-protection` (ID `26248287`) and `rebuild-branch-safety` (ID `26248473`). See [main ruleset](https://github.com/MYGRAM-DB/mygram-app/rules/26248287) and [rebuild ruleset](https://github.com/MYGRAM-DB/mygram-app/rules/26248473). Do not reopen this task absent new contradictory evidence.
+- PR #54: **Open / Draft / Not Merged**. No merge, Ready transition, close, or release is authorized.
+- Production remains **read-only**. No Production migration, data, Auth, Storage, Edge Function, configuration, or deployment change is authorized.
+- Gate A remains **OPEN**. AuthZ fixtures, real OIDC positive/negative/replay tests, independent AuthZ CI, access-token expiry and refresh-token revocation runtime tests, cleanup proof, signed avatar URL contract/tests, migration-source recovery or approved baseline, Migration Validator, Production privacy remediation plan, identity SMTP/recovery journey, and Staging rollback proof remain outstanding.
+- AuthZ fixture defect remains confirmed: `ensurePrivateRow` attempts INSERT into `profile_private_details` with a user-scoped client although Staging authenticated grants do not permit client INSERT/UPDATE. Do not deploy this function until fixture setup is corrected using a server-only admin path and all authorization assertions remain real user JWT calls.
+- No RLS weakening, public bucket, secret exposure, migration-history rewrite, or public deployment.
+
+## Decision 05 schema provenance addendum
+
+- Staging migration ledger count: **17**; migration source files on the execution branch: **13**.
+- Four applied ledger entries remain source-missing: `20261029200719_create_profile_for_new_auth_users`, `20261029200728_revoke_public_execute_handle_new_user`, `20261029211249_mygram_staging_profiles_rls_core`, and `20261029223828_create_supported_locales_public_read`.
+- No SQL has been invented or restored without a trusted source. No applied migration history has been rewritten.
+- Recovery path: search trusted Git history and backups, identify provenance, calculate SHA-256 for any recovered original, and reconcile exact SQL/order with the Staging ledger. If originals cannot be recovered, submit a separately reviewed baseline exception with source evidence, checksums, and schema diff. It is not automatically considered closed.
+- Migration Validator is not yet implemented or passed. It must detect missing, duplicate, reordered, and checksum-conflicting files and compare the repository migration set against the recorded Staging ledger without mutating either environment.
+- Production remains read-only; no migration applied to Production or Staging as part of this documentation update.
 # LATEST VERIFIED CI DELTA | 2026-10-31
 
 - Last tested code/documentation baseline: `cf81c0543d97dc85c34ac5ae2abdd75f028f1073`.
