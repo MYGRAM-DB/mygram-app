@@ -1,0 +1,20 @@
+name: MYGRAM Marketplace Ads workshop CI
+on:
+  push:
+    branches: ["feature/workshop-marketplace-ads"]
+  pull_request:
+    branches: ["rebuild/phase-a-architecture"]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/workshops/marketplace.test.mjs
+      - run: npm run build
