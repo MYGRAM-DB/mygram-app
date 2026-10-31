@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {safeAuditPayload,healthStatus} from "../../src/lib/workshops/ops.mjs";
+test("ops audit redacts credentials and contact details",()=>{const r=safeAuditPayload({action:"login",email:"a@b",accessToken:"abc",count:2});assert.equal(r.email,"[REDACTED]");assert.equal(r.accessToken,"[REDACTED]");assert.equal(r.count,2)});
+test("ops health summarizes partial and total failure",()=>{assert.equal(healthStatus([{ok:true},{ok:false}]),"degraded");assert.equal(healthStatus([{ok:false}]),"unavailable")})
