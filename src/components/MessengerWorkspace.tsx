@@ -8,6 +8,10 @@ import {
 } from "react";
 import type { MygramUser } from "../lib/supabase";
 import { supabase } from "../lib/supabase";
+import {
+  compensateAttachmentInsertFailure,
+  mergeMessagesByCreatedAtId,
+} from "../lib/workshops/messenger.mjs";
 
 type ProfileSummary = {
   id: string;
@@ -92,6 +96,10 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [hasOlderMessages, setHasOlderMessages] = useState(false);
+  const activeConversationId = useRef<string | null>(null);
+  const messageRequestVersion = useRef(0);
   const [creating, setCreating] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -165,52 +173,107 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
     setLoading(false);
   }, [user.id]);
 
-  const loadMessages = useCallback(async (conversationId: string) => {
+  const loadMessages = useCallback(async (
+    conversationId: string,
+    before: Pick<MessageView, "created_at" | "id"> | null = null,
+    append = false,
+  ) => {
     if (!supabase || !isUuid(conversationId)) return;
-    setMessagesLoading(true);
-    const { data, error: queryError } = await supabase
-      .from("messenger_messages")
+    // Concurrent page/realtime reads for the same conversation must coexist.
+    // The version changes only when the selected conversation changes or unmounts.
+    const requestVersion = messageRequestVersion.current;
+    if (!append) setMessagesLoading(true);
+    const pageSize = 50;
+    let query = supabase.from("messenger_messages")
       .select("id,conversation_id,sender_id,message_type,body,created_at")
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true })
-      .limit(250);
+      .eq("conversation_id", conversationId);
+    if (before) {
+      query = query.or(`created_at.lt.${before.created_at},and(created_at.eq.${before.created_at},id.lt.${before.id})`);
+    }
+    const { data, error: queryError } = await query
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(pageSize);
 
+    if (requestVersion !== messageRequestVersion.current || activeConversationId.current !== conversationId) return;
     if (queryError) {
       setError("تعذر تحميل الرسائل. قد لا تكون عضواً في هذه المحادثة.");
-      setMessagesLoading(false);
+      if (!append) setMessagesLoading(false);
       return;
     }
 
     const rows = (data ?? []) as Omit<MessageView, "attachments">[];
-    const messageIds = rows.map((message) => message.id);
     let attachments: AttachmentView[] = [];
+    const messageIds = rows.map((message) => message.id);
     if (messageIds.length > 0) {
-      const { data: attachmentRows } = await supabase
-        .from("messenger_attachments")
+      const attachmentResult = await supabase.from("messenger_attachments")
         .select("id,message_id,object_path,mime_type,byte_size")
         .in("message_id", messageIds);
-
-      attachments = await Promise.all(
-        (attachmentRows ?? []).map(async (attachment) => {
-          const { data: signed } = await supabase!
-            .storage.from("messenger-attachments")
-            .createSignedUrl(attachment.object_path, 900);
-          return { ...attachment, signedUrl: signed?.signedUrl ?? null } as AttachmentView;
-        }),
-      );
+      if (attachmentResult.error) {
+        setInfo("تعذر تحميل بيانات المرفقات. أعد تحميل الرسائل للمحاولة.");
+      } else {
+        attachments = await Promise.all(
+          (attachmentResult.data ?? []).map(async (attachment) => {
+            const { data: signed, error: signedError } = await supabase!
+              .storage.from("messenger-attachments")
+              .createSignedUrl(attachment.object_path, 900);
+            return {
+              ...attachment,
+              signedUrl: signedError ? null : signed?.signedUrl ?? null,
+            } as AttachmentView;
+          }),
+        );
+      }
     }
 
+    if (requestVersion !== messageRequestVersion.current || activeConversationId.current !== conversationId) return;
     const byMessage = new Map<string, AttachmentView[]>();
     for (const attachment of attachments) {
       byMessage.set(attachment.message_id, [...(byMessage.get(attachment.message_id) ?? []), attachment]);
     }
-    setMessages(rows.map((message) => ({
+    const incoming = rows.map((message) => ({
       ...message,
       message_type: message.message_type as MessageView["message_type"],
       attachments: byMessage.get(message.id) ?? [],
-    })));
-    setMessagesLoading(false);
+    }));
+    // Merge every response into the current timeline. A realtime refresh may
+    // finish before an older-page request; neither response may erase the other.
+    setMessages((current) => mergeMessagesByCreatedAtId(current, incoming));
+    // A latest-page refresh must preserve the current older-page availability.
+    // Only a first-page load or an older-page cursor request can change this flag.
+    if (!append || before) setHasOlderMessages(rows.length === pageSize);
+    if (!append) setMessagesLoading(false);
   }, []);
+
+  async function loadOlderMessages() {
+    if (!selectedId || !messages.length || loadingOlder || !hasOlderMessages) return;
+    setLoadingOlder(true);
+    setError("");
+    try {
+      const oldest = messages[0];
+      await loadMessages(selectedId, { created_at: oldest.created_at, id: oldest.id }, true);
+    } finally {
+      setLoadingOlder(false);
+    }
+  }
+
+  async function refreshAttachmentUrl(messageId: string, attachmentId: string, objectPath: string) {
+    if (!supabase) return;
+    const { data, error: signedError } = await supabase.storage
+      .from("messenger-attachments")
+      .createSignedUrl(objectPath, 900);
+    if (signedError || !data?.signedUrl) {
+      setInfo("تعذر تجديد رابط المرفق. تحقق من عضويتك في المحادثة ثم أعد المحاولة.");
+      return;
+    }
+    setMessages((current) => current.map((message) => message.id !== messageId ? message : ({
+      ...message,
+      attachments: message.attachments.map((attachment) => attachment.id === attachmentId
+        ? { ...attachment, signedUrl: data.signedUrl }
+        : attachment),
+    })));
+    setInfo("تم تجديد رابط المرفق لمدة مؤقتة.");
+  }
 
   useEffect(() => {
     let active = true;
@@ -223,21 +286,26 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
   }, [loadConversations]);
 
   useEffect(() => {
-    if (!selectedId || !supabase) {
+    const activeClient = supabase;
+    if (!selectedId || !activeClient) {
+      activeConversationId.current = null;
       setMessages([]);
+      setHasOlderMessages(false);
       return;
     }
 
     let active = true;
+    activeConversationId.current = selectedId;
     setError("");
     void loadMessages(selectedId);
-    void supabase.realtime.setAuth();
+    void activeClient.realtime.setAuth();
 
-    const channel = supabase
+    const channel = activeClient
       .channel(`messenger:${selectedId}:messages`, { config: { private: true } })
       .on("broadcast", { event: "INSERT" }, () => {
         if (active) {
-          void loadMessages(selectedId);
+          // Refresh the newest page without discarding older pages already loaded.
+          void loadMessages(selectedId, null, true);
           void loadConversations();
         }
       })
@@ -251,13 +319,26 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
 
     return () => {
       active = false;
-      void channel.unsubscribe();
+      if (activeConversationId.current === selectedId) activeConversationId.current = null;
+      messageRequestVersion.current += 1;
+      void activeClient.removeChannel(channel);
     };
   }, [selectedId, loadMessages, loadConversations]);
 
   useEffect(() => {
     messageEnd.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length, selectedId]);
+
+  function selectConversation(conversationId: string) {
+    // Invalidate pending requests synchronously, before React effects for the
+    // new selection run, so an old conversation cannot paint stale rows.
+    activeConversationId.current = conversationId;
+    messageRequestVersion.current += 1;
+    setMessages([]);
+    setHasOlderMessages(false);
+    setMessagesLoading(true);
+    setSelectedId(conversationId);
+  }
 
   async function createConversation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -313,7 +394,7 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
 
       setNewUsername("");
       await loadConversations();
-      setSelectedId(conversationId);
+      selectConversation(conversationId);
       setInfo(`تم فتح محادثة مع ${displayName(target as ProfileSummary)}.`);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "";
@@ -358,14 +439,22 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
           conversation_id: selectedId,
           sender_id: user.id,
           client_message_id: crypto.randomUUID(),
-          message_type: file ? fileMessageType(file) : "text",
+          // Text remains a valid message if the optional attachment row fails.
+          message_type: body ? "text" : file ? fileMessageType(file) : "text",
           body: body || null,
         })
         .select("id")
         .single();
 
       if (insertError) {
-        if (uploadedPath) await supabase.storage.from("messenger-attachments").remove([uploadedPath]);
+        if (uploadedPath) {
+          const cleanup = await compensateAttachmentInsertFailure({
+            removeStorageObject: () => supabase!.storage.from("messenger-attachments").remove([uploadedPath!]),
+            deleteEmptyMessage: async () => ({ error: null }),
+            hasTextBody: true,
+          });
+          if (!cleanup.storageRemoved) throw new Error("ATTACHMENT_ROLLBACK_FAILED");
+        }
         throw insertError;
       }
 
@@ -379,20 +468,42 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
           byte_size: file.size,
         });
         if (attachmentError) {
-          await supabase.storage.from("messenger-attachments").remove([uploadedPath]);
-          setInfo("أُرسلت الرسالة، لكن تعذر ربط المرفق بها. أعد إرسال الملف.");
+          const cleanup = await compensateAttachmentInsertFailure({
+            removeStorageObject: () => supabase!.storage.from("messenger-attachments").remove([uploadedPath!]),
+            deleteEmptyMessage: async () => await supabase!.from("messenger_messages")
+              .delete()
+              .eq("id", message.id)
+              .eq("sender_id", user.id),
+            hasTextBody: Boolean(body),
+          });
+
+          if (!body) {
+            if (!cleanup.storageRemoved || !cleanup.messageResolved) {
+              throw new Error("ATTACHMENT_ROLLBACK_FAILED");
+            }
+            throw new Error("ATTACHMENT_METADATA_INSERT_FAILED");
+          }
+
+          setInfo(cleanup.storageRemoved
+            ? "تم إرسال النص، لكن تعذر حفظ المرفق ونُظّف الملف المرفوع."
+            : "تم إرسال النص، لكن تعذر حفظ المرفق وتعذر تأكيد تنظيف الملف. يلزم فحص Storage.");
         }
       }
 
       setDraft("");
       if (fileInput.current) fileInput.current.value = "";
       setFileName("");
-      await Promise.all([loadMessages(selectedId), loadConversations()]);
+      // Keep history already paged in by the user when refreshing after send.
+      await Promise.all([loadMessages(selectedId, null, true), loadConversations()]);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "";
-      setError(message.includes("row-level security")
-        ? "رفضت قاعدة البيانات العملية لأن صلاحية المحادثة غير متاحة."
-        : "تعذر إرسال الرسالة أو المرفق. تحقق من الاتصال ثم أعد المحاولة.");
+      setError(message.includes("ATTACHMENT_METADATA_INSERT_FAILED")
+        ? "لم تُرسل الرسالة لأن بيانات المرفق لم تُحفظ. أعد المحاولة."
+        : message.includes("ATTACHMENT_ROLLBACK_FAILED")
+          ? "فشل حفظ المرفق وتعذر تأكيد تنظيف جميع الموارد. لا تعاود الإرسال قبل مراجعة المحادثة وStorage."
+          : message.includes("row-level security")
+            ? "رفضت قاعدة البيانات العملية لأن صلاحية المحادثة غير متاحة."
+            : "تعذر إرسال الرسالة أو المرفق. تحقق من الاتصال ثم أعد المحاولة.");
     } finally {
       setSending(false);
     }
@@ -451,7 +562,7 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
                 type="button"
                 key={conversation.id}
                 className={`messenger-conversation ${selectedId === conversation.id ? "active" : ""}`}
-                onClick={() => setSelectedId(conversation.id)}
+                onClick={() => selectConversation(conversation.id)}
               >
                 <span className="messenger-avatar">{initials(conversation.other)}</span>
                 <span className="messenger-conversation-copy">
@@ -478,6 +589,11 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
             </header>
 
             <div className="messenger-history" aria-live="polite">
+              {messages.length > 0 && hasOlderMessages && (
+                <button className="messenger-load-older" type="button" onClick={() => void loadOlderMessages()} disabled={loadingOlder || messagesLoading}>
+                  {loadingOlder ? "جارٍ تحميل الأقدم…" : "تحميل رسائل أقدم"}
+                </button>
+              )}
               {messagesLoading ? <p className="messenger-empty">جارٍ تحميل الرسائل…</p> :
                 messages.length === 0 ? (
                   <div className="messenger-empty chat-empty">
@@ -507,6 +623,9 @@ export function MessengerWorkspace({ user }: { user: MygramUser }) {
                           <a className="messenger-file-link" href={attachment.signedUrl} target="_blank" rel="noreferrer">
                             ↧ تنزيل الملف · {(attachment.byte_size / 1024).toFixed(0)} KB
                           </a>}
+                        <button className="messenger-refresh-link" type="button" onClick={() => void refreshAttachmentUrl(message.id, attachment.id, attachment.object_path)}>
+                          تجديد رابط المرفق
+                        </button>
                       </div>
                     ))}
                     <time>{shortTime(message.created_at)}</time>
