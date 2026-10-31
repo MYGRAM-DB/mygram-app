@@ -26,13 +26,14 @@ const baseClaims = {
   workflow_ref: TRUSTED_STAGING_WORKFLOW.workflowRef,
   workflow: TRUSTED_STAGING_WORKFLOW.workflow,
   sha: "a".repeat(40),
-  workflow_sha: "b".repeat(40),
+  workflow_sha: TRUSTED_STAGING_WORKFLOW.workflowSha ?? "b".repeat(40),
   run_id: "41195057068",
   run_attempt: 1,
 };
 
-test("only the exact protected Staging workflow push identity is accepted", () => {
-  assert.equal(isTrustedStagingWorkflowClaims(baseClaims, NOW), true);
+test("trusted Staging OIDC remains fail-closed until an immutable workflow SHA is approved", () => {
+  assert.equal(TRUSTED_STAGING_WORKFLOW.workflowSha, null);
+  assert.equal(isTrustedStagingWorkflowClaims(baseClaims, NOW), false);
 });
 
 test("untrusted event, branch, workflow path and workflow name are rejected", () => {
@@ -76,6 +77,7 @@ test("expired, future-issued, not-yet-valid and malformed provenance claims are 
     { jti: "" },
     { sha: "not-a-commit" },
     { workflow_sha: "not-a-commit" },
+    { workflow_sha: "c".repeat(40) },
     { run_id: "not-numeric" },
     { run_attempt: 0 },
   ]) {
