@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.118.0";
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.9.6";
+import { isTrustedStagingWorkflowClaims } from "../_shared/github-oidc-policy.mjs";
 
 const PROJECT_REF = "cbyvtehvaojxfcgpelir";
 const BUCKET = "messenger-attachments";
@@ -99,20 +100,7 @@ Deno.serve(async (request: Request) => {
     return json({ ok: false, error: "GITHUB_OIDC_TOKEN_INVALID" }, 401);
   }
 
-  const allowedWorkflow = "MYGRAM-DB/mygram-app/.github/workflows/ci.yml@";
-  const identityAllowed =
-    claims.repository === "MYGRAM-DB/mygram-app" &&
-    claims.repository_owner === "MYGRAM-DB" &&
-    claims.event_name === "pull_request" &&
-    claims.head_ref === "rebuild/phase-a-architecture" &&
-    claims.base_ref === "main" &&
-    typeof claims.workflow_ref === "string" &&
-    claims.workflow_ref.startsWith(allowedWorkflow) &&
-    claims.workflow === "MYGRAM Build and Quality Gate" &&
-    String(claims.repository_id) === "1429829602" &&
-    String(claims.repository_owner_id) === "346374775" &&
-    claims.sub === "repo:MYGRAM-DB@346374775/mygram-app@1429829602:pull_request";
-  if (!identityAllowed) {
+  if (!isTrustedStagingWorkflowClaims(claims)) {
     return json({ ok: false, error: "GITHUB_WORKFLOW_IDENTITY_NOT_ALLOWLISTED" }, 403);
   }
 
