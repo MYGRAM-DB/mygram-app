@@ -206,7 +206,6 @@ export type SchemaPendingService =
   | "meetings"
   | "ai"
   | "notifications"
-  | "translation"
   | "moderation"
   | "audit"
   | "marketplace"
@@ -216,7 +215,6 @@ export const SCHEMA_PENDING_SERVICES: readonly SchemaPendingService[] = [
   "meetings",
   "ai",
   "notifications",
-  "translation",
   "moderation",
   "audit",
   "marketplace",
