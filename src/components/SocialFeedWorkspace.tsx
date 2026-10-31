@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { MygramUser } from "../lib/supabase";
 import { supabase } from "../lib/supabase";
+import { mergePostsByCreatedAtId } from "../lib/workshops/fb.mjs";
 
 type PublicProfile = {
   id: string;
@@ -85,17 +86,24 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [hasOlderPosts, setHasOlderPosts] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [busyPost, setBusyPost] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  const loadFeed = useCallback(async () => {
+  const loadFeed = useCallback(async (before: Pick<PostRow, "created_at" | "id"> | null = null, append = false) => {
     if (!supabase) return;
-    const { data: postRows, error: postError } = await supabase
+    let postQuery = supabase
       .from("posts")
-      .select("id,user_id,content,media_url,media_type,created_at")
+      .select("id,user_id,content,media_url,media_type,created_at");
+    if (before) {
+      postQuery = postQuery.or(`created_at.lt.${before.created_at},and(created_at.eq.${before.created_at},id.lt.${before.id})`);
+    }
+    const { data: postRows, error: postError } = await postQuery
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .limit(50);
 
     if (postError) {
@@ -106,7 +114,8 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
 
     const rows = (postRows ?? []) as PostRow[];
     if (rows.length === 0) {
-      setPosts([]);
+      if (!append) setPosts([]);
+      if (!append || before) setHasOlderPosts(false);
       setLoading(false);
       return;
     }
@@ -148,7 +157,7 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
       reactionsByPost.set(reaction.post_id, [...(reactionsByPost.get(reaction.post_id) ?? []), reaction]);
     }
 
-    setPosts(rows.map((post) => ({
+    const incoming = rows.map((post) => ({
       ...post,
       author: profileById.get(post.user_id) ?? null,
       comments: (commentsByPost.get(post.id) ?? []).map((comment) => ({
@@ -156,7 +165,11 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
         author: profileById.get(comment.user_id) ?? null,
       })),
       reactions: reactionsByPost.get(post.id) ?? [],
-    })));
+    }));
+    // Merge page and refresh responses so a late response cannot erase a page
+    // already loaded. The helper deduplicates IDs and keeps created_at + id order.
+    setPosts((current) => mergePostsByCreatedAtId(current, incoming));
+    if (!append || before) setHasOlderPosts(rows.length === 50);
     setLoading(false);
   }, []);
 
@@ -196,7 +209,7 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
       if (insertError) throw insertError;
       setDraft("");
       setNotice("تم نشر منشورك.");
-      await loadFeed();
+      await loadFeed(null, true);
     } catch {
       setError("تعذر نشر المنشور. تحقق من الجلسة ثم أعد المحاولة.");
     } finally {
@@ -230,7 +243,7 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
       } else {
         setCommentDrafts((current) => ({ ...current, [postId]: "" }));
       }
-      await loadFeed();
+      await loadFeed(null, true);
     } catch {
       setError("تعذر إضافة التعليق.");
     } finally {
@@ -260,7 +273,7 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
         });
         if (insertError) throw insertError;
       }
-      await loadFeed();
+      await loadFeed(null, true);
     } catch {
       setError("تعذر حفظ التفاعل. قد يكون هناك تفاعل آخر قيد الحفظ.");
     } finally {
@@ -288,7 +301,7 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
       if (!data) throw new Error("POST_UPDATE_NOT_AUTHORIZED");
       setEditingPostId(null);
       setEditDraft("");
-      await loadFeed();
+      await loadFeed(null, true);
       setNotice("تم تحديث المنشور.");
     } catch {
       setError("تعذر تعديل المنشور. قد لا تملك صلاحية تعديله.");
@@ -305,7 +318,8 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
       const { error: deleteError } = await supabase.from("posts").delete()
         .eq("id", postId).eq("user_id", user.id);
       if (deleteError) throw deleteError;
-      await loadFeed();
+      setPosts((current) => current.filter((post) => post.id !== postId));
+      await loadFeed(null, true);
       setNotice("تم حذف المنشور.");
     } catch {
       setError("تعذر حذف المنشور.");
@@ -322,11 +336,23 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
       const { error: deleteError } = await supabase.from("post_comments").delete()
         .eq("id", commentId).eq("user_id", user.id);
       if (deleteError) throw deleteError;
-      await loadFeed();
+      await loadFeed(null, true);
     } catch {
       setError("تعذر حذف التعليق.");
     } finally {
       setBusyPost(null);
+    }
+  }
+
+  async function loadOlderPosts() {
+    if (!posts.length || loadingOlder || !hasOlderPosts) return;
+    setLoadingOlder(true);
+    setError("");
+    try {
+      const oldest = posts[posts.length - 1];
+      await loadFeed({ created_at: oldest.created_at, id: oldest.id }, true);
+    } finally {
+      setLoadingOlder(false);
     }
   }
 
@@ -478,6 +504,13 @@ export function SocialFeedWorkspace({ user }: { user: MygramUser }) {
             );
           })}
       </div>
+      {hasOlderPosts && (
+        <div className="social-load-older">
+          <button type="button" onClick={() => void loadOlderPosts()} disabled={loadingOlder}>
+            {loadingOlder ? "جارٍ تحميل المنشورات…" : "تحميل منشورات أقدم"}
+          </button>
+        </div>
+      )}
     </section>
   );
 }
