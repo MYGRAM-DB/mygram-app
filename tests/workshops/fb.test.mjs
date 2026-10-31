@@ -1,0 +1,3 @@
+import test from "node:test";import assert from "node:assert/strict";import {addReply,editOwnedPost} from "../../src/lib/workshops/fb.mjs";
+test("nested reply and missing-parent rejection",()=>{const rows=[{id:"c1"}];assert.equal(addReply(rows,"c1",{id:"c2",parentId:"c1",body:" reply "})[1].body,"reply");assert.throws(()=>addReply(rows,"x",{id:"c3",parentId:"x",body:"x"}),/PARENT_NOT_FOUND/)});
+test("only owner edits a post",()=>{const p={authorId:"a",body:"old"};assert.equal(editOwnedPost(p,"a","new").body,"new");assert.throws(()=>editOwnedPost(p,"b","hack"),/FORBIDDEN/)})
