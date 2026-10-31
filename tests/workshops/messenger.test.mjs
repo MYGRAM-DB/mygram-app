@@ -37,3 +37,32 @@ test("created_at and id cursor rejects invalid timestamp", () => {
     /INVALID_MESSAGE_CURSOR/,
   );
 });
+
+test("realtime newest-page refresh preserves older pages already loaded", () => {
+  const olderPage = {
+    id: "00000000-0000-4000-8000-000000000001",
+    created_at: "2026-10-30T08:00:00.000Z",
+    body: "loaded older page",
+  };
+  const newestPageRow = {
+    id: "00000000-0000-4000-8000-000000000002",
+    created_at: "2026-10-30T10:00:00.000Z",
+    body: "visible newest page",
+  };
+  const realtimeRow = {
+    id: "00000000-0000-4000-8000-000000000003",
+    created_at: "2026-10-30T10:01:00.000Z",
+    body: "arrived over realtime",
+  };
+
+  const refreshed = mergeMessagesByCreatedAtId(
+    [olderPage, newestPageRow],
+    [newestPageRow, realtimeRow],
+  );
+
+  assert.deepEqual(
+    refreshed.map((message) => message.id),
+    [olderPage.id, newestPageRow.id, realtimeRow.id],
+  );
+  assert.equal(new Set(refreshed.map((message) => message.id)).size, 3);
+});
